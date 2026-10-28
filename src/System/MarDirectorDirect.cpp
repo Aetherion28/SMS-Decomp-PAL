@@ -38,6 +38,12 @@
 #include <M3DUtil/InfectiousStrings.hpp>
 #include <Map/MapCollisionEntry.hpp>
 
+#ifdef SMS_ORACLE
+// playable build only (tools/playable/oracle.cpp)
+void SMSOracle_onStateChange(u8);
+void SMSOracle_onTick(u32, u32, u32);
+#endif
+
 extern OSThread gSetupThread;
 
 int TMarDirector::direct()
@@ -156,6 +162,11 @@ int TMarDirector::direct()
 				else
 					mPerformListCalcAnim->perform(~blacklistedCues, &local_140);
 			}
+#ifdef SMS_ORACLE
+			// playable build only (tools/playable/oracle.cpp)
+			SMSOracle_onTick(mTickCount, mMoveTickCount,
+			                 movementCue & CUE_MOVE);
+#endif
 
 			if (checkFlag(DIRECTOR_FLAG_LAST_SIMULATION_TICK)) {
 				local_140.unk0 = 0;
@@ -458,6 +469,10 @@ int TMarDirector::changeState()
 		currentStateFinalize(nextState);
 		nextStateInitialize(nextState);
 		mState = nextState;
+#ifdef SMS_ORACLE
+		// playable build only (tools/playable/oracle.cpp)
+		SMSOracle_onStateChange(mState);
+#endif
 	}
 
 	return desiredAppState;

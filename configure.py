@@ -124,6 +124,14 @@ parser.add_argument(
     help="with --non-matching, also link NonMatching objects from source (playable build)",
 )
 parser.add_argument(
+    "--define",
+    dest="defines",
+    action="append",
+    default=[],
+    metavar="NAME",
+    help="extra preprocessor define for every object (playable build only)",
+)
+parser.add_argument(
     "--no-progress",
     dest="progress",
     action="store_false",
@@ -227,6 +235,7 @@ cflags_base_base = [
     "-Dnullptr=0",
     "-Dalignof=__builtin_align",
     f"-DVERSION_{config.version}",
+    *[f"-D{d}" for d in args.defines],
 ]
 
 cflags_base = [
