@@ -507,6 +507,12 @@ void TNozzleTrigger::init()
 
 void TNozzleTrigger::movement(const TMarioControllerWork& controllerWork)
 {
+#ifdef VERSION_GMSP01
+	// PAL only: the air-charge sound below is gated on the pressure having
+	// actually risen this frame, so the entry value is kept.
+	f32 oldPressure = mInsidePressure;
+#endif
+
 	if (mFludd->getCurrentWater() <= 0) {
 		mSprayState     = TNozzleTrigger::SPRAY_STATE_INACTIVE;
 		mSprayTimer     = 0;
@@ -559,6 +565,7 @@ void TNozzleTrigger::movement(const TMarioControllerWork& controllerWork)
 				SMSRumbleMgr->start(20, (int)mFludd->getMario()->getUnk564(),
 				                    (f32*)nullptr);
 		}
+#ifndef VERSION_GMSP01
 		if (mRumbleOnCharge != true
 		    && mSprayState == TNozzleTrigger::SPRAY_STATE_INACTIVE
 		    && controllerWork.mAnalogR > 0.0f) {
@@ -566,11 +573,24 @@ void TNozzleTrigger::movement(const TMarioControllerWork& controllerWork)
 			                                mFludd->getEmitPos0(), 0, nullptr,
 			                                0, 4);
 		}
+#endif
 	}
 	mInsidePressure -= mInsidePressureDec.get();
 	if (mInsidePressure < 0.0f) {
 		mInsidePressure = 0.0f;
 	}
+
+#ifdef VERSION_GMSP01
+	// PAL only: moved after the decrement, so the sound plays when this
+	// frame's pressure ended up higher than it started.
+	if (canSpray == true && mRumbleOnCharge != true
+	    && mSprayState == TNozzleTrigger::SPRAY_STATE_INACTIVE
+	    && controllerWork.mAnalogR > 0.0f && oldPressure < mInsidePressure) {
+		SMSGetMSound()->startSoundActor(MSD_SE_SY_NEWP_AIR_TAME,
+		                                mFludd->getEmitPos0(), 0, nullptr, 0,
+		                                4);
+	}
+#endif
 
 	if (mInsidePressure > mInsidePressureMax.get()) {
 		mInsidePressure = mInsidePressureMax.get();

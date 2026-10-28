@@ -8,6 +8,10 @@
 #include <MarioUtil/ModelUtil.hpp>
 #include <MarioUtil/RumbleMgr.hpp>
 #include <MarioUtil/ShadowUtil.hpp>
+#ifdef VERSION_GMSP01
+// PAL only: TYoshi::entry() switches the light draw buffer.
+#include <MarioUtil/LightUtil.hpp>
+#endif
 #include <MarioUtil/RandomUtil.hpp>
 #include <M3DUtil/MActor.hpp>
 #include <M3DUtil/M3UModelMario.hpp>
@@ -1070,6 +1074,15 @@ void TYoshi::entry()
 	if (mState == STATE_EGG)
 		bVar1 = false;
 
+#ifdef VERSION_GMSP01
+	// PAL only: during a camera demo or a conversation Yoshi is always drawn,
+	// so the hatching blink above is overridden. Same predicate, and the same
+	// spelling, as PAL's TWaterGun::isEmitting().
+	if (gpMarDirector->isDemoMode3() || gpMarDirector->isDemoMode4()
+	    || gpMarDirector->isTalkModeNow())
+		bVar1 = true;
+#endif
+
 	if (unkC < 600)
 		mType = 0;
 
@@ -1121,9 +1134,18 @@ void TYoshi::entry()
 	}
 
 	mActor->entry();
+#ifdef VERSION_GMSP01
+	// PAL only: Yoshi's models and tongue are entered with the light draw
+	// buffer switched to MActor's own light, then it is put back.
+	gpLightManager->getLightSet(1)->changeLightDrawBuffer(
+	    mActor->getLightId());
+#endif
 	mMirrorModels[0]->entry();
 	mMirrorModels[1]->entry();
 	mTongue->entry();
+#ifdef VERSION_GMSP01
+	gpLightManager->getLightSet(1)->resetLightDrawBuffer();
+#endif
 
 	TCircleShadowRequest shadowRequest;
 	shadowRequest.mPosition = mTranslation;
