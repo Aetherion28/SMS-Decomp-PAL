@@ -935,7 +935,7 @@ BOOL TMario::wireHanging()
 	}
 
 	if (mUpperState == UPPER_STATE_PUMPING && mWaterGun != nullptr
-	    && mWaterGun->canSpray()) {
+	    && mWaterGun->isEmitting()) {
 		s16 rotSp = getNozzleEmitVX();
 		if (rotSp > 0)
 			unkF6 += 2 * mWireParams.mRotStop.get();
@@ -1006,7 +1006,7 @@ BOOL TMario::wireRolling()
 	}
 
 	if (mUpperState == UPPER_STATE_PUMPING && mWaterGun != nullptr
-	    && mWaterGun->canSpray()) {
+	    && mWaterGun->isEmitting()) {
 		unkF6 += getNozzleEmitVX();
 	}
 
