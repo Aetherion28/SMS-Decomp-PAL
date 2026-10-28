@@ -11,10 +11,10 @@ Regenerate it with `python3 tools/progress_treemap.py` after `ninja`.
 <!-- progress:start -->
 | | Code matched | Fuzzy | Functions matched | Units complete |
 |---|---|---|---|---|
-| **Total** | 51.19% | 98.86% | 10438 / 12881 | 407 / 736 |
-| Game Code | 40.41% | 98.60% | 6503 / 8857 | 89 / 387 |
-| JSystem Middleware | 87.29% | 99.74% | 2923 / 3009 | 172 / 200 |
-| SDK Code | 98.88% | 99.97% | 1012 / 1015 | 146 / 149 |
+| **Total** | 49.78% | 97.39% | 10220 / 12751 | 399 / 730 |
+| Game Code | 38.97% | 96.74% | 6415 / 8855 | 84 / 383 |
+| JSystem Middleware | 87.12% | 99.74% | 2794 / 2880 | 170 / 198 |
+| SDK Code | 95.73% | 99.97% | 1011 / 1016 | 145 / 149 |
 <!-- progress:end -->
 
 Upstream project: [doldecomp/sms](https://github.com/doldecomp/sms) ([upstream progress](https://decomp.dev/doldecomp/sms)).

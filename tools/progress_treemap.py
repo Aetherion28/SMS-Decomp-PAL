@@ -33,7 +33,7 @@ PAGE_TEMPLATE = os.path.join(ROOT, "tools", "progress_page.html")
 PAGE_OUT = os.path.join(ROOT, "build", "progress", "progress.html")
 DEMANGLE_CACHE = os.path.join(ROOT, "build", "progress", "demangle_cache.json")
 DTK = os.path.join(ROOT, "build", "tools", "dtk")
-REPO_URL = "https://github.com/Aetherion28/sms-ai-decomp"
+REPO_URL = "https://github.com/Aetherion28/SMS-AI-Decomp-PAL"
 
 W, H = 1000, 500
 GREEN = (0, 200, 0)
