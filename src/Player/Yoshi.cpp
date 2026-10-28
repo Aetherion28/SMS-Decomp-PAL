@@ -489,6 +489,11 @@ void TYoshi::getOff(bool param_1)
 	SMS_RideMoveCalcLocalPos(unk94, mTranslation);
 	SMSGetMSound()->unk88 = 1;
 	MSBgm::setStageBgmYoshiPercussion(false);
+#ifdef VERSION_GMSP01
+	// PAL only: getting off also puts the tongue back to idle, so it cannot
+	// stay out after dismounting.
+	mTongue->mState = TYoshiTongue::STATE_IDLE;
+#endif
 }
 
 BOOL TYoshi::thinkJumpEnd(u16 cur_idx, u16* new_idx)
@@ -839,10 +844,32 @@ void TYoshi::movement()
 		SMS_RideMoveByGroundActor(unk94, &mTranslation, &rot);
 		mEggRotSpeed = DEG2SHORTANGLE(rot);
 
+#ifdef VERSION_GMSP01
+		// PAL only: keep probing downwards through planes Mario can pass
+		// through, so the egg lands on real ground instead of on a
+		// pass-through floor. Capped at five probes.
+		// TODO: the target calls isMarioThrough()/isWaterSurface() here,
+		// while we inline both, which is the only thing left in this
+		// function. Both are weak header inlines in PAL too (marioEU.MAP),
+		// there is no PAL-only helper symbol in Yoshi.cpp, and splitting the
+		// || into two ifs changes nothing, so this looks like the same
+		// unexplained MWCC inline-budget behaviour noted in src/Camera.
+		const TBGCheckData* ground = nullptr;
+		f32 groundY = gpMap->checkGround(mTranslation.x,
+		                                 200.0f + mTranslation.y,
+		                                 mTranslation.z, &ground);
+		for (int i = 0; i < 5; i++) {
+			if (!ground->isMarioThrough() || ground->isWaterSurface())
+				break;
+			groundY = gpMap->checkGround(mTranslation.x, groundY - 1.0f,
+			                             mTranslation.z, &ground);
+		}
+#else
 		const TBGCheckData* ground;
 		JGeometry::TVec3<f32> trans = mTranslation;
 		f32 groundY
 		    = gpMap->checkGround(trans.x, 200.0f + trans.y, trans.z, &ground);
+#endif
 		mActor->setLightData(ground, mTranslation);
 		unk2C -= mMario->mJumpParams.mGravity.get();
 		mTranslation.y += unk2C;
@@ -927,6 +954,15 @@ void TYoshi::movement()
 		const TBGCheckData* ground;
 		f32 groundY = gpMap->checkGround(
 		    mTranslation.x, 200.0f + mTranslation.y, mTranslation.z, &ground);
+#ifdef VERSION_GMSP01
+		// PAL only: same downward probe as in the egg case above.
+		for (int i = 0; i < 5; i++) {
+			if (!ground->isMarioThrough() || ground->isWaterSurface())
+				break;
+			groundY = gpMap->checkGround(mTranslation.x, groundY - 1.0f,
+			                             mTranslation.z, &ground);
+		}
+#endif
 		mActor->setLightData(ground, mTranslation);
 
 		if (mState == STATE_UNMOUNTED && groundY > mTranslation.y) {

@@ -1773,6 +1773,11 @@ void TMario::checkPlayerAction(JDrama::TGraphics* graphics)
 
 void TMario::stateMachine()
 {
+#ifdef VERSION_GMSP01
+	// PAL only: a safety cap, so a status whose handler keeps asking to run
+	// again cannot spin here forever.
+	int loopCount = 0;
+#endif
 	int result = 1;
 	while (result != 0) {
 		switch (mStatus & MARIO_STATUS_TYPE_MASK) {
@@ -1798,6 +1803,11 @@ void TMario::stateMachine()
 			result = actnMain();
 			break;
 		}
+#ifdef VERSION_GMSP01
+		loopCount++;
+		if (loopCount > 10)
+			break;
+#endif
 	}
 }
 
@@ -2198,7 +2208,10 @@ void TMario::getOffYoshi(bool fly)
 
 	setAnimation(ANIM_JUMP, 1.0f);
 	unk78 &= ~0x100;
+#ifndef VERSION_GMSP01
+	// PAL drops this: getting off Yoshi no longer lifts Mario 100 units.
 	mPosition.y += 100.0f;
+#endif
 	mForwardVel = -8.0f;
 
 	mWaterGun->changeNozzle(TWaterGun::Hover, true);
