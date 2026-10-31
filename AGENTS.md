@@ -472,8 +472,8 @@ The DOL fits in the retail disc's DOL slot (offset 0x1E000, before the FST at 0x
 
 `assets/progress.svg` is a treemap of the whole game, shown at the top of README.md together with a progress table.
 Before every commit that changes code, run `ninja` and then `python3 tools/progress_treemap.py`, and include the updated `assets/progress.svg` and `README.md` in the commit.
-The script also writes `build/progress/progress.html`, the clickable map.
-Republish it to the existing artifact https://claude.ai/artifact/P341LnYJBNsiWYKJcdJKdV (Artifact tool, `url` set to that link) so the README link stays current.
+The script also writes `assets/progress.html`, the clickable map for this repository.
+Commit `assets/progress.html` with the SVG so each regional repository keeps its own current interactive map.
 
 ### Pre-PR checklist
 

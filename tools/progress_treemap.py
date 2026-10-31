@@ -10,11 +10,11 @@ Units are grouped by category (game, JSystem, SDK) and then by folder.
 The script also refreshes the progress numbers in README.md between the
 <!-- progress:start --> and <!-- progress:end --> markers.
 
-It also writes build/progress/progress.html, the clickable version of the
-map (published as the "Sunshine Decomp Map" artifact linked from README.md).
+It also writes assets/progress.html, the clickable version of the
+map (saved independently in this repository and linked from README.md).
 
 Usage: python3 tools/progress_treemap.py [report.json] [out.svg]
-Run `ninja` first so build/GMSJ01/report.json is current.
+Run `ninja` first so build/GMSP01/report.json is current.
 """
 
 import datetime
@@ -26,13 +26,13 @@ from concurrent.futures import ThreadPoolExecutor
 from html import escape
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-REPORT = os.path.join(ROOT, "build", "GMSJ01", "report.json")
+REPORT = os.path.join(ROOT, "build", "GMSP01", "report.json")
 OUT = os.path.join(ROOT, "assets", "progress.svg")
 README = os.path.join(ROOT, "README.md")
 PAGE_TEMPLATE = os.path.join(ROOT, "tools", "progress_page.html")
-PAGE_OUT = os.path.join(ROOT, "build", "progress", "progress.html")
+PAGE_OUT = os.path.join(ROOT, "assets", "progress.html")
 DEMANGLE_CACHE = os.path.join(ROOT, "build", "progress", "demangle_cache.json")
-DTK = os.path.join(ROOT, "build", "tools", "dtk")
+DTK = os.path.join(ROOT, "build", "tools", "dtk.exe" if os.name == "nt" else "dtk")
 REPO_URL = "https://github.com/Aetherion28/SMS-AI-Decomp-PAL"
 
 W, H = 1000, 500
@@ -239,7 +239,7 @@ def demangle_all(names):
 
 
 def write_page(data):
-    names = [f["name"] for u in data["units"] for f in u.get("functions", [])]
+    names = [f["name"] for u in data["units"] for f in u.get("functions", []) if not f.get("metadata", {}).get("demangled_name")]
     dem = demangle_all(names)
     units = []
     for u in data["units"]:
@@ -253,7 +253,7 @@ def write_page(data):
             "c": int(m.get("total_code", 0) or 0),
             "m": int(m.get("matched_code", 0) or 0),
             "f": round(float(m.get("fuzzy_match_percent", 0) or 0), 2),
-            "fn": [[dem.get(f["name"], f["name"]), int(f.get("size", 0) or 0),
+            "fn": [[f.get("metadata", {}).get("demangled_name") or dem.get(f["name"], f["name"]), int(f.get("size", 0) or 0),
                     round(float(f["fuzzy_match_percent"]), 2) if "fuzzy_match_percent" in f else -1]
                    for f in fns],
         })
