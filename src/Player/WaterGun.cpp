@@ -1670,7 +1670,7 @@ void TWaterGun::perform(u32 cue, JDrama::TGraphics* graphics)
 }
 
 #ifdef VERSION_GMSP01
-// US and later: in JP this is an inline in WaterGun.hpp (emitted as a weak copy in
+// PAL only: in JP this is an inline in WaterGun.hpp (emitted as a weak copy in
 // MarioRun.cpp). PAL defines it here as a global and adds the director-mode
 // check, so FLUDD counts as not emitting during demos and conversations.
 bool TWaterGun::isEmitting()
