@@ -1,5 +1,5 @@
 <meta charset="utf-8">
-<title>Sunshine JP 1.0 Decomp Map</title>
+<title>Sunshine PAL Decomp Map</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
 /* Layout: one map that fills the width, a stats strip above it, and the
@@ -118,7 +118,7 @@ td.num { text-align: right; white-space: nowrap; }
 <div class="wrap">
   <header>
     <div>
-      <h1>Sunshine JP 1.0 Decomp Map</h1>
+      <h1>Sunshine PAL Decomp Map</h1>
       <p class="sub" id="sub"></p>
     </div>
     <div class="stats" id="stats"></div>
@@ -326,7 +326,7 @@ function select(u, scroll) {
 
 function header() {
   const t = DATA.total;
-  $("sub").textContent = `Super Mario Sunshine (JP 1.0; GMSJ01) · ${t.units} source files · built ${DATA.built}`;
+  $("sub").textContent = `Super Mario Sunshine (PAL; GMSP01) · ${t.units} source files · built ${DATA.built}`;
   const items = [
     [pct(t.matched), "code matched"],
     [pct(t.fuzzy), "fuzzy"],

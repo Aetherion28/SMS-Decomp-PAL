@@ -1,21 +1,29 @@
-Super Mario Sunshine
+Super Mario Sunshine — PAL
 =============
 
-[<img src="assets/progress.svg" width="1000" height="500">](https://claude.ai/artifact/P341LnYJBNsiWYKJcdJKdV)
+[<img src="assets/progress.svg" width="1000" height="500">](assets/progress.html)
 
 Each box is one source file, sized by its code.
 Green: every function matches. Blue: partly matched (brighter is closer). Dark grey: not started.
-Click the graph to open the [interactive map](https://claude.ai/artifact/P341LnYJBNsiWYKJcdJKdV), where each box opens that file's function list and source.
+Click the graph to open the [interactive map](assets/progress.html), where each box opens that file's function list and source.
 Regenerate it with `python3 tools/progress_treemap.py` after `ninja`.
 
 <!-- progress:start -->
 | | Code matched | Fuzzy | Functions matched | Units complete |
 |---|---|---|---|---|
-| **Total** | 51.19% | 98.86% | 10438 / 12881 | 407 / 736 |
-| Game Code | 40.41% | 98.60% | 6503 / 8857 | 89 / 387 |
-| JSystem Middleware | 87.29% | 99.74% | 2923 / 3009 | 172 / 200 |
-| SDK Code | 98.88% | 99.97% | 1012 / 1015 | 146 / 149 |
+| **Total** | 52.00% | 99.07% | 10375 / 12751 | 403 / 730 |
+| Game Code | 41.78% | 98.87% | 6568 / 8855 | 88 / 383 |
+| JSystem Middleware | 87.19% | 99.74% | 2796 / 2880 | 170 / 198 |
+| SDK Code | 95.73% | 99.97% | 1011 / 1016 | 145 / 149 |
 <!-- progress:end -->
+
+
+Regional target: **PAL** (`GMSP01`).
+Configure with `python configure.py -v GMSP01`; this is also the default in this repository.
+Download [the interactive map](assets/progress.html) and open it locally, or preview the SVG above.
+The map is self-contained and links to this repository’s sources.
+
+See [cross-version code comparison](docs/REGIONAL_COMPARISON.md) and [interactive reuse map](assets/reuse.html).
 
 Upstream project: [doldecomp/sms](https://github.com/doldecomp/sms) ([upstream progress](https://decomp.dev/doldecomp/sms)).
 

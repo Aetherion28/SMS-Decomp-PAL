@@ -14,7 +14,7 @@ It also writes assets/progress.html, the clickable version of the
 map (saved independently in this repository and linked from README.md).
 
 Usage: python3 tools/progress_treemap.py [report.json] [out.svg]
-Run `ninja` first so build/GMSJ01/report.json is current.
+Run `ninja` first so build/GMSP01/report.json is current.
 """
 
 import datetime
@@ -26,7 +26,7 @@ from concurrent.futures import ThreadPoolExecutor
 from html import escape
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-REPORT = os.path.join(ROOT, "build", "GMSJ01", "report.json")
+REPORT = os.path.join(ROOT, "build", "GMSP01", "report.json")
 OUT = os.path.join(ROOT, "assets", "progress.svg")
 README = os.path.join(ROOT, "README.md")
 PAGE_TEMPLATE = os.path.join(ROOT, "tools", "progress_page.html")

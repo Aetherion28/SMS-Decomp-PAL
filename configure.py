@@ -27,7 +27,7 @@ from tools.project import (
 )
 
 # Game versions
-DEFAULT_VERSION = 0
+DEFAULT_VERSION = 1
 VERSIONS = [
     "GMSJ01",     # 0
     "GMSP01",     # 1
