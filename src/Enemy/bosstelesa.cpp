@@ -2047,10 +2047,6 @@ void TBossTelesa::rollRouletteCircle()
 // UNUSED
 bool TBossTelesa::isForceRestart() { return false; }
 
-// TODO: same as forceAllItemKill: the original is called out of line from
-// TBossTelesaKillSmallEnemy::checkHit, so it had 16+ statements (ours has
-// 15) and an 8 byte larger frame.
-#pragma dont_inline on
 void TBossTelesa::forceHide()
 {
 	if (mSpine->getCurrentNerve() == &TNerveBossTelesaDie::theNerve())
@@ -2074,8 +2070,10 @@ void TBossTelesa::forceHide()
 	mSpine->reset();
 	mSpine->setNext(&TNerveBossTelesaHide::theNerve());
 }
-#pragma dont_inline off
 
+// TODO: the original is not inlined into forceHide; the pragma stands in for
+// the missing source.
+#pragma dont_inline on
 void TBossTelesa::forceAllItemKill()
 {
 	for (int i = 0; i < mSpitObjNum; ++i) {
@@ -2095,6 +2093,7 @@ void TBossTelesa::forceAllItemKill()
 		                             &mSpitObjs[i]->mPosition, 0, nullptr);
 	}
 }
+#pragma dont_inline off
 
 void TBossTelesa::fanfale()
 {

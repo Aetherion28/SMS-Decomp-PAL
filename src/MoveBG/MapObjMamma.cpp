@@ -621,6 +621,9 @@ void TLeanMirror::release()
 	MSBgm::stopTrackBGM(1, 10);
 }
 
+#ifdef VERSION_GMSP01
+static s32 startCameraShakeSE(uintptr_t, u32) { return 0; }
+#else
 static s32 startCameraShakeSE(uintptr_t param_1, u32 param_2)
 {
 	if (param_2 == 0) {
@@ -631,6 +634,7 @@ static s32 startCameraShakeSE(uintptr_t param_1, u32 param_2)
 	}
 	return 0;
 }
+#endif
 
 void TLeanMirror::controlGoTarget()
 {

@@ -134,8 +134,12 @@ public:
 	virtual void setMActorAndKeeper();
 	virtual bool isHitValid(u32 message)
 	{
-		if (message == 0xB)
+		if (message == 0xB) {
+#ifdef VERSION_GMSP01
+			onLiveFlag(LIVE_FLAG_HIDDEN);
+#endif
 			return true;
+		}
 		return false;
 	}
 	virtual bool isCollidMove(THitActor*) { return false; }

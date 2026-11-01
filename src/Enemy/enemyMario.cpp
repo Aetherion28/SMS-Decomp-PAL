@@ -894,6 +894,9 @@ void TEnemyMario::emReplay()
 		mStampActor->setBck("stamp_koopa_sign_draw1");
 		MActor* stampActor = mStampActor;
 		stampActor->setFrameRate(SMSGetAnmFrameRate(), ANM_TYPE_BCK);
+#ifdef VERSION_GMSP01
+		mStampActor->getFrameCtrl(ANM_TYPE_BCK)->setRate(0.8333333f);
+#endif
 		changeEMDoing(EM_DOING_UNK13);
 		startSoundActor(MSD_SE_MA_KAGE_PAINTS);
 		startSoundActor(MSD_SE_MA_KAGE_PAINTINGWIND);

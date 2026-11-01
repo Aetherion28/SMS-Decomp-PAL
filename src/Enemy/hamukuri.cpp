@@ -1190,6 +1190,10 @@ bool THamuKuri::isHitValid(u32 param_1)
 	if (checkLiveFlag(LIVE_FLAG_HIDDEN))
 		return false;
 
+#ifdef VERSION_GMSP01
+	if (param_1 == HIT_MESSAGE_UNKB)
+		onLiveFlag(LIVE_FLAG_HIDDEN);
+#endif
 	return true;
 }
 
@@ -1532,6 +1536,16 @@ bool THaneHamuKuri::isCollidMove(THitActor* param_1)
 	return TSmallEnemy::isCollidMove(param_1);
 }
 
+#ifdef VERSION_GMSP01
+bool THaneHamuKuri::isHitValid(u32 message)
+{
+	if (checkLiveFlag(LIVE_FLAG_HIDDEN))
+		return false;
+	if (message == HIT_MESSAGE_UNKB)
+		onLiveFlag(LIVE_FLAG_HIDDEN);
+	return true;
+}
+#else
 bool THaneHamuKuri::isHitValid(u32)
 {
 	if (checkLiveFlag(LIVE_FLAG_HIDDEN))
@@ -1539,6 +1553,7 @@ bool THaneHamuKuri::isHitValid(u32)
 	else
 		return true;
 }
+#endif
 
 void THaneHamuKuri::resetFlyParam()
 {

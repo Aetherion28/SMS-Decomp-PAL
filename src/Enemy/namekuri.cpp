@@ -628,8 +628,11 @@ bool TNameKuri::isHitValid(u32 param_1)
 
 	if (checkLiveFlag(2))
 		return false;
-	else
-		return true;
+#ifdef VERSION_GMSP01
+	if (param_1 == HIT_MESSAGE_UNKB)
+		onLiveFlag(LIVE_FLAG_HIDDEN);
+#endif
+	return true;
 }
 
 bool TNameKuri::isCollidMove(THitActor* param_1)

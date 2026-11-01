@@ -331,8 +331,12 @@ void TPoiHana::setDeadAnm()
 
 bool TPoiHana::isHitValid(u32 param_1)
 {
-	if (param_1 == HIT_MESSAGE_UNKB)
+	if (param_1 == HIT_MESSAGE_UNKB) {
+#ifdef VERSION_GMSP01
+		onLiveFlag(LIVE_FLAG_HIDDEN);
+#endif
 		return true;
+	}
 
 	if (mSpine->getCurrentNerve() == &TNervePoihanaFreeze::theNerve()) {
 		setBckAnm(3);

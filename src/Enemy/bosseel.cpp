@@ -1198,6 +1198,9 @@ void TBossEelHeartCoin::perform(u32 cue, JDrama::TGraphics* graphics)
 			mPosition.set(jointMtx[0][3], jointMtx[1][3], jointMtx[2][3]);
 		}
 		mPosition.y = jointMtx[1][3];
+#ifdef VERSION_GMSP01
+		mPosition.y = -23300.0f;
+#endif
 
 		TPosition3f heartMtx(mPosition.x, mPosition.y, mPosition.z);
 		getMActor()->getModel()->setBaseTRMtx(heartMtx);
@@ -1207,8 +1210,12 @@ void TBossEelHeartCoin::perform(u32 cue, JDrama::TGraphics* graphics)
 	if (calcAnim) {
 		for (s32 i = 0; i < 20; ++i) {
 			MtxPtr coinMtx = getMActor()->getModel()->getAnmMtx(i + 2);
+#ifdef VERSION_GMSP01
+			mCoins[i]->mPosition.set(coinMtx[0][3], -23300.0f, coinMtx[2][3]);
+#else
 			mCoins[i]->mPosition.set(coinMtx[0][3], coinMtx[1][3],
 			                         coinMtx[2][3]);
+#endif
 		}
 	}
 }
