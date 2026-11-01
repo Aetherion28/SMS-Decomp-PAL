@@ -845,7 +845,10 @@ void TDonchou::calcRootMatrix()
 	if (unk144 != nullptr && unk144->unk194 && unk148->unk194)
 		unk13C = 1;
 	if (unk13C != 0) {
-		unk14C++;
+#ifdef VERSION_GMSP01
+		if (!SMSGetMarDirector()->isTalkModeNow())
+#endif
+			unk14C++;
 		if (unk14C > 100) {
 			if (mMActor->checkCurAnm("donchou", ANM_TYPE_BCK)) {
 				if (mMActor->curAnmEndsNext(ANM_TYPE_BCK, nullptr))
@@ -859,6 +862,12 @@ void TDonchou::calcRootMatrix()
 				    nullptr, JDrama::TFlagT<u16>(0));
 				J3DFrameCtrl* fc = mMActor->getFrameCtrl(ANM_TYPE_BCK);
 				fc->setRate(0.5f * fc->getRate());
+#ifdef VERSION_GMSP01
+				if (!SMSGetMarDirector()->isTalkModeNow()) {
+					gpMarioOriginal->mGamePad->onNeutralMarioKey();
+					gpMarioOriginal->mGamePad->mDisabledFrames = 5;
+				}
+#endif
 			}
 		}
 	}

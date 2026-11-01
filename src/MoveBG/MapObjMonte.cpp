@@ -807,6 +807,9 @@ void TFluff::kill()
 {
 	if (mHeldObject != nullptr) {
 		mHeldObject->receiveMessage(this, HIT_MESSAGE_DETACH);
+#ifdef VERSION_GMSP01
+		mHeldObject->mHolder = nullptr;
+#endif
 		mHeldObject = nullptr;
 	}
 	mState = STATE_UNK3;

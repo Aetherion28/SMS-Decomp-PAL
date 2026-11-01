@@ -1545,6 +1545,21 @@ void TEnemyMario::checkReturn()
 	if (!mGroundPlane->isIllegalData())
 		return;
 
+#ifdef VERSION_GMSP01
+	int nodeIndex
+	    = mEMario->getTracer()->getGraph()->findNearestNodeIndex(mPosition, -1);
+	int nodeNum = mEMario->getTracer()->getGraph()->getNodeNum();
+	for (int i = 0; i < nodeNum; i++) {
+		JGeometry::TVec3<f32> point;
+		mEMario->getTracer()
+		    ->getGraph()
+		    ->getGraphNode((nodeIndex + i) % nodeNum)
+		    .getPoint(&point);
+
+		if (point.distance(SMS_GetMarioPos()) > 1000.0f)
+			mPosition = point;
+	}
+#else
 	int nodeIndex
 	    = mEMario->getTracer()->getGraph()->findNearestNodeIndex(mPosition, -1);
 	BOOL searching = true;
@@ -1561,6 +1576,7 @@ void TEnemyMario::checkReturn()
 		nodeIndex
 		    = (nodeIndex + 1) % mEMario->getTracer()->getGraph()->getNodeNum();
 	}
+#endif
 }
 
 void TEnemyMario::checkController(JDrama::TGraphics*)

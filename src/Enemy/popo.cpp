@@ -936,6 +936,10 @@ DEFINE_NERVE(TNervePopoExplosion, TLiveActor)
 		self->onHitFilter(HIT_FILTER_NO_COLLISION);
 		self->onLiveFlag(LIVE_FLAG_UNK8);
 		self->explosionEffect();
+#ifdef VERSION_GMSP01
+		SMSGetMSound()->startSoundActor(0x297F, &self->mPosition, 0, nullptr,
+		                                0, 4);
+#endif
 	}
 	if (spine->getTime() > self->unk194->mSLExplosionEmitTime.get()) {
 		self->onLiveFlag(LIVE_FLAG_DEAD);

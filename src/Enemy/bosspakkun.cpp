@@ -897,7 +897,7 @@ void TBossPakkun::rumblePad(int type, const JGeometry::TVec3<f32>& position)
 
 void TBossPakkun::showMessage(u32 message)
 {
-	u32 index = message - 0xe0000;
+	u32 index = message - BALLOON_MSG(0xE0000);
 	u32 mask;
 	if (index == 1)
 		mask = 0;
