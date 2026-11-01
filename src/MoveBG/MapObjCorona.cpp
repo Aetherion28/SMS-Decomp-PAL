@@ -538,6 +538,9 @@ Mtx* TBathtub::getRootJointMtx() const
 
 void TBathtub::perform(u32 cue, JDrama::TGraphics* graphics)
 {
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01)
+	onLiveFlag(LIVE_FLAG_CALC_INT_FRAME);
+#endif
 	TMapObjBase::perform(cue, graphics);
 	if (cue & CUE_MOVE) {
 		MTXCopy(getShineMtx(), unk29C->getModel()->getBaseTRMtx());

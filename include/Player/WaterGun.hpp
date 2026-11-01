@@ -112,9 +112,9 @@ public:
 	f32 getPressureMax();
 	void init();
 	void initInLoadAfter();
-#ifdef VERSION_GMSP01
-	// PAL moved this out of the header and into WaterGun.cpp, and gave it an
-	// extra director-mode check, so outside that TU it is a real call.
+#if !defined(VERSION_GMSJ01)
+	// US and later moved this out of the header and into WaterGun.cpp, and gave
+	// it an extra director-mode check, so outside that TU it is a real call.
 	// marioEU.MAP: isEmitting__9TWaterGunFv (func,global) in WaterGun.cpp.
 	bool isEmitting();
 #else

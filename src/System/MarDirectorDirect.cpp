@@ -493,8 +493,10 @@ void TMarDirector::currentStateFinalize(u8 next_state)
 
 		SMSGetApplication()->getFader()->startWipe(unkE4, 0.4f, 0.0f);
 		SMSRumbleMgr->reset();
+#if defined(VERSION_GMSJ01)
 		if (SMSGetApplication()->getCurrArea().getStage() == 1)
 			THPPlayerPlay();
+#endif
 		break;
 
 	case STATE_UNK1:
@@ -724,7 +726,7 @@ void TMarDirector::nextStateInitialize(u8 next_state)
 		}
 		if (mStage != 0xf)
 			getConsole()->unkC.off(CUE_MOVE | CUE_CALC_ANIM | CUE_DRAW);
-#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01)
+#if !defined(VERSION_GMSJ01)
 		if (currSeq.getStage() == 1)
 			THPPlayerPlay();
 #endif
@@ -799,7 +801,7 @@ void TMarDirector::nextStateInitialize(u8 next_state)
 		unkAC->mCardSave->init(unk261);
 		for (int i = 0; i < 4; ++i)
 			JUTGamePad::CRumble::stopMotor(mGamePads[i]->mPortNum);
-#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01)
+#if !defined(VERSION_GMSJ01)
 		switch (unk261) {
 		case 3:
 		case 4:

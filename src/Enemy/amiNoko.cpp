@@ -770,7 +770,7 @@ DEFINE_NERVE(TNerveAmiNokoDie, TLiveActor)
 	if (spine->getTime() == 0) {
 		self->setBckAnm(1);
 		self->onHitFilter(HIT_FILTER_NO_COLLISION);
-#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01)
+#if !defined(VERSION_GMSJ01)
 		self->unk208->onHitFilter(HIT_FILTER_NO_COLLISION);
 #endif
 	}

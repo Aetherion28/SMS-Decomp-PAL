@@ -770,7 +770,7 @@ void MSound::setCategoryAllVolume(u8 category, f32 volume, u32 param_3,
                                   u8 param_4)
 {
 #if !defined(VERSION_GMSJ01)
-	int count = 0;
+	u32 count = 0;
 	for (JAISound* sound = unk0->getLinkBuffer(category)->mUsedHead;
 	     sound != nullptr; sound = sound->getNextSound()) {
 		if (count >= 100)
@@ -921,7 +921,12 @@ u32 MSound::startMarioVoice(u32 param_1, s16 param_2, u8 param_3)
 
 	switch (param_1) {
 	case 0xffff0003:
+#if !defined(VERSION_GMSJ01)
+		if (unk94 != MSD_SE_MV13_ACTION_SMALL_01 && param_3 != 2
+		    && JALCalc::getRandom_0_1() < 0.5f)
+#else
 		if (param_3 != 2 && JALCalc::getRandom_0_1() < 0.5f)
+#endif
 			param_1 = MSD_SE_MA_VO_JUMP_MID_3;
 		if (param_1 + 0x10000 == 3)
 			param_1 = MSD_SE_MA_VO_LAND_LOW_4;
@@ -1006,7 +1011,12 @@ u32 MSound::startMarioVoice(u32 param_1, s16 param_2, u8 param_3)
 			param_1 = MSD_SE_MV41_JUMP_T_01;
 			break;
 		}
+#if !defined(VERSION_GMSJ01)
+		if (unk94 != MSD_SE_MV13_ACTION_SMALL_01 && param_3 != 2
+		    && JALCalc::getRandom_0_1() < 0.7f)
+#else
 		if (param_3 != 2 && JALCalc::getRandom_0_1() < 0.7f)
+#endif
 			param_1 = MSD_SE_MA_VO_JUMP_MID_0;
 		break;
 
@@ -1061,6 +1071,9 @@ u32 MSound::startMarioVoice(u32 param_1, s16 param_2, u8 param_3)
 	                  unkAC[iVar3].mPosition, 0);
 	MSoundSESystem::MSoundSE::startSoundActorInner(param_1, unk8C + iVar6,
 	                                               &local_48, 1, 4);
+#if !defined(VERSION_GMSJ01)
+	unk94 = param_1;
+#endif
 	if (unk8C[iVar6] != nullptr) {
 		if (param_3 == 2) {
 			unk8C[iVar6]->setPortData(11, 1);

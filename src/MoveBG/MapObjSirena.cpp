@@ -606,7 +606,12 @@ int TItemSlotDrum::getForcastResult(int idx)
 {
 	f32 angle = unk13C[idx];
 	f32 speed = unk138[idx];
+#if !defined(VERSION_GMSJ01)
+	int i = 0;
+	do {
+#else
 	for (;;) {
+#endif
 		if (fabsf(speed) > unk160) {
 			angle += speed;
 			if (speed > 0.0f)
@@ -623,11 +628,20 @@ int TItemSlotDrum::getForcastResult(int idx)
 				angle -= 360.0f;
 			if (angle <= 0.0f)
 				angle += 360.0f;
+#if !defined(VERSION_GMSJ01)
+			if ((int)fabsf(angle) % unk168 == 0) {
+				angle = (int)(angle / unk168) * unk168;
+				break;
+			}
+		}
+	} while (++i <= 10000);
+#else
 			if ((int)fabsf(angle) % unk168 == 0)
 				break;
 		}
 	}
 	angle = (int)(angle / unk168) * unk168;
+#endif
 	return getResultFromAng(angle);
 }
 
@@ -875,7 +889,11 @@ void TDonchou::calcRootMatrix()
 		if (!SMSGetMarDirector()->isTalkModeNow())
 #endif
 			unk14C++;
+#if !defined(VERSION_GMSJ01)
+		if (unk14C > 20) {
+#else
 		if (unk14C > 100) {
+#endif
 			if (mMActor->checkCurAnm("donchou", ANM_TYPE_BCK)) {
 				if (mMActor->curAnmEndsNext(ANM_TYPE_BCK, nullptr))
 					unk138->remove();
@@ -888,13 +906,12 @@ void TDonchou::calcRootMatrix()
 				    nullptr, JDrama::TFlagT<u16>(0));
 				J3DFrameCtrl* fc = mMActor->getFrameCtrl(ANM_TYPE_BCK);
 				fc->setRate(0.5f * fc->getRate());
-#if !defined(VERSION_GMSJ01)
-				if (!SMSGetMarDirector()->isTalkModeNow()) {
-					gpMarioOriginal->mGamePad->onNeutralMarioKey();
-					gpMarioOriginal->mGamePad->mDisabledFrames = 5;
-				}
-#endif
 			}
+#if !defined(VERSION_GMSJ01)
+		} else if (!SMSGetMarDirector()->isTalkModeNow()) {
+			gpMarioOriginal->mGamePad->onNeutralMarioKey();
+			gpMarioOriginal->mGamePad->mDisabledFrames = 5;
+#endif
 		}
 	}
 }

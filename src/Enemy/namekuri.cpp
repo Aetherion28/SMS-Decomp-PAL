@@ -626,11 +626,14 @@ bool TNameKuri::isHitValid(u32 param_1)
 	if (param_1 == HIT_MESSAGE_SPRAYED_BY_WATER)
 		unk198 = 0;
 
-	if (checkLiveFlag(2))
-		return false;
 #if !defined(VERSION_GMSJ01)
+	if (mLiveFlag & LIVE_FLAG_HIDDEN)
+		return false;
 	if (param_1 == HIT_MESSAGE_UNKB)
 		onLiveFlag(LIVE_FLAG_HIDDEN);
+#else
+	if (checkLiveFlag(2))
+		return false;
 #endif
 	return true;
 }

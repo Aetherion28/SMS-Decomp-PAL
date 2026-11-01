@@ -740,7 +740,12 @@ int TTelesaSlot::getForcastResult(int idx)
 	f32 ang = unk13C[idx];
 	f32 cur = unk138[idx];
 
+#if !defined(VERSION_GMSJ01)
+	int i = 0;
+	do {
+#else
 	for (;;) {
+#endif
 		if (fabsf(cur) > unk160) {
 			ang += cur;
 			if (cur > 0.0f)
@@ -758,12 +763,23 @@ int TTelesaSlot::getForcastResult(int idx)
 				ang -= 360.0f;
 			if (ang <= 0.0f)
 				ang += 360.0f;
+#if !defined(VERSION_GMSJ01)
+			if ((int)fabsf(ang) % unk168 == 0) {
+				ang = unk168 * (int)(ang / (f32)unk168);
+				break;
+			}
+		}
+	} while (++i <= 10000);
+
+	return getResultFromAng(ang);
+#else
 			if ((int)fabsf(ang) % unk168 == 0)
 				break;
 		}
 	}
 
 	return getResultFromAng(unk168 * (int)(ang / (f32)unk168));
+#endif
 }
 
 int TTelesaSlot::getResultFromAng(f32 ang)

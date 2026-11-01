@@ -853,6 +853,9 @@ void TBossGesso::gotTentacleDamage()
 	mSpine->reset();
 	mSpine->setNext(&TNerveBGTentacleDamage::theNerve());
 	mSpine->pushAfterCurrent(&TNerveBGWait::theNerve());
+#if !defined(VERSION_GMSJ01)
+	unk1A0 = 1;
+#endif
 }
 
 void TBossGesso::gotEyeDamage()

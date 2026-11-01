@@ -273,11 +273,19 @@ void TCogwheel::control()
 	unk150->mPosition.y
 	    = mPosition.y - unk13C + unk150->getObjCollisionHeightOffset();
 	unk164->mPosition.y = mPosition.y - (unk14C - unk13C);
+#if !defined(VERSION_GMSJ01)
+	if (fabsf(unk138) > 0.01f) {
+		SMSGetMSound()->startSoundActorWithInfo(
+		    MSD_SE_OBJ_MR_TSUBO_PULL, &mPosition, nullptr,
+		    10.0f * fabsf(unk138), 0, 0, nullptr, 0, 4);
+	}
+#else
 	if (fabsf(unk138) > mMinSpeed) {
 		SMSGetMSound()->startSoundActorWithInfo(
 		    MSD_SE_OBJ_MR_TSUBO_PULL, &mPosition, nullptr, fabsf(unk138), 0, 0,
 		    nullptr, 0, 4);
 	}
+#endif
 }
 
 void TCogwheel::initMapObj()

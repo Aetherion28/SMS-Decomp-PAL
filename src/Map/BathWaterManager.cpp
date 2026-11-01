@@ -1660,8 +1660,7 @@ void TBathWaterManager::loadAfter()
 	TScreenTexture* tex = static_cast<TScreenTexture*>(
 	    JDrama::TNameRefGen::search("スクリーンテクスチャ"));
 #if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01)
-	unk28[1] = new TBathWaterMeshRenderer(unk18, tex->getTexture());
-	unk28[0] = new TBathWaterFlatRenderer(unk18);
+	unk28[0] = unk28[1] = new TBathWaterMeshRenderer(unk18, tex->getTexture());
 	unk30    = unk28[1];
 #else
 	unk28[0] = new TBathWaterFlatRenderer(unk18);

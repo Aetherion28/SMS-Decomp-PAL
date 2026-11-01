@@ -1196,12 +1196,15 @@ bool THamuKuri::isHitValid(u32 param_1)
 		return true;
 	}
 
-	if (checkLiveFlag(LIVE_FLAG_HIDDEN))
+#if !defined(VERSION_GMSJ01)
+	if (mLiveFlag & LIVE_FLAG_HIDDEN)
 		return false;
 
-#if !defined(VERSION_GMSJ01)
 	if (param_1 == HIT_MESSAGE_UNKB)
 		onLiveFlag(LIVE_FLAG_HIDDEN);
+#else
+	if (checkLiveFlag(LIVE_FLAG_HIDDEN))
+		return false;
 #endif
 	return true;
 }
@@ -1548,7 +1551,7 @@ bool THaneHamuKuri::isCollidMove(THitActor* param_1)
 #if !defined(VERSION_GMSJ01)
 bool THaneHamuKuri::isHitValid(u32 message)
 {
-	if (checkLiveFlag(LIVE_FLAG_HIDDEN))
+	if (mLiveFlag & LIVE_FLAG_HIDDEN)
 		return false;
 	if (message == HIT_MESSAGE_UNKB)
 		onLiveFlag(LIVE_FLAG_HIDDEN);

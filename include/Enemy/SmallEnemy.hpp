@@ -148,7 +148,7 @@ public:
 #if !defined(VERSION_GMSJ01)
 	virtual bool isHitValid(u32 message)
 	{
-		if (checkLiveFlag(LIVE_FLAG_HIDDEN))
+		if (mLiveFlag & LIVE_FLAG_HIDDEN)
 			return false;
 		if (message == HIT_MESSAGE_UNKB)
 			onLiveFlag(LIVE_FLAG_HIDDEN);

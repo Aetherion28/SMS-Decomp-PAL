@@ -700,6 +700,10 @@ bool TSmallEnemy::changeMove()
 				mJuiceBlock->mPosition.x -= local_80.x;
 				mJuiceBlock->mPosition.z -= local_80.z;
 			}
+#if !defined(VERSION_GMSJ01)
+			if (mJuiceBlock->checkLiveFlag(LIVE_FLAG_DEAD))
+				return true;
+#endif
 		}
 	}
 

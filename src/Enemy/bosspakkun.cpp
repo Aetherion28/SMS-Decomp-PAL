@@ -745,7 +745,11 @@ TBossPakkun::TBossPakkun(const char* name)
     , unk1B8(0)
     , unk1BC(0)
     , unk1C0(0)
+#if !defined(VERSION_GMSJ01)
+    , unk1C4(1)
+#else
     , unk1C4(0)
+#endif
     , unk1CC(0)
 {
 	offLiveFlag(LIVE_FLAG_ENABLE_CLIPPING);
@@ -1669,12 +1673,21 @@ DEFINE_NERVE(TNerveBPTumbleOut, TLiveActor)
 		if (actor->checkCurBckFromIndex(14)) {
 			boss->changeBck(22);
 			if (!boss->is2ndFightNow()) {
+#if !defined(VERSION_GMSJ01)
+				boss->unk1C4 -= 1;
+				if (boss->unk1C4 <= 0) {
+					SMSGetMarDirector()->getConsole()->startAppearBalloon(
+					    BALLOON_MSG(0xe0001), true);
+					boss->unk1C4 = 3;
+				}
+#else
 				boss->unk1C4 += 1;
 				if (boss->unk1C4 >= 3) {
 					SMSGetMarDirector()->getConsole()->startAppearBalloon(
 					    0xe0001, true);
 					boss->unk1C4 = 0;
 				}
+#endif
 			}
 		} else {
 			spine->pushAfterCurrent(&TNerveBPWait::theNerve());

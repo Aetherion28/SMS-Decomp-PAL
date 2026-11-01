@@ -1362,6 +1362,9 @@ void TBossEelAwaCollision::perform(u32 cue, JDrama::TGraphics* graphics)
 	if (cue & CUE_CALC_ANIM) {
 		mPosition.x = mCollisionMtx[0][3];
 		mPosition.y = mCollisionMtx[1][3] + 11000.0f;
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01)
+		mPosition.y = -24300.0f;
+#endif
 		mPosition.z = mCollisionMtx[2][3];
 	}
 	THitActor::perform(cue, graphics);

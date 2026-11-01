@@ -205,7 +205,7 @@ public:
 
 public:
 #if !defined(VERSION_GMSJ01)
-	/* 0x94 */ s32 unk94;
+	/* 0x94 */ u32 unk94;
 	/* 0x98 */ bool mWaterFirEnabled;
 	/* 0x9A */ u16 mTimerSyncValue;
 #else

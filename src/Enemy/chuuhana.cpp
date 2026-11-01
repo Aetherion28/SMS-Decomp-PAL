@@ -104,13 +104,15 @@ TChuuHanaSaveLoadParams::TChuuHanaSaveLoadParams(const char* param_1)
 
 TChuuHanaManager::TChuuHanaManager(const char* param_1)
     : TSmallEnemyManager(param_1)
+#if !defined(VERSION_GMSJ01)
+    , unk60(0)
+    , unk68(0)
+    , unk6C(0)
+    , unk70(0)
+#endif
 {
 	gpCurChuuHana = nullptr;
 #if !defined(VERSION_GMSJ01)
-	unk60 = 0;
-	unk68 = 0;
-	unk6C = 0;
-	unk70 = 0;
 	unk64 = 0;
 	unk65 = 0;
 	unk66 = 0;
@@ -137,22 +139,25 @@ void TChuuHanaManager::perform(u32 cue, JDrama::TGraphics* param_2)
 		    && unk60 < 900) {
 			unk60++;
 			if (unk60 == 900)
-				SMSGetMarDirector()->getConsole()->startAppearBalloon(0x2E,
-				                                                      true);
+				SMSGetMarDirector()->getConsole()->startAppearBalloon(
+				    VERSION_SELECT(0x2E, GMSJ01_01(0xE002E)), true);
 		}
 		if (unk68 >= 60 && unk68 < 80) {
 			unk60 = 1000;
 			unk68 = 80;
-			SMSGetMarDirector()->getConsole()->startAppearBalloon(0x2F, true);
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(
+			    VERSION_SELECT(0x2F, GMSJ01_01(0xE002F)), true);
 		}
 		if (unk6C == 5 || unk6C == 10) {
 			unk6C++;
-			SMSGetMarDirector()->getConsole()->startAppearBalloon(0x31, true);
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(
+			    VERSION_SELECT(0x31, GMSJ01_01(0xE0031)), true);
 		}
 		if (unk70 == 1) {
 			unk70++;
 			unk68 = 80;
-			SMSGetMarDirector()->getConsole()->startAppearBalloon(0x30, true);
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(
+			    VERSION_SELECT(0x30, GMSJ01_01(0xE0030)), true);
 		}
 	}
 #endif

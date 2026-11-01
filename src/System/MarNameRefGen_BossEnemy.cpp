@@ -102,7 +102,7 @@ JDrama::TNameRef* TMarNameRefGen::getNameRef_BossEnemy(const char* name) const
 		return new TKoopaJrSubmarine;
 
 #if !(!defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01))
-	// PAL has no LimitKoopa units (no strings or calls in its binary)
+	// JP 1.1 and later have no LimitKoopa units (no strings or calls in the binary)
 	if (strcmp(name, "LimitKoopaJrManager") == 0)
 		return new TLimitKoopaJrManager;
 

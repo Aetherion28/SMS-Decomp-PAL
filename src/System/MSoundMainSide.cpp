@@ -333,6 +333,21 @@ void MSMainProc::setMSoundEnterStage(u8 param_1, u8 param_2)
 		}
 		break;
 	case 8:
+#if !defined(VERSION_GMSJ01)
+		switch (param_2) {
+		case 0:
+		case 2:
+		case 4:
+		case 6:
+			MSoundSESystem::MSRandPlay::createRandPlayVec(
+			    MSD_SE_OBJ_MONTE_NIGHT_A1, 5);
+			break;
+		default:
+			MSoundSESystem::MSRandPlay::createRandPlayVec(
+			    MSD_SE_OBJ_MONTE_DAY_A1, 5);
+			break;
+		}
+#endif
 		switch (param_2) {
 		case 5:
 			MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_MERRY_GO_ROUND);
@@ -350,7 +365,11 @@ void MSMainProc::setMSoundEnterStage(u8 param_1, u8 param_2)
 			MSStageInfo::volOffCategory -= 0x83;
 			MSStageInfo::fadeEvent  = 1;
 			MSStageInfo::switchBgm2 = 0xfffffff0;
+#if !defined(VERSION_GMSJ01)
+		} else if (param_2 != 1) {
+#else
 		} else {
+#endif
 			MSStageInfo::switchBgm  = 0xfffffff0;
 			MSStageInfo::fadeEvent  = 2;
 			MSStageInfo::switchBgm2 = 0xfffffff0;
@@ -411,7 +430,11 @@ void MSMainProc::setMSoundEnterStage(u8 param_1, u8 param_2)
 			MSStageInfo::stageBgmSilent            = MSD_BGM_MARE_SEA;
 			MSStageInfo::stageBgmSilentStartStatus = 2;
 			MSStageInfo::distFadeStageToKage       = 0;
+#if !defined(VERSION_GMSJ01)
+		} else if (param_2 != 6) {
+#else
 		} else {
+#endif
 			MSStageInfo::stageBgmSilent            = MSD_BGM_SCENARIO_SELECT;
 			MSStageInfo::cubeFadeRatio             = 0.12f;
 			MSStageInfo::stageBgmSilentStartStatus = 2;
@@ -420,7 +443,11 @@ void MSMainProc::setMSoundEnterStage(u8 param_1, u8 param_2)
 			MSStageInfo::switchBgm2                = 0xfffffff0;
 			MSStageInfo::cubeFadeUsePan            = 1;
 		}
+#if !defined(VERSION_GMSJ01)
+		if (param_2 == 6 || param_2 == 7)
+#else
 		if (param_2 == 7)
+#endif
 			MSStageInfo::stageBgm = 0xfffffff0;
 		break;
 	case 14:
@@ -523,6 +550,9 @@ void MSMainProc::setMSoundEnterStage(u8 param_1, u8 param_2)
 		break;
 	case 57:
 		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_MAP_SELECT);
+#if !defined(VERSION_GMSJ01)
+		bVar2 = true;
+#endif
 		MSStageInfo::stageBgm = MSD_BGM_MAP_SELECT;
 		break;
 	case 58:
@@ -559,6 +589,9 @@ void MSMainProc::setMSoundEnterStage(u8 param_1, u8 param_2)
 		SMSGetMSound()->enterStage(MSStageInfo::msStg, param_1, param_2);
 	}
 	MSSeCallBack::setWaterCameraFir(bVar2);
+#if !defined(VERSION_GMSJ01)
+	SMSGetMSound()->mWaterFirEnabled = bVar2;
+#endif
 	if (MSStageInfo::stageBgmSilent != 0xfffffff0
 	    && MSStageInfo::stageBgmSilentStartStatus == 0
 	    && SMSGetMSound()->unkCF != 0) {
