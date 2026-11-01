@@ -47,7 +47,7 @@
 <rect x="181.07" y="346.19" width="39.30" height="35.68" fill="rgb(0,112,191)"><title>Enemy/wireTrap: 99.70% fuzzy, 39.54% matched, 10016 bytes</title></rect>
 <rect x="220.37" y="346.19" width="36.36" height="35.68" fill="rgb(0,112,192)"><title>Enemy/conductor: 99.89% fuzzy, 57.49% matched, 9268 bytes</title></rect>
 <rect x="256.73" y="346.19" width="36.19" height="35.68" fill="rgb(0,112,192)"><title>Enemy/yunbo: 99.85% fuzzy, 65.05% matched, 9224 bytes</title></rect>
-<rect x="141.05" y="381.87" width="37.41" height="30.61" fill="rgb(0,112,192)"><title>Enemy/fruitsboat: 99.82% fuzzy, 34.13% matched, 8180 bytes</title></rect>
+<rect x="141.05" y="381.87" width="37.41" height="30.61" fill="rgb(0,112,192)"><title>Enemy/fruitsboat: 99.86% fuzzy, 34.13% matched, 8180 bytes</title></rect>
 <rect x="141.05" y="412.48" width="37.41" height="30.01" fill="rgb(1,111,189)"><title>Enemy/BossHanachanParts: 99.05% fuzzy, 41.05% matched, 8020 bytes</title></rect>
 <rect x="141.05" y="442.49" width="37.41" height="29.56" fill="rgb(2,110,187)"><title>Enemy/coasterkiller: 98.27% fuzzy, 70.99% matched, 7900 bytes</title></rect>
 <rect x="141.05" y="472.05" width="37.41" height="27.95" fill="rgb(0,112,192)"><title>Enemy/walkerEnemy: 99.94% fuzzy, 63.20% matched, 7468 bytes</title></rect>
@@ -62,7 +62,7 @@
 <rect x="205.30" y="413.48" width="24.10" height="21.98" fill="rgb(0,112,192)"><title>Enemy/BossHanachanNerve: 99.99% fuzzy, 83.40% matched, 3784 bytes</title></rect>
 <rect x="205.30" y="435.46" width="24.10" height="21.61" fill="rgb(0,112,191)"><title>Enemy/enemyAttachment: 99.59% fuzzy, 61.51% matched, 3720 bytes</title></rect>
 <rect x="205.30" y="457.06" width="24.10" height="21.51" fill="rgb(0,112,191)"><title>Enemy/beam: 99.75% fuzzy, 54.64% matched, 3704 bytes</title></rect>
-<rect x="205.30" y="478.58" width="24.10" height="21.42" fill="rgb(17,92,146)"><title>Enemy/riccohook: 79.26% fuzzy, 56.40% matched, 3688 bytes</title></rect>
+<rect x="205.30" y="478.58" width="24.10" height="21.42" fill="rgb(0,112,192)"><title>Enemy/riccohook: 99.98% fuzzy, 77.11% matched, 3688 bytes</title></rect>
 <rect x="229.40" y="413.48" width="22.34" height="22.84" fill="rgb(0,112,192)"><title>Enemy/BossHanachanAnm: 99.95% fuzzy, 54.88% matched, 3644 bytes</title></rect>
 <rect x="251.73" y="413.48" width="22.04" height="22.84" fill="rgb(1,111,190)"><title>Enemy/BossHanachanEffect: 99.37% fuzzy, 44.05% matched, 3596 bytes</title></rect>
 <rect x="273.77" y="413.48" width="19.15" height="22.84" fill="rgb(6,105,175)"><title>Enemy/BossHanachanSub: 93.46% fuzzy, 8.58% matched, 3124 bytes</title></rect>
@@ -127,7 +127,7 @@
 <rect x="525.70" y="171.56" width="16.29" height="14.44" fill="rgb(0,200,0)"><title>MoveBG/MapObjFloat: 100.00% fuzzy, 100.00% matched, 1680 bytes</title></rect>
 <rect x="541.99" y="171.56" width="8.57" height="14.44" fill="rgb(0,200,0)"><title>MoveBG/MapObjSample: 100.00% fuzzy, 100.00% matched, 884 bytes</title></rect>
 <rect x="550.56" y="0.00" width="89.21" height="102.01" fill="rgb(1,110,188)"><title>GC2D/GCConsole2: 98.68% fuzzy, 26.67% matched, 65004 bytes</title></rect>
-<rect x="550.56" y="102.01" width="89.21" height="83.99" fill="rgb(1,111,190)"><title>GC2D/CardLoad: 99.36% fuzzy, 15.33% matched, 53524 bytes</title></rect>
+<rect x="550.56" y="102.01" width="89.21" height="83.99" fill="rgb(1,111,190)"><title>GC2D/CardLoad: 99.36% fuzzy, 20.01% matched, 53524 bytes</title></rect>
 <rect x="639.78" y="0.00" width="96.42" height="69.77" fill="rgb(0,111,191)"><title>GC2D/CardSave: 99.53% fuzzy, 6.64% matched, 48048 bytes</title></rect>
 <rect x="736.19" y="0.00" width="51.95" height="69.77" fill="rgb(0,112,191)"><title>GC2D/Option: 99.65% fuzzy, 39.62% matched, 25888 bytes</title></rect>
 <rect x="639.78" y="69.77" width="49.20" height="61.27" fill="rgb(0,112,192)"><title>GC2D/hx_wiper: 99.87% fuzzy, 51.03% matched, 21532 bytes</title></rect>
@@ -156,7 +156,7 @@
 <rect x="292.92" y="254.82" width="69.60" height="67.87" fill="rgb(0,112,192)"><title>Player/MarioInit: 100.00% fuzzy, 96.11% matched, 33740 bytes</title></rect>
 <rect x="292.92" y="322.69" width="69.60" height="43.63" fill="rgb(2,109,186)"><title>Player/MarioDraw: 97.70% fuzzy, 20.62% matched, 21692 bytes</title></rect>
 <rect x="362.52" y="186.00" width="53.65" height="54.96" fill="rgb(2,109,186)"><title>Player/MarioSpecial: 97.80% fuzzy, 8.17% matched, 21060 bytes</title></rect>
-<rect x="416.17" y="186.00" width="53.54" height="54.96" fill="rgb(1,111,190)"><title>Player/WaterGun: 99.18% fuzzy, 34.87% matched, 21016 bytes</title></rect>
+<rect x="416.17" y="186.00" width="53.54" height="54.96" fill="rgb(1,111,190)"><title>Player/WaterGun: 99.25% fuzzy, 34.87% matched, 21016 bytes</title></rect>
 <rect x="469.71" y="186.00" width="52.09" height="54.96" fill="rgb(2,110,186)"><title>Player/ModelWaterManager: 97.91% fuzzy, 17.80% matched, 20448 bytes</title></rect>
 <rect x="362.52" y="240.96" width="56.78" height="48.83" fill="rgb(0,112,192)"><title>Player/MarioRun: 99.85% fuzzy, 16.97% matched, 19804 bytes</title></rect>
 <rect x="362.52" y="289.79" width="56.78" height="39.96" fill="rgb(0,112,192)"><title>Player/MarioJump: 99.97% fuzzy, 20.48% matched, 16208 bytes</title></rect>
@@ -186,12 +186,12 @@
 <rect x="360.72" y="366.32" width="38.67" height="53.14" fill="rgb(0,200,0)"><title>System/MarNameRefGen_MapObj: 100.00% fuzzy, 100.00% matched, 14680 bytes</title></rect>
 <rect x="360.72" y="419.46" width="38.67" height="40.50" fill="rgb(0,112,192)"><title>System/MarDirectorDirect: 99.82% fuzzy, 9.37% matched, 11188 bytes</title></rect>
 <rect x="360.72" y="459.96" width="38.67" height="40.04" fill="rgb(1,111,190)"><title>System/MSoundMainSide: 99.37% fuzzy, 22.13% matched, 11060 bytes</title></rect>
-<rect x="399.39" y="366.32" width="42.43" height="34.10" fill="rgb(0,112,191)"><title>System/Application: 99.71% fuzzy, 24.88% matched, 10336 bytes</title></rect>
+<rect x="399.39" y="366.32" width="42.43" height="34.10" fill="rgb(0,112,191)"><title>System/Application: 99.71% fuzzy, 36.61% matched, 10336 bytes</title></rect>
 <rect x="441.82" y="366.32" width="40.20" height="34.10" fill="rgb(0,112,191)"><title>System/MarDirectorSetupObjects: 99.63% fuzzy, 7.97% matched, 9792 bytes</title></rect>
 <rect x="482.02" y="366.32" width="39.77" height="34.10" fill="rgb(0,112,192)"><title>System/MarDirectorLoadResource: 99.99% fuzzy, 64.66% matched, 9688 bytes</title></rect>
 <rect x="399.39" y="400.42" width="35.63" height="34.70" fill="rgb(2,109,186)"><title>System/MarNameRefGen_Enemy: 97.70% fuzzy, 4.94% matched, 8832 bytes</title></rect>
 <rect x="399.39" y="435.12" width="35.63" height="33.59" fill="rgb(0,112,192)"><title>System/FlagManager: 99.99% fuzzy, 93.40% matched, 8548 bytes</title></rect>
-<rect x="399.39" y="468.71" width="35.63" height="31.29" fill="rgb(0,111,191)"><title>System/CardManager: 99.56% fuzzy, 48.67% matched, 7964 bytes</title></rect>
+<rect x="399.39" y="468.71" width="35.63" height="31.29" fill="rgb(0,111,191)"><title>System/CardManager: 99.57% fuzzy, 51.93% matched, 7964 bytes</title></rect>
 <rect x="435.02" y="400.42" width="30.11" height="33.51" fill="rgb(0,111,191)"><title>System/MenuDir: 99.51% fuzzy, 14.32% matched, 7208 bytes</title></rect>
 <rect x="465.13" y="400.42" width="29.51" height="33.51" fill="rgb(0,112,192)"><title>System/MovieDirector: 99.89% fuzzy, 19.71% matched, 7064 bytes</title></rect>
 <rect x="494.64" y="400.42" width="27.15" height="33.51" fill="rgb(0,112,192)"><title>System/EmitterViewObj: 99.93% fuzzy, 35.82% matched, 6500 bytes</title></rect>
@@ -336,7 +336,7 @@
 <rect x="632.02" y="497.48" width="6.45" height="2.52" fill="rgb(0,200,0)"><title>MarioUtil/RumbleType: 100.00% fuzzy, 100.00% matched, 116 bytes</title></rect>
 <rect x="638.47" y="314.09" width="75.27" height="43.33" fill="rgb(0,112,192)"><title>Strategic/spcinterp: 99.99% fuzzy, 85.01% matched, 23296 bytes</title></rect>
 <rect x="638.47" y="357.42" width="32.46" height="30.21" fill="rgb(0,112,192)"><title>Strategic/liveinterp: 99.95% fuzzy, 72.24% matched, 7004 bytes</title></rect>
-<rect x="638.47" y="387.63" width="32.46" height="28.43" fill="rgb(0,112,192)"><title>Strategic/liveactor: 99.96% fuzzy, 64.87% matched, 6592 bytes</title></rect>
+<rect x="638.47" y="387.63" width="32.46" height="28.43" fill="rgb(0,112,192)"><title>Strategic/liveactor: 99.96% fuzzy, 71.06% matched, 6592 bytes</title></rect>
 <rect x="670.93" y="357.42" width="24.14" height="24.38" fill="rgb(0,112,191)"><title>Strategic/ObjHitCheck: 99.71% fuzzy, 16.65% matched, 4204 bytes</title></rect>
 <rect x="695.07" y="357.42" width="18.67" height="24.38" fill="rgb(7,104,174)"><title>Strategic/ObjModel: 92.75% fuzzy, 42.93% matched, 3252 bytes</title></rect>
 <rect x="670.93" y="381.81" width="17.00" height="20.75" fill="rgb(0,112,191)"><title>Strategic/MirrorActor: 99.78% fuzzy, 39.68% matched, 2520 bytes</title></rect>
@@ -448,7 +448,7 @@
 <rect x="788.14" y="107.83" width="42.37" height="38.64" fill="rgb(0,200,0)"><title>JSystem/JAudio/JAInterface/JAISound: 100.00% fuzzy, 100.00% matched, 11696 bytes</title></rect>
 <rect x="830.52" y="107.83" width="37.09" height="38.64" fill="rgb(0,112,192)"><title>JSystem/JAudio/JAInterface/JAIBasic: 100.00% fuzzy, 98.83% matched, 10236 bytes</title></rect>
 <rect x="788.14" y="146.47" width="34.21" height="32.14" fill="rgb(0,112,192)"><title>JSystem/JAudio/JAInterface/JAIGFrameStream: 99.98% fuzzy, 57.56% matched, 7852 bytes</title></rect>
-<rect x="788.14" y="178.61" width="34.21" height="27.85" fill="rgb(0,112,191)"><title>JSystem/JAudio/JAInterface/JAIGFrameSequence: 99.62% fuzzy, 27.57% matched, 6804 bytes</title></rect>
+<rect x="788.14" y="178.61" width="34.21" height="27.85" fill="rgb(0,112,191)"><title>JSystem/JAudio/JAInterface/JAIGFrameSequence: 99.77% fuzzy, 27.57% matched, 6804 bytes</title></rect>
 <rect x="822.35" y="146.47" width="22.76" height="36.38" fill="rgb(0,200,0)"><title>JSystem/JAudio/JAInterface/JAIData: 100.00% fuzzy, 100.00% matched, 5916 bytes</title></rect>
 <rect x="845.12" y="146.47" width="22.49" height="36.38" fill="rgb(1,111,190)"><title>JSystem/JAudio/JAInterface/JAIGFrameSe: 99.44% fuzzy, 43.74% matched, 5844 bytes</title></rect>
 <rect x="822.35" y="182.85" width="15.59" height="23.60" fill="rgb(0,200,0)"><title>JSystem/JAudio/JAInterface/JAIAnimation: 100.00% fuzzy, 100.00% matched, 2628 bytes</title></rect>
