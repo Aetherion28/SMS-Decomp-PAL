@@ -1,3 +1,4 @@
+#include <System/BalloonMsg.hpp>
 #include <Enemy/BossGesso.hpp>
 #include <Enemy/BossGessoTentacle.hpp>
 #include <Enemy/BossGessoPolDrop.hpp>
@@ -191,7 +192,7 @@ BOOL TBGBeakHit::receiveMessage(THitActor* sender, u32 message)
 			mHolder = actor;
 
 			if (mOwner->unk190.color.a != 0)
-				mOwner->showMessage(0xE0028);
+				mOwner->showMessage(BALLOON_MSG(0xE0028));
 
 			return true;
 		}
@@ -699,13 +700,13 @@ f32 TBossGesso::lenFromToeToMario()
 void TBossGesso::showMessage(u32 message)
 {
 	u32 idx;
-	if (message == 0xE0028)
+	if (message == BALLOON_MSG(0xE0028))
 		idx = 3;
 	else
-		idx = message - 0xE0003;
+		idx = message - BALLOON_MSG(0xE0003);
 
 	u32 flag;
-	if (message == 0xE0003)
+	if (message == BALLOON_MSG(0xE0003))
 		flag = 0;
 	else
 		flag = 1 << idx;
@@ -727,7 +728,7 @@ void TBossGesso::checkTakeMsg()
 		if (toMario.squared() < 4000000.0f) {
 			unk19C++;
 			if (unk19C >= 1200) {
-				showMessage(0xE0004);
+				showMessage(BALLOON_MSG(0xE0004));
 				unk1A0 = 1;
 			}
 		}
@@ -1512,7 +1513,7 @@ void TBossGesso::perform(u32 cue, JDrama::TGraphics* graphics)
 	if (cue & CUE_MOVE) {
 		if (mBeak->getHolder() != nullptr && unk190.color.a == 0) {
 			if (!mTentacles[1]->isThing() || !mTentacles[3]->isThing())
-				SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE0003,
+				SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0003),
 				                                                      true);
 		}
 	}

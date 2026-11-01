@@ -448,9 +448,11 @@ void TDemoCannon::startDemo()
 {
 	unk14C = 1;
 
+#ifndef VERSION_GMSP01
 	MSound* sound = gpMSound;
 	s16 hp        = SMS_GetMarioHP();
 	sound->startMarioVoice(30911, hp, 0);
+#endif
 
 	mMActor->setBck("democannon_dpt");
 	unk138->getMActor()->setBck("democannon_dom");

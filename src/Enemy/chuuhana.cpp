@@ -36,6 +36,8 @@
 #include <Strategic/ObjModel.hpp>
 #include <Strategic/TakeActor.hpp>
 #include <System/Application.hpp>
+#include <GC2D/GCConsole2.hpp>
+#include <System/MarDirector.hpp>
 #include <System/BaseParam.hpp>
 #include <System/EmitterViewObj.hpp>
 #include <System/ParamInst.hpp>
@@ -104,9 +106,19 @@ TChuuHanaManager::TChuuHanaManager(const char* param_1)
     : TSmallEnemyManager(param_1)
 {
 	gpCurChuuHana = nullptr;
+#ifdef VERSION_GMSP01
+	unk60 = 0;
+	unk68 = 0;
+	unk6C = 0;
+	unk70 = 0;
+	unk64 = 0;
+	unk65 = 0;
+	unk66 = 0;
+#else
 	unk60         = 0;
 	unk61         = 0;
 	unk62         = 0;
+#endif
 }
 
 void TChuuHanaManager::load(JSUMemoryInputStream& param_1)
@@ -117,6 +129,33 @@ void TChuuHanaManager::load(JSUMemoryInputStream& param_1)
 
 void TChuuHanaManager::perform(u32 cue, JDrama::TGraphics* param_2)
 {
+#ifdef VERSION_GMSP01
+	if (cue & 2) {
+		if (SMS_GetMarioGrPlane()->getActor() != nullptr
+		    && SMS_GetMarioGrPlane()->getActor()->getActorType()
+		        == ACTOR_TYPE_MIRROR_L
+		    && unk60 < 900) {
+			unk60++;
+			if (unk60 == 900)
+				SMSGetMarDirector()->getConsole()->startAppearBalloon(0x2E,
+				                                                      true);
+		}
+		if (unk68 >= 60 && unk68 < 80) {
+			unk60 = 1000;
+			unk68 = 80;
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(0x2F, true);
+		}
+		if (unk6C == 5 || unk6C == 10) {
+			unk6C++;
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(0x31, true);
+		}
+		if (unk70 == 1) {
+			unk70++;
+			unk68 = 80;
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(0x30, true);
+		}
+	}
+#endif
 	TEnemyManager::perform(cue, param_2);
 }
 
@@ -131,12 +170,21 @@ void TChuuHanaManager::initSetEnemies()
 		TGraphWeb* graph = gpConductor->getGraphByName(graphlist[i]);
 		TChuuHana* enemy = (TChuuHana*)getObj(i);
 
+#ifdef VERSION_GMSP01
+		if (i == 0)
+			enemy->unk21C = &unk64;
+		else if (i < 3)
+			enemy->unk21C = &unk65;
+		else
+			enemy->unk21C = &unk66;
+#else
 		if (i == 0)
 			enemy->unk21C = &unk60;
 		else if (i < 3)
 			enemy->unk21C = &unk61;
 		else
 			enemy->unk21C = &unk62;
+#endif
 
 		TMsRange<s32> nodeRange(0, graph->getNodeNum());
 		JGeometry::TVec3<f32> point;

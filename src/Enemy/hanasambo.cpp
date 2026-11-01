@@ -676,8 +676,16 @@ void THanaSambo::moveObject()
 
 	unk194->checkHit();
 
+#ifdef VERSION_GMSP01
+	if (!checkLiveFlag(LIVE_FLAG_HIDDEN)
+	    || mSpine->getCurrentNerve() == &TNerveHanaSamboHide::theNerve()) {
+		mPosition.x = unk19C.x;
+		mPosition.z = unk19C.z;
+	}
+#else
 	mPosition.x = unk19C.x;
 	mPosition.z = unk19C.z;
+#endif
 }
 
 void THanaSambo::drawObject(JDrama::TGraphics* param_1)

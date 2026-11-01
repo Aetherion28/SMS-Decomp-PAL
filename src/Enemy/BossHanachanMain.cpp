@@ -1,3 +1,4 @@
+#include <System/BalloonMsg.hpp>
 #include <Enemy/BossHanachan.hpp>
 #include <JSystem/JUtility/JUTNameTab.hpp>
 #include <JSystem/JDrama/JDRNameRefGen.hpp>
@@ -455,7 +456,7 @@ void TBossHanachan::perform(u32 cue, JDrama::TGraphics* graphics)
 					--unk1B8;
 					if (unk1B8 == 0) {
 						unk1B8 = 7200;
-						gpMarDirector->getConsole()->startAppearBalloon(0xE0006,
+						gpMarDirector->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0006),
 						                                                true);
 					}
 				}

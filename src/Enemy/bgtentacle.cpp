@@ -1,3 +1,4 @@
+#include <System/BalloonMsg.hpp>
 #include <Enemy/BossGessoTentacle.hpp>
 #include <Enemy/BossGesso.hpp>
 #include <Enemy/Spline.hpp>
@@ -613,7 +614,7 @@ void TBGTentacle::throwMario(THitActor* param_1, THitActor* param_2)
 	SMS_SendMessageToMario(param_2, HIT_MESSAGE_THROWN);
 
 	SMS_ThrowMario(local_e0, 60.0f);
-	mOwner->showMessage(0xE0005);
+	mOwner->showMessage(BALLOON_MSG(0xE0005));
 	mOwner->stopIfRoll();
 }
 

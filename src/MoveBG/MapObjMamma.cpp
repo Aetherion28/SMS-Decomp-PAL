@@ -1,3 +1,4 @@
+#include <System/BalloonMsg.hpp>
 #include <JSystem/JAudio/JALibrary/JALSystem.hpp>
 #include <M3DUtil/MActorAnm.hpp>
 #include <MSound/MSSetSound.hpp>
@@ -1066,7 +1067,7 @@ void TSandBird::control()
 		const TBGCheckData* plane = SMS_GetMarioGroundPlane();
 		if (plane->getActor() != nullptr
 		    && plane->getActor()->isActorType(ACTOR_TYPE_SAND_BIRD_BLOCK)) {
-			SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE002F,
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE002F),
 			                                                      false);
 			mStateTimer = 2400;
 			unk150      = 1;
@@ -1074,7 +1075,7 @@ void TSandBird::control()
 	}
 
 	if (!unk151 && unk150 && !isStateTimerEngaged()) {
-		SMSGetMarDirector()->getConsole()->startDisappearBalloon(0xE002F,
+		SMSGetMarDirector()->getConsole()->startDisappearBalloon(BALLOON_MSG(0xE002F),
 		                                                         false);
 		unk151 = 1;
 	}

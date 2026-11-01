@@ -1,3 +1,4 @@
+#include <System/BalloonMsg.hpp>
 #include <Enemy/BossEel.hpp>
 #include <Enemy/Conductor.hpp>
 #include <Camera/Camera.hpp>
@@ -2018,7 +2019,7 @@ static s32 hoseiDiveCameraCallback(uintptr_t actorAddress, u32 state)
 void TBossEel::startMoguCamera()
 {
 	if (!mMoguCameraActive) {
-		SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE0015, true);
+		SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0015), true);
 		SMSGetMarDirector()->fireStartDemoCamera(
 		    "meoto_mogu_camera", &mPosition, -1, 0.0f, false,
 		    &hoseiDiveCameraCallback, reinterpret_cast<uintptr_t>(this),
@@ -2036,7 +2037,7 @@ DEFINE_NERVE(TNerveBossEelWaitAppear, TLiveActor)
 		eel->setBckAnm(10);
 
 	if (spine->getTime() == 2500)
-		SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE0012, true);
+		SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0012), true);
 
 	JGeometry::TVec3<f32> marioPosition = SMS_GetMarioPos();
 	marioPosition.y += 75.0f;
@@ -2171,7 +2172,7 @@ DEFINE_NERVE_EXECUTE(TNerveBossEelAppear, TLiveActor)
 		eel->mBarrierCollision->onHitFilter(HIT_FILTER_NO_COLLISION);
 		if (eel->mCollisionEnabled) {
 			eel->mCollisionEnabled = false;
-			SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE0013,
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0013),
 			                                                      true);
 		}
 		return true;
@@ -2334,7 +2335,7 @@ DEFINE_NERVE(TNerveBossEelDie, TLiveActor)
 	if (spine->getTime() == 0) {
 		SMSGetMSound()->startSoundActor(MSD_SE_BS_UNG_VOICE_LAST,
 		                                &eel->mPosition, 0, nullptr, 0, 4);
-		SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE0014, true);
+		SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0014), true);
 		MSBgm::stopTrackBGMs(7, 10);
 		gpCameraShake->startShake(CAM_SHAKE_MODE_UNK1E, 1.0f);
 		eel->setBckAnm(3);

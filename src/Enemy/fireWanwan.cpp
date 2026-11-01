@@ -1,3 +1,4 @@
+#include <System/BalloonMsg.hpp>
 #include <Enemy/FireWanwan.hpp>
 #include <JSystem/JDrama/JDRNameRefGen.hpp>
 #include <System/MarDirector.hpp>
@@ -335,7 +336,7 @@ void TFireWanwanManager::checkBalloonHelpBoss22()
 		f32 helpRange22 = getWanwanParams()->mBoss22HelpRange.get();
 		if (diff.squared() < helpRange22 * helpRange22) {
 			mBoss22BalloonWasShown = true;
-			SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE0016,
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0016),
 			                                                      true);
 		}
 	}
@@ -347,7 +348,7 @@ void TFireWanwanManager::checkBalloonHelpBoss23()
 	    && getWanwanParams()->mBoss23TimerMax.get() > unk64) {
 		if (++unk64 >= getWanwanParams()->mBoss23TimerMax.get()) {
 			unk64 = getWanwanParams()->mBoss23TimerMax.get();
-			SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE0017,
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0017),
 			                                                      true);
 		}
 	}
@@ -356,7 +357,7 @@ void TFireWanwanManager::checkBalloonHelpBoss23()
 void TFireWanwanManager::checkBalloonHelpBoss24()
 {
 	if (mWanwanRecoversBeforeHelpBalloon == 0) {
-		SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE0018, true);
+		SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0018), true);
 		mWanwanRecoversBeforeHelpBalloon = -1;
 	}
 }
@@ -2014,7 +2015,7 @@ DEFINE_NERVE(TNerveFireWanwanDie, TLiveActor)
 		manager->mWanwanRecoversBeforeHelpBalloon = -1;
 
 		if (++manager->mWanwansKilled == manager->getActiveObjNum()) {
-			SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE0019,
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0019),
 			                                                      true);
 		}
 

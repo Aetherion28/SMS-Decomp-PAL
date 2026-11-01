@@ -1,3 +1,4 @@
+#include <System/BalloonMsg.hpp>
 #include <MoveBG/Item.hpp>
 #include <MoveBG/ItemManager.hpp>
 #include <Map/MapMirror.hpp>
@@ -118,9 +119,17 @@ void TItem::calc()
 		mtx[2][3] = mPosition.z;
 	}
 
-	if (isState(STATE_HOLDING) && checkMapObjFlag(MAP_OBJ_FLAG_NO_ANIMATIONS))
-		TMapObjGeneral::calcRootMatrix();
+#ifdef VERSION_GMSP01
+	if (isState(STATE_HOLDING) && checkMapObjFlag(MAP_OBJ_FLAG_NO_ANIMATIONS)) {
+		if (isActorType(ACTOR_TYPE_ROCKET_NOZZLE_ITEM)
+		    || isActorType(ACTOR_TYPE_BACK_NOZZLE_ITEM))
+			calcRootMatrix();
+		else
+			TMapObjGeneral::calcRootMatrix();
+	}
 }
+#else
+#endif
 
 void TItem::appearing()
 {
@@ -1243,11 +1252,11 @@ void TNozzleBox::touchPlayer(THitActor*)
 	    && !TFlagManager::getInstance()->getNozzleRight(
 	        SMSGetMarDirector()->getCurrentStage(), 1)
 	    && !mBalloonShown) {
-		SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE0057, true);
+		SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0057), true);
 		mBalloonShown = true;
 	}
 	if (!mIsValid && !mBalloonShown) {
-		SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE0056, true);
+		SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0056), true);
 		mBalloonShown = true;
 	}
 }

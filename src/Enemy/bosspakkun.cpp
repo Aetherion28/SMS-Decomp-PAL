@@ -1,3 +1,4 @@
+#include <System/BalloonMsg.hpp>
 #include <Enemy/BossPakkun.hpp>
 #include <Enemy/AreaCylinder.hpp>
 #include <Enemy/Conductor.hpp>
@@ -1116,7 +1117,13 @@ const char** TBossPakkun::getBasNameTable() const
 void TBossPakkun::setGroundCollision()
 {
 	const TNerveBase<TLiveActor>* dieNerve = &TNerveBPDie::theNerve();
+#ifdef VERSION_GMSP01
+	if (!mSpine->isNerve(dieNerve)
+	    && !mSpine->isNerve(&TNerveBPTumbleOut::theNerve())
+	    && mMapCollisionManager != nullptr) {
+#else
 	if (!mSpine->isNerve(dieNerve) && mMapCollisionManager != nullptr) {
+#endif
 		TPosition3f collisionMtx;
 		collisionMtx.set(getModel()->getAnmMtx(2));
 		mMapCollisionManager->moveActiveCollisionMtx(collisionMtx);
@@ -1516,7 +1523,7 @@ DEFINE_NERVE(TNerveBPVomit, TLiveActor)
 			if (!boss->is2ndFightNow()) {
 				if (!(boss->unk1C0 & 1))
 					SMSGetMarDirector()->getConsole()->startAppearBalloon(
-					    0xE0000, true);
+					    BALLOON_MSG(0xE0000), true);
 				boss->unk1C0 |= 1;
 			}
 			return true;

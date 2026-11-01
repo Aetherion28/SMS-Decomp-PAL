@@ -761,9 +761,20 @@ void MSound::stopAllSeInCategory(u8 param_1, u32 param_2) { }
 void MSound::setCategoryAllVolume(u8 category, f32 volume, u32 param_3,
                                   u8 param_4)
 {
+#ifdef VERSION_GMSP01
+	int count = 0;
+	for (JAISound* sound = unk0->getLinkBuffer(category)->mUsedHead;
+	     sound != nullptr; sound = sound->getNextSound()) {
+		if (count >= 100)
+			break;
+		sound->setVolume(volume, param_3, param_4);
+		count++;
+	}
+#else
 	for (JAISound* sound         = unk0->getLinkBuffer(category)->mUsedHead;
 	     sound != nullptr; sound = sound->getNextSound())
 		sound->setVolume(volume, param_3, param_4);
+#endif
 }
 
 void MSound::fadeOutAllSound(u32 fadeout)

@@ -1,3 +1,4 @@
+#include <System/BalloonMsg.hpp>
 #include <System/MarDirector.hpp>
 #include <JSystem/JDrama/JDRNameRefGen.hpp>
 #include <JSystem/JKernel/JKRFileLoader.hpp>
@@ -539,11 +540,11 @@ void TMarDirector::currentStateFinalize(u8 next_state)
 			THPPlayerPlay();
 		switch (unk261) {
 		case TCardSave::PURPOSE_ROCKET_NOZZLE_GET:
-			getConsole()->startAppearBalloon(0xE0048, true);
+			getConsole()->startAppearBalloon(BALLOON_MSG(0xE0048), true);
 			break;
 
 		case TCardSave::PURPOSE_TURBO_NOZZLE_GET:
-			getConsole()->startAppearBalloon(0xE0049, true);
+			getConsole()->startAppearBalloon(BALLOON_MSG(0xE0049), true);
 			break;
 		}
 		break;

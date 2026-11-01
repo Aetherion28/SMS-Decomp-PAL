@@ -1,3 +1,4 @@
+#include <System/BalloonMsg.hpp>
 #include <Enemy/GateKeeper.hpp>
 #include <JSystem/JMath.hpp>
 #include <JSystem/JDrama/JDRNameRefGen.hpp>
@@ -746,7 +747,7 @@ void TBiancoGateKeeper::perform(u32 cue, JDrama::TGraphics* graphics)
 		if (mHintTimer > 160) {
 			mHintTimer = 0;
 			mHintShown = TRUE;
-			SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE002E,
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE002E),
 			                                                      true);
 		}
 	}
@@ -814,7 +815,7 @@ DEFINE_NERVE(TNerveBGKAppear, TLiveActor)
 		if (self->unk28A < 0xFF)
 			self->unk28A++;
 		if (self->unk28A == 2)
-			SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE0047,
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0047),
 			                                                      true);
 	}
 
@@ -934,7 +935,7 @@ DEFINE_NERVE(TNerveBGKWait2, TLiveActor)
 			self->unk288++;
 			if (self->unk288 == 2 && self->unk28A == 1
 			    && SMSGetMarDirector()->getCurrentStage() == 0)
-				SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE0000,
+				SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0000),
 				                                                      true);
 			if (self->unk288 > self->getSaveParams()->mSLLoop2Dive.get()) {
 				self->changeBck(0xC);

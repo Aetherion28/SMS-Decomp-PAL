@@ -1,3 +1,4 @@
+#include <System/BalloonMsg.hpp>
 #include <Enemy/BossTelesa.hpp>
 #include <Enemy/Conductor.hpp>
 #include <Enemy/HamuKuri.hpp>
@@ -1450,12 +1451,12 @@ void TBossTelesa::checkHitObject(THitActor* actor)
 	if (!mIsSpicy && actor->mActorType != ACTOR_TYPE_RED_PEPPER) {
 		if (unk35A) {
 			unk35A = 0;
-			SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE000F,
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE000F),
 			                                                      true);
 		}
 		mFruitHitCount++;
 		if (mFruitHitCount > 2)
-			SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE0010,
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0010),
 			                                                      true);
 	} else {
 		mFruitHitCount = 0;
@@ -1491,7 +1492,7 @@ void TBossTelesa::setSpicy(TLiveActor* actor)
 
 	if (unk35B) {
 		unk35B = 0;
-		SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE0011, true);
+		SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0011), true);
 	}
 
 	actor->kill();

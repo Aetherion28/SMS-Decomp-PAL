@@ -1,3 +1,4 @@
+#include <System/BalloonMsg.hpp>
 #include <Enemy/BossWanwan.hpp>
 #include <Enemy/Conductor.hpp>
 #include <Enemy/EffectObj.hpp>
@@ -1016,7 +1017,7 @@ void TBossWanwan::rollNextGraphNode()
 	if (prev >= 0
 	    && graph->getGraphNode(prev).getRailNode()->mConnectionNum >= 2
 	    && gpMarDirector->getMoveTickCount() >= 14400)
-		showMessage(0xE001C);
+		showMessage(BALLOON_MSG(0xE001C));
 
 	unk124->moveTo(graph->getEscapeDirLimited(cur, prev,
 	                                          fromPolar(mRotation.y, 1.0f),
@@ -1162,7 +1163,7 @@ void TBossWanwan::emitEffects()
 
 void TBossWanwan::showMessage(u32 message)
 {
-	u32 bit = 1 << (message - 0xE001A);
+	u32 bit = 1 << (message - BALLOON_MSG(0xE001A));
 	if (!(unk198 & bit))
 		gpMarDirector->getConsole()->startAppearBalloon(message, true);
 	unk198 |= bit;
@@ -1213,12 +1214,12 @@ void TBossWanwan::perform(u32 cue, JDrama::TGraphics* graphics)
 		if (unk19C < 0)
 			unk19C = 1;
 		if (unk19C > 600)
-			showMessage(0xE001A);
+			showMessage(BALLOON_MSG(0xE001A));
 	}
 
 	if ((cue & CUE_MOVE) && unk1A0 == 0
 	    && gpMarDirector->getMoveTickCount() >= 28800)
-		showMessage(0xE001D);
+		showMessage(BALLOON_MSG(0xE001D));
 
 	if ((cue & CUE_MOVE) && !mSpine->isNerve(&TNerveBWDie::theNerve())
 	    && !mSpine->isNerve(&TNerveBWJumpToBath::theNerve())) {
@@ -1461,7 +1462,7 @@ DEFINE_NERVE(TNerveBWBark, TLiveActor)
 
 	if (self->getMActor()->curAnmEndsNext(0, nullptr)) {
 		spine->pushAfterCurrent(&TNerveBWGraphWander::theNerve());
-		self->showMessage(0xE001B);
+		self->showMessage(BALLOON_MSG(0xE001B));
 		return true;
 	}
 
