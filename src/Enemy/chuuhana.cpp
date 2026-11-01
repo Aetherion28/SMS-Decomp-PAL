@@ -357,6 +357,9 @@ void TChuuHana::behaveToWater(THitActor* param_1)
 {
 	unk165 = true;
 	unk224 = 0;
+#ifdef VERSION_GMSP01
+	static_cast<TChuuHanaManager*>(mManager)->unk68++;
+#endif
 
 	if (mSpine->getCurrentNerve() == &TNerveChuuHanaRoll::theNerve()) {
 		JGeometry::TVec3<f32> away(mPosition.x - SMS_GetMarioPos().x, 0.0f,
@@ -802,6 +805,9 @@ void TChuuHana::checkStretchType()
 			return;
 		}
 	}
+#ifdef VERSION_GMSP01
+	static_cast<TChuuHanaManager*>(mManager)->unk6C++;
+#endif
 
 	int index         = mInstanceIndex;
 	f32 stretchHeight = unk1B4->mSLStretchHeightS.get();
@@ -930,6 +936,9 @@ DEFINE_NERVE(TNerveChuuHanaKeepBalance, TLiveActor)
 {
 	TChuuHana* self = (TChuuHana*)spine->getBody();
 	if (spine->getTime() == 0) {
+#ifdef VERSION_GMSP01
+		static_cast<TChuuHanaManager*>(self->mManager)->unk70++;
+#endif
 		self->setBckAnm(2);
 		self->mPosition.x -= 10.0f * self->unk1EC.x;
 		self->mPosition.z -= 10.0f * self->unk1EC.z;
