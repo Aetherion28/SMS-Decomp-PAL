@@ -212,6 +212,17 @@ config.scratch_preset_id = 61  # Super Mario Sunshine
 
 # Base flags, common to most GC/Wii games.
 # Generally leave untouched, with overrides added below.
+# A regional repository can name an extra define in region.json (for example
+# the Korean image, which is built as GMSE01 but has its own strings).
+region_defines = []
+_region_file = Path(__file__).parent / "region.json"
+if _region_file.exists():
+    import json
+
+    _region = json.loads(_region_file.read_text(encoding="utf-8"))
+    if _region.get("version") == config.version and _region.get("extra_define"):
+        region_defines.append(f"-D{_region['extra_define']}")
+
 cflags_base_base = [
     "-nodefaults",
     "-align powerpc",
@@ -236,6 +247,7 @@ cflags_base_base = [
     "-Dalignof=__builtin_align",
     f"-DVERSION_{config.version}",
     *[f"-D{d}" for d in args.defines],
+    *region_defines,
 ]
 
 cflags_base = [
