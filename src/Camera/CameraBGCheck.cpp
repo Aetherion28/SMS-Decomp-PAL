@@ -51,7 +51,7 @@ void CPolarSubCamera::calcInHouseNo_(bool param_1)
 		JGeometry::TVec3<f32>* src = local_120[0];
 		JGeometry::TVec3<f32>* dst = local_120[1];
 		for (int i = 0; i < 9; ++i, ++src, ++dst) {
-			dst->scaleAdd(fVar1, *src, unk25C);
+			dst->scaleAdd(fVar1, unk25C, *src);
 		}
 
 		f32 tmp = unk2C0;

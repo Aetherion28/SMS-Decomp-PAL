@@ -12,9 +12,12 @@
 // rogue includes needed for matching sinit & bss
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
+#ifndef VERSION_GMSJ01
+#include <M3DUtil/MActorAnm.hpp>
+#endif
 
 MSStage* MSStage::smMSStage;
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 MSStageCubeFade* MSStageCubeFade::smInstance             = nullptr;
 MSStageCubeFadeDouble* MSStageCubeFadeDouble::smInstance = nullptr;
 #endif
@@ -44,7 +47,7 @@ namespace MSStageInfo {
 
 } // namespace MSMainProc
 
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 void MSMainProc::setGateKeeperBGMPlayFlag(u32 param_1, bool param_2)
 {
 	MSStageCubeFadeDouble* stage = MSStageCubeFadeDouble::smInstance;
@@ -115,7 +118,7 @@ void MSMainProc::fromTHPDemo() { }
 void MSMainProc::toTalkingCameraDemo()
 {
 	u16 tmp = 0;
-	switch (SMSGetMarDirector()->mMap) {
+	switch (SMSGetMarDirector()->getCurrentStage()) {
 	case 9:
 		tmp = 4;
 		break;
@@ -628,7 +631,7 @@ void MSMainProc::startStageBGM(u8, u8)
 MSStage* MSStage::init(u8 param_1, u8 param_2)
 {
 	smMSStage = nullptr;
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 	MSStageCubeFade::smInstance       = nullptr;
 	MSStageCubeFadeDouble::smInstance = nullptr;
 #endif
@@ -666,7 +669,7 @@ MSStage* MSStage::init(u8 param_1, u8 param_2)
 		if (gpCubeSoundChange->unk10 != 0) {
 			if (param_1 == 8)
 				smMSStage = new MSStageCubeFadeMonte;
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 			else if (param_1 == 1 && param_2 == 5)
 				smMSStage = new MSStageCubeFadeDouble;
 #endif
@@ -829,7 +832,7 @@ MSStageCubeFade::MSStageCubeFade()
     , unk8(-1)
     , unkC(MSMainProc::MSStageInfo::cubeFadeRatio)
 {
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 	smInstance = this;
 #endif
 }
@@ -863,7 +866,7 @@ void MSStageCubeFade::proc()
 	unk8 = unk4;
 }
 
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 void MSStageCubeFade::setBgmVolumeForce()
 {
 	s32 cubeNo

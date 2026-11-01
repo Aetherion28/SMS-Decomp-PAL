@@ -11,6 +11,8 @@
 #include <System/FlagManager.hpp>
 #include <MSound/MSound.hpp>
 #include <MSound/MSoundSE.hpp>
+#include <M3DUtil/MActor.hpp>
+#include <M3DUtil/M3UModelMario.hpp>
 
 // rogue includes needed for matching sinit & bss
 #include <MSound/MSSetSound.hpp>
@@ -663,7 +665,7 @@ BOOL TMario::receiveMessage(THitActor* sender, u32 message)
 
 	case ACTOR_TYPE_BOSS_UNKB:
 	case ACTOR_TYPE_BOSS_UNKC:
-	case ACTOR_TYPE_BOSS_UNKD:
+	case ACTOR_TYPE_BOSS_WANWAN:
 	case ACTOR_TYPE_BOSS_UNKE:
 		if (message == HIT_MESSAGE_BURN && !isInvincible()) {
 			damageExec(sender, mDmgParamsFire.mDamage.get(),

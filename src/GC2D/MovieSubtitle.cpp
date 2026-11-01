@@ -4,11 +4,12 @@
 #include <JSystem/J2D/J2DScreen.hpp>
 #include <JSystem/J2D/J2DTextBox.hpp>
 #include <JSystem/J2D/J2DOrthoGraph.hpp>
+#include <JSystem/J2D/J2DPrint.hpp>
 #include <System/THPRender.hpp>
 #include <System/Application.hpp>
 #include <version.h>
 
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 #include <JSystem/JSupport/JSUMemoryInputStream.hpp>
 #include <JSystem/JSupport/JSUMemoryOutputStream.hpp>
 #include <JSystem/JUtility/JUTColor.hpp>
@@ -16,8 +17,6 @@
 #endif
 
 // TODO: removeme
-static const char* dummyMactorStringValue1 = "\0\0\0\0\0\0\0\0\0\0\0";
-static const char* SMS_NO_MEMORY_MESSAGE   = "メモリが足りません\n";
 
 namespace {
 
@@ -34,8 +33,8 @@ bool is_longheight_movie(u32 param_1)
 
 } // namespace
 
-TMovieSubTitle::TMovieSubTitle(const TTHPRender* param_1)
-    : unk10(param_1)
+TMovieSubTitle::TMovieSubTitle(const TTHPRender* thpRender)
+    : mThpRenderer(thpRender)
     , unk14(nullptr)
     , unk18(nullptr)
     , unk1C(nullptr)
@@ -80,7 +79,7 @@ void TMovieSubTitle::perform(u32 cue, JDrama::TGraphics* graphics)
 
 void TMovieSubTitle::movement()
 {
-	if (unk28)
+	if (mVisible)
 		checkSubTitleOff();
 	else
 		checkSubTitleOn();
@@ -88,7 +87,7 @@ void TMovieSubTitle::movement()
 
 void TMovieSubTitle::checkSubTitleOff()
 {
-	int frame = unk10->getFrameNumber();
+	int frame = mThpRenderer->getFrameNumber();
 	if (getCurEntry()) {
 		if (getCurEntry()->unk6 <= frame) {
 			hide();
@@ -99,7 +98,7 @@ void TMovieSubTitle::checkSubTitleOff()
 
 void TMovieSubTitle::checkSubTitleOn()
 {
-	int frame = unk10->getFrameNumber();
+	int frame = mThpRenderer->getFrameNumber();
 	if (getCurEntry()) {
 		if (getCurEntry()->unk4 <= frame)
 			show();
@@ -108,20 +107,20 @@ void TMovieSubTitle::checkSubTitleOn()
 
 void TMovieSubTitle::show()
 {
-	unk28 = true;
+	mVisible = true;
 	unk14->show();
 	setCurMessage();
 }
 
 void TMovieSubTitle::hide()
 {
-	unk28 = false;
+	mVisible = false;
 	unk14->hide();
 }
 
-const TMessageLoader::EntryInfo* TMovieSubTitle::getCurEntry() const
+const JMSMesgEntry* TMovieSubTitle::getCurEntry() const
 {
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 	if (unk20->getMessageNum() <= unk24
 	    || !TFlagManager::getInstance()->getFlag(MSF_SUBTITLES))
 		return nullptr;
@@ -138,7 +137,7 @@ void TMovieSubTitle::setCurMessage()
 	const char* msg
 	    = (const char*)(unk20->getMessageData() + getCurEntry()->unk0);
 
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 	JSUMemoryInputStream in(msg, 0x400);
 	JSUMemoryOutputStream out(unk18->getStringPtr(), 0x400);
 
@@ -188,17 +187,30 @@ void TMovieSubTitle::setCurMessage()
 		}
 
 		if (colored) {
+			// clang-format off
 			snprintf(buffer, 255,
-			         "\033GM[0]\033CC[%02x%02x%02x]\033SH[3]\033CD[4]", color.r,
-			         color.g, color.b);
+				J2DPRINT_GRADIENT_MODE(0)
+				J2DPRINT_CHAR_COLOR("%02x%02x%02x")
+				J2DPRINT_CHAR_SPACING(3)
+				J2DPRINT_CURSOR_DOWN(4),
+				color.r, color.g, color.b);
+			// clang-format on
 			out.write(buffer, 29);
 		}
 
 		out << c;
 
 		if (colored) {
+			// clang-format off
 			snprintf(buffer, 255,
-			         "\033GM[0]\033CC\033FX\033FY\033SH\033CU[4]\033GM[1]");
+				J2DPRINT_GRADIENT_MODE(0)
+				J2DPRINT_CHAR_COLOR_RESET
+				J2DPRINT_FONT_WIDTH_RESET
+				J2DPRINT_FONT_HEIGHT_RESET
+				J2DPRINT_CHAR_SPACING_RESET
+				J2DPRINT_CURSOR_UP(4)
+				J2DPRINT_GRADIENT_MODE(1));
+			// clang-format on
 			out.write(buffer, 30);
 		}
 	}

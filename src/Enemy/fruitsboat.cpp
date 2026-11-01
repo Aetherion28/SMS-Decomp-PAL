@@ -1,31 +1,33 @@
 #include <Enemy/FruitsBoat.hpp>
 #include <Enemy/Conductor.hpp>
 #include <Enemy/Graph.hpp>
-#include <JSystem/JDrama/JDRNameRefGen.hpp>
-#include <JSystem/JSupport/JSUInputStream.hpp>
-#include <JSystem/J3D/J3DGraphAnimator/J3DAnimation.hpp>
-#include <JSystem/J3D/J3DGraphAnimator/J3DModel.hpp>
-#include <JSystem/J3D/J3DGraphBase/J3DTransform.hpp>
 #include <M3DUtil/MActor.hpp>
 #include <M3DUtil/MActorData.hpp>
-#include <MSound/MSound.hpp>
-#include <MSound/SoundEffects.hpp>
 #include <Map/Map.hpp>
+#include <Map/MapCollisionEntry.hpp>
 #include <Map/MapCollisionManager.hpp>
 #include <Map/MapData.hpp>
 #include <MarioUtil/MathUtil.hpp>
 #include <MarioUtil/ShadowUtil.hpp>
 #include <MoveBG/MapObjWave.hpp>
+#include <MSound/MSound.hpp>
+#include <MSound/MSoundSE.hpp>
+#include <MSound/SoundEffects.hpp>
 #include <Player/MarioAccess.hpp>
 #include <Player/Yoshi.hpp>
+#include <Strategic/ActorTypes.hpp>
 #include <Strategic/ObjModel.hpp>
 #include <Strategic/question.hpp>
-#include <System/MarDirector.hpp>
+#include <Strategic/Spine.hpp>
+#include <System/Application.hpp>
+#include <JSystem/J3D/J3DGraphAnimator/J3DAnimation.hpp>
+#include <JSystem/J3D/J3DGraphAnimator/J3DModel.hpp>
+#include <JSystem/JDrama/JDRNameRefGen.hpp>
+#include <string.h>
 
 // rogue includes needed for matching sinit & bss
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
-#include <M3DUtil/InfectiousStrings.hpp>
 
 TFruitsBoatParams::TFruitsBoatParams(const char* path)
     : TSpineEnemyParams(path)
@@ -39,82 +41,78 @@ TFruitsBoatParams::TFruitsBoatParams(const char* path)
 TFruitsBoat::TFruitsBoat(const char* name)
     : TSpineEnemy(name)
     , unk150(0)
-    , mShadowRadiusX(800.0f)
-    , mShadowRadiusZ(800.0f)
-    , mBckTrack(nullptr)
-    , mBckTrackCtrl(nullptr)
-    , mRockAxis(1.0f, 0.0f, 0.0f)
-    , mRockAngle(0.0f)
-    , mRockSpeed(0.0f)
+    , unk154(800.0f)
+    , unk158(800.0f)
+    , unk15C(nullptr)
+    , unk160(nullptr)
+    , unk164(1.0f, 0.0f, 0.0f)
+    , unk170(0.0f)
+    , unk174(0.0f)
 {
 	onLiveFlag(LIVE_FLAG_UNK10);
 }
 
-// Without a graph, the boat follows the joint animation named like the graph
-// instead.
-// TODO: frame-only, ours is 8 bytes smaller. The `rate` local is what keeps
-// this function out of line in load(), like in the target.
 int TFruitsBoat::setBckTrack(const char* name)
 {
 	MActorAnmDataEach<J3DAnmTransformKey>* bcks
-	    = mManager->getMActorAnmData()->getUnk2C();
-	for (int i = 0; i < bcks->getAnmNum(); ++i) {
-		if (strcmp(name, bcks->getName(i)) == 0) {
-			mBckTrack     = bcks->getAnmPtr(i);
-			mBckTrackCtrl = new J3DFrameCtrl(0);
-			mBckTrackCtrl->init(mBckTrack->getFrameMax());
-			mBckTrackCtrl->setAttribute(mBckTrack->getAttribute());
-			f32 rate = getParam()->mSLBckMoveSpeed.get();
-			mBckTrackCtrl->setRate(rate * SMSGetAnmFrameRate());
+	    = mManager->getMActorAnmData()->mBckAnms;
+
+	for (int i = 0; i < bcks->mAnmNum; ++i) {
+		if (strcmp(name, bcks->mAnmNames[i]) == 0) {
+			unk15C = bcks->getAnmPtr(i);
+			unk160 = new J3DFrameCtrl;
+			unk160->init(unk15C->getFrameMax());
+			unk160->setAttribute(unk15C->getAttribute());
+			f32 speed
+			    = ((TFruitsBoatParams*)getSaveParam())->mSLBckMoveSpeed.get();
+			unk160->setRate(speed * SMSGetAnmFrameRate());
 			return 0;
 		}
 	}
+
 	return -1;
 }
 
-// The sail bounces when Mario lands on it.
 void TFruitsBoat::setJumpReaction()
 {
-	const char* name;
+	const char* bck;
 	switch (getBoatType()) {
 	case 0:
-		name = "shipdolpic";
+		bck = "shipdolpic";
 		break;
 	case 1:
-		name = "shipdolpic2";
+		bck = "shipdolpic2";
 		break;
 	case 2:
-		name = "shipdolpic3";
+		bck = "shipdolpic3";
 		break;
 	case 3:
 	default:
 		return;
 	}
 
-	if (!mMActor->checkCurAnm(name, ANM_TYPE_BCK)
-	    || mMActor->curAnmEndsNext(ANM_TYPE_BCK, nullptr))
-		mMActor->setBck(name);
+	if (!mMActor->checkCurAnm(bck, ANM_TYPE_BCK) || mMActor->curAnmEndsNext())
+		mMActor->setBck(bck);
 }
 
 void TFruitsBoat::traceBckTrack()
 {
-	mBckTrackCtrl->update();
-	mBckTrack->setFrame(mBckTrackCtrl->getFrame());
+	unk160->update();
+	unk15C->setFrame(unk160->getFrame());
 
 	J3DTransformInfo info0;
-	mBckTrack->getTransform(0, &info0);
 	J3DTransformInfo info1;
-	mBckTrack->getTransform(1, &info1);
+	unk15C->getTransform(0, &info0);
+	unk15C->getTransform(1, &info1);
 
 	mPosition.x = info0.mTranslate.x + info1.mTranslate.x;
 	mPosition.y = info0.mTranslate.y + info1.mTranslate.y;
 	mPosition.z = info0.mTranslate.z + info1.mTranslate.z;
-	mRotation.x
-	    = (360.0f / 65536.0f) * (info0.mRotation.x + info1.mRotation.x);
-	mRotation.y
-	    = (360.0f / 65536.0f) * (info0.mRotation.y + info1.mRotation.y);
-	mRotation.z
-	    = (360.0f / 65536.0f) * (info0.mRotation.z + info1.mRotation.z);
+
+	mRotation.x = (360.0f / 65536.0f) * (info0.mRotation.x + info1.mRotation.x);
+	mRotation.y = (360.0f / 65536.0f) * (info0.mRotation.y + info1.mRotation.y);
+	mRotation.z = (360.0f / 65536.0f) * (info0.mRotation.z + info1.mRotation.z);
+
 	mScaling.x = info0.mScale.x * info1.mScale.x;
 	mScaling.y = info0.mScale.y * info1.mScale.y;
 	mScaling.z = info0.mScale.z * info1.mScale.z;
@@ -122,7 +120,7 @@ void TFruitsBoat::traceBckTrack()
 
 int TFruitsBoat::getBoatType() const
 {
-	return ((TFruitsBoatManager*)mManager)->mBoatType;
+	return ((TFruitsBoatManager*)mManager)->unk54;
 }
 
 Mtx* TFruitsBoat::getRootJointMtx() const
@@ -132,19 +130,19 @@ Mtx* TFruitsBoat::getRootJointMtx() const
 
 void TFruitsBoat::rowToCurPathNode(f32 speed)
 {
-	if (unk124->getGraph()->getSplineRail() ? TRUE : FALSE) {
+	if (unk124->unk0->unk14 ? TRUE : FALSE) {
 		f32 splineSpeed = unk124->calcSplineSpeed(speed);
 		unk124->traceSpline(splineSpeed);
 
 		JGeometry::TVec3<f32> pos;
 		JGeometry::TVec3<f32> rot;
-		unk124->getGraph()->getSplineRail()->getPosAndRot(unk124->unk14, &pos,
-		                                                  &rot);
+		unk124->unk0->unk14->getPosAndRot(unk124->unk14, &pos, &rot);
 		pos.sub(mPosition);
 		mPositionDelta.add(pos);
 		mRotation.y = rot.y;
+
 		if (splineSpeed < 0.0f)
-			mRotation.y = MsWrap(mRotation.y + 180.0f, 0.0f, 360.0f);
+			mRotation.y = MsWrap(180.0f + mRotation.y, 0.0f, 360.0f);
 	} else {
 		walkToCurPathNode(speed, mTurnSpeed, 0.0f);
 	}
@@ -157,38 +155,40 @@ void TFruitsBoat::load(JSUMemoryInputStream& stream)
 {
 	JDrama::TActor::load(stream);
 
-	char managerName[256];
-	stream.readString(managerName, 256);
-	TLiveManager* manager
-	    = (TLiveManager*)JDrama::TNameRefGen::search(managerName);
+	char buffer[256];
+	stream.readString(buffer, 256);
+	TLiveManager* mgr
+	    = static_cast<TLiveManager*>(JDrama::TNameRefGen::search(buffer));
 
-	char graphName[256];
-	stream.readString(graphName, 256);
-	TGraphWeb* graph = gpConductor->getGraphByName(graphName);
+	char buffer2[256];
+	stream.readString(buffer2, 256);
+	TGraphWeb* graph = gpConductor->getGraphByName(buffer2);
 	unk124->init(graph);
 
 	mGroundPlane = TMap::getIllegalCheckData();
 
-	init(manager);
+	init(mgr);
 
-	if ((graph == nullptr || graph->isDummy()) && setBckTrack(graphName) == 0)
-		mSpine->initWith(&TNerveFruitsBoatBckTrace::theNerve());
+	if (!graph || graph->isDummy()) {
+		if (setBckTrack(buffer2) == 0)
+			mSpine->initWith(&TNerveFruitsBoatBckTrace::theNerve());
+	}
 }
 
-// TODO: nonmatching, the target's frame is 0x30 bigger and it gives `this` and
-// the string pool base the opposite registers (r31/r30).
 void TFruitsBoat::init(TLiveManager* manager)
 {
 	mManager = manager;
 	mManager->manageActor(this);
 	mMActorKeeper = new TMActorKeeper(mManager, 1);
-	initHitActor(ACTOR_TYPE_FRUITS_BOAT, 1, 0xC0000000, 0.0f, 0.0f, 0.0f,
-	             0.0f);
+
+	initHitActor(ACTOR_TYPE_FRUITS_BOAT, 1,
+	             HIT_CATEGORY_PLAYER | HIT_CATEGORY_MAP_OBJECT, 0.0f, 0.0f,
+	             0.0f, 0.0f);
 	offHitFilter(HIT_FILTER_NO_COLLISION);
 
 	unk124->reset();
 	goToShortestNextGraphNode();
-	if (unk124->getGraph()->getSplineRail()) {
+	if (unk124->unk0->unk14) {
 		mPosition = unk124->getCurrentPos();
 		unk124->moveToShortestNext();
 	}
@@ -197,7 +197,7 @@ void TFruitsBoat::init(TLiveManager* manager)
 	case 0:
 		mMapCollisionManager
 		    = new TMapCollisionManager(1, "/scene/fruitsboat", this);
-		mMActor = mMActorKeeper->createMActor("ShipDolpic.bmd", 0);
+		mMActor = getActorKeeper()->createMActor("ShipDolpic.bmd", 0);
 		mMapCollisionManager->init("ShipDolpic.col", 1, nullptr);
 		setAttackRadius(850.0f);
 		setAttackHeight(600.0f);
@@ -205,7 +205,7 @@ void TFruitsBoat::init(TLiveManager* manager)
 	case 1:
 		mMapCollisionManager
 		    = new TMapCollisionManager(1, "/scene/fruitsboatb", this);
-		mMActor = mMActorKeeper->createMActor("ShipDolpic2.bmd", 0);
+		mMActor = getActorKeeper()->createMActor("ShipDolpic2.bmd", 0);
 		mMapCollisionManager->init("ShipDolpic2.col", 1, nullptr);
 		setAttackRadius(750.0f);
 		setAttackHeight(480.0f);
@@ -213,7 +213,7 @@ void TFruitsBoat::init(TLiveManager* manager)
 	case 2:
 		mMapCollisionManager
 		    = new TMapCollisionManager(1, "/scene/fruitsboatc", this);
-		mMActor = mMActorKeeper->createMActor("ShipDolpic3.bmd", 0);
+		mMActor = getActorKeeper()->createMActor("ShipDolpic3.bmd", 0);
 		mMapCollisionManager->init("ShipDolpic3.col", 1, nullptr);
 		setAttackRadius(1000.0f);
 		setAttackHeight(300.0f);
@@ -222,7 +222,7 @@ void TFruitsBoat::init(TLiveManager* manager)
 	default:
 		mMapCollisionManager
 		    = new TMapCollisionManager(1, "/scene/fruitsboatd", this);
-		mMActor = mMActorKeeper->createMActor("ShipDolpic4.bmd", 0);
+		mMActor = getActorKeeper()->createMActor("ShipDolpic4.bmd", 0);
 		mMapCollisionManager->init("ShipDolpic4.col", 1, nullptr);
 		setAttackRadius(760.0f);
 		setAttackHeight(270.0f);
@@ -231,19 +231,18 @@ void TFruitsBoat::init(TLiveManager* manager)
 
 	mMapCollisionManager->setUpActiveCollisionTRS(mPosition, mRotation,
 	                                              mScaling);
-
 	mSpine->initWith(&TNerveFruitsBoatGraphWander::theNerve());
 
-	// A boat starting on a node flagged 0x80 stays anchored there.
-	if (unk124->getGraph() == nullptr)
-		onLiveFlag(LIVE_FLAG_UNK10000);
+	if (!unk124->unk0)
+		onLiveFlag(LIVE_FLAG_UNK8000);
 	else if (unk124->getCurrent().checkFlag(0x80))
-		onLiveFlag(LIVE_FLAG_UNK10000);
+		onLiveFlag(LIVE_FLAG_UNK8000);
 	else
-		offLiveFlag(LIVE_FLAG_UNK10000);
+		offLiveFlag(LIVE_FLAG_UNK8000);
 
-	mMarchSpeed = getParam()->mSLMoveSpeed.get();
-	mTurnSpeed  = getParam()->mSLRotSpeed.get();
+	mMarchSpeed = ((TFruitsBoatParams*)getSaveParam())->mSLMoveSpeed.get();
+	mTurnSpeed  = ((TFruitsBoatParams*)getSaveParam())->mSLRotSpeed.get();
+
 	offLiveFlag(LIVE_FLAG_CLIPPED_OUT);
 	onLiveFlag(LIVE_FLAG_UNK20);
 	offLiveFlag(LIVE_FLAG_ENABLE_CLIPPING);
@@ -254,23 +253,22 @@ void TFruitsBoat::init(TLiveManager* manager)
 
 BOOL TFruitsBoat::receiveMessage(THitActor* sender, u32 message)
 {
-	return false;
+	return FALSE;
 }
 
-// Only keep the collision moving with the boat while someone can stand on it.
-// TODO: frame-only, ours is 8 bytes smaller.
 void TFruitsBoat::setGroundCollision()
 {
 	JGeometry::TVec3<f32> diff = mPosition;
-	diff -= *gpMarioPos;
+	diff.sub(*gpMarioPos);
+
 	if (mColCount != 0 || diff.length() < 1000.0f
 	    || (SMS_GetYoshi()->isHatched()
 	        && mPosition.x - 1000.0f < SMS_GetYoshi()->getTranslation().x
 	        && mPosition.x + 1000.0f > SMS_GetYoshi()->getTranslation().x
 	        && mPosition.z - 1000.0f < SMS_GetYoshi()->getTranslation().z
-	        && mPosition.z + 1000.0f > SMS_GetYoshi()->getTranslation().z))
-		mMapCollisionManager->moveActiveCollisionMtx(
-		    getModel()->getAnmMtx(0));
+	        && mPosition.z + 1000.0f > SMS_GetYoshi()->getTranslation().z)) {
+		mMapCollisionManager->moveActiveCollisionMtx(getModel()->getAnmMtx(0));
+	}
 }
 
 void TFruitsBoat::calcRootMatrix()
@@ -278,14 +276,15 @@ void TFruitsBoat::calcRootMatrix()
 	J3DModel* model = getModel();
 	MtxPtr mtx      = model->getBaseTRMtx();
 	MsMtxSetRotRPH(mtx, mRotation.x, mRotation.y, mRotation.z);
-	Mtx rock;
-	MTXRotAxisRad(rock, &mRockAxis, 0.017453292f * mRockAngle);
-	MTXConcat(rock, mtx, mtx);
+
+	Mtx rot;
+	MTXRotAxisRad(rot, &unk164, 0.017453292f * unk170);
+	MTXConcat(rot, mtx, mtx);
 	MTXTransApply(mtx, mtx, mPosition.x, mPosition.y, mPosition.z);
 	model->setBaseScale(mScaling);
 }
 
-// TODO: fake inline, the same one as in enemy.cpp and riccohook.cpp
+// fabricated
 static inline JGeometry::TVec3<f32> polarXZ(f32 theta, f32 radius)
 {
 	f32 c = radius * MsCos(theta);
@@ -293,82 +292,96 @@ static inline JGeometry::TVec3<f32> polarXZ(f32 theta, f32 radius)
 	return JGeometry::TVec3<f32>(s, 0.0f, c);
 }
 
-// TODO: nonmatching, see the note on the rocking axis below; the frame is also
-// 0x10 smaller than the target's.
+// fabricated
+static inline void easeTo(f32& cur, f32 dst, f32 rate)
+{
+	f32 d = rate * (dst - cur);
+	cur += d;
+}
+
 void TFruitsBoat::moveObject()
 {
-	// Pitch the boat along the waves under its bow and stern.
 	JGeometry::TVec3<f32> offset = polarXZ(mRotation.y, 300.0f);
-	JGeometry::TVec3<f32> bow    = mPosition;
-	bow += offset;
-	JGeometry::TVec3<f32> stern = mPosition;
-	stern -= offset;
-	bow.y   = gpMapObjWave->getWaveHeight(bow.x, bow.z);
-	stern.y = gpMapObjWave->getWaveHeight(stern.x, stern.z);
+	JGeometry::TVec3<f32> pos    = mPosition;
+	JGeometry::TVec3<f32> front  = pos;
+	front.add(offset);
+	JGeometry::TVec3<f32> back = pos;
+	back.sub(offset);
+	front.y = gpMapObjWave->getWaveHeight(front.x, front.z);
+	back.y  = gpMapObjWave->getWaveHeight(back.x, back.z);
 
-	JGeometry::TVec3<f32> dir = bow - stern;
+	JGeometry::TVec3<f32> dir = front - back;
 	JGeometry::TVec3<f32> rot = MsGetRotFromZaxis(dir);
 	rot.x *= 0.5f;
-	f32 pitchStep = MsAngleDiff(rot.x, mRotation.x);
-	if (pitchStep >= 0.0f)
-		pitchStep = MsMin(pitchStep, 1.0f);
-	else
-		pitchStep = MsMax(pitchStep, -1.0f);
-	mRotation.x += pitchStep;
 
-	// Rock sideways when Mario lands on the boat.
+	f32 step = MsAngleDiff(rot.x, mRotation.x);
+	if (step >= 0.0f)
+		step = MsMin(step, 1.0f);
+	else
+		step = MsMax(step, -1.0f);
+	mRotation.x += step;
+
 	const TBGCheckData* plane = SMS_GetMarioGrPlane();
-	if (!checkLiveFlag(LIVE_FLAG_UNK20000)) {
-		if (plane != nullptr && plane->getActor() == this
-		    && SMS_IsMarioTouchGround4cm()) {
-			JGeometry::TVec3<f32> dir = *gpMarioPos;
-			dir -= mPosition;
-			dir.y    = 0.0f;
-			f32 dist = dir.length();
+	if (!checkLiveFlag(LIVE_FLAG_UNK10000)) {
+		if (plane && plane->mActor == this && SMS_IsMarioTouchGround4cm()) {
+			JGeometry::TVec3<f32> toMario = *gpMarioPos;
+			toMario.sub(mPosition);
+			toMario.y = 0.0f;
+			f32 dist  = toMario.length();
 			if (dist != 0.0f) {
-				static const JGeometry::TVec3<f32> up(0.0f, 1.0f, 0.0f);
-				dir.normalize();
-				mRockAxis.cross2(up, dir);
-				mRockAxis.normalize();
-				mRockSpeed += 0.0003f * dist;
+				static JGeometry::TVec3<f32> up(0.0f, 1.0f, 0.0f);
+				toMario.normalize();
+				unk164.set(up.y * toMario.z - up.z * toMario.y,
+				           up.z * toMario.x - up.x * toMario.z,
+				           up.x * toMario.y - up.y * toMario.x);
+				unk164.normalize();
+				unk174 += 0.0003f * dist;
 			}
-			onLiveFlag(LIVE_FLAG_UNK20000);
-			offLiveFlag(LIVE_FLAG_UNK10000);
+			onLiveFlag(LIVE_FLAG_UNK10000);
+			offLiveFlag(LIVE_FLAG_UNK8000);
 			if (plane->isBounceOnLanding()) {
 				setJumpReaction();
-				offLiveFlag(LIVE_FLAG_UNK20000);
+				offLiveFlag(LIVE_FLAG_UNK10000);
 			}
 		}
-	} else if (plane == nullptr || plane->getActor() != this
+	} else if (!plane || plane->mActor != this
 	           || !SMS_IsMarioTouchGround4cm()) {
-		offLiveFlag(LIVE_FLAG_UNK20000);
+		offLiveFlag(LIVE_FLAG_UNK10000);
 	}
 
-	// Keep turning the rocking axis towards Mario while he stands on it.
-	if (checkLiveFlag(LIVE_FLAG_UNK20000)) {
-		JGeometry::TVec3<f32> dir = *gpMarioPos;
-		dir -= mPosition;
-		dir.y = 0.0f;
-		if (dir.length() != 0.0f) {
-			dir.normalize();
-			static const JGeometry::TVec3<f32> up(0.0f, 1.0f, 0.0f);
-			JGeometry::TVec3<f32> axis;
-			axis.cross(up, dir);
+	if (checkLiveFlag(LIVE_FLAG_UNK10000)) {
+		JGeometry::TVec3<f32> toMario = *gpMarioPos;
+		toMario.sub(mPosition);
+		toMario.y = 0.0f;
+		if (toMario.length() != 0.0f) {
+			toMario.normalize();
+			static JGeometry::TVec3<f32> up(0.0f, 1.0f, 0.0f);
+			f32 x = up.y * toMario.z - up.z * toMario.y;
+			f32 y = up.z * toMario.x - up.x * toMario.z;
+			f32 z = up.x * toMario.y - up.y * toMario.x;
+			JGeometry::TVec3<f32> axis(x, y, z);
 			axis.normalize();
-			// TODO: the target does not fuse these into multiply-adds; writing
-			// each step into its own local (dx, dy, dz) reproduces that, but
-			// nothing else hints at such locals, so maybe a lost helper.
-			mRockAxis.x += 0.1f * (axis.x - mRockAxis.x);
-			mRockAxis.y += 0.1f * (axis.y - mRockAxis.y);
-			mRockAxis.z += 0.1f * (axis.z - mRockAxis.z);
+			easeTo(unk164.x, axis.x, 0.1f);
+			easeTo(unk164.y, axis.y, 0.1f);
+			easeTo(unk164.z, axis.z, 0.1f);
 		}
 	}
 
-	mRockSpeed += 0.01f * -MsSin(mRockAngle);
-	mRockAngle += mRockSpeed;
-	if (mRockAngle < -10.0f || mRockAngle > 10.0f)
-		mRockSpeed = -mRockSpeed;
-	mRockSpeed *= 0.99f;
+	unk174 += 0.01f * -MsSin(unk170);
+	unk170 += unk174;
+#if defined(VERSION_GMSJ01)
+	if (unk170 < -10.0f || unk170 > 10.0f)
+		unk174 = -unk174;
+#else
+	if (unk170 < -8.0f) {
+		unk170 = -8.0f;
+		unk174 = -unk174;
+	} else if (unk170 > 8.0f) {
+		unk170 = 8.0f;
+		unk174 = -unk174;
+	}
+#endif
+	unk174 *= 0.99f;
 
 	TLiveActor::moveObject();
 }
@@ -382,8 +395,8 @@ void TFruitsBoat::requestShadow()
 	    || (mLiveFlag & LIVE_FLAG_FORCE_SHADOW)) {
 		TCircleShadowRequest shadow;
 		shadow.mPosition   = mPosition;
-		shadow.mRadiusX    = mShadowRadiusX;
-		shadow.mRadiusZ    = mShadowRadiusZ;
+		shadow.mRadiusX    = unk154;
+		shadow.mRadiusZ    = unk158;
 		shadow.mShadowType = SHADOW_TYPE_SHIP;
 		shadow.mRotationY  = (s16)mRotation.y;
 
@@ -401,35 +414,55 @@ void TFruitsBoat::requestShadow()
 
 TFruitsBoatManager::TFruitsBoatManager(int type, const char* name)
     : TEnemyManager(name)
-    , mBoatType(type)
+    , unk54(type)
 {
 }
 
 void TFruitsBoatManager::createModelData()
 {
-	switch (mBoatType) {
+	switch (unk54) {
 	case 0: {
-		static const TModelDataLoadEntry entry[]
-		    = { { "ShipDolpic.bmd", 0x10210000, 0 }, { nullptr, 0, 0 } };
+		static const TModelDataLoadEntry entry[] = {
+			{ "ShipDolpic.bmd",
+			  J3DMLF_MaterialPEFull | J3DMLF_UseUniqueMaterials
+			      | (1 << J3DMLF_TevStageNumShift),
+			  0 },
+			{ nullptr, 0, 0 },
+		};
 		createModelDataArray(entry);
 		break;
 	}
 	case 1: {
-		static const TModelDataLoadEntry entry[]
-		    = { { "ShipDolpic2.bmd", 0x10210000, 0 }, { nullptr, 0, 0 } };
+		static const TModelDataLoadEntry entry[] = {
+			{ "ShipDolpic2.bmd",
+			  J3DMLF_MaterialPEFull | J3DMLF_UseUniqueMaterials
+			      | (1 << J3DMLF_TevStageNumShift),
+			  0 },
+			{ nullptr, 0, 0 },
+		};
 		createModelDataArray(entry);
 		break;
 	}
 	case 2: {
-		static const TModelDataLoadEntry entry[]
-		    = { { "ShipDolpic3.bmd", 0x10210000, 0 }, { nullptr, 0, 0 } };
+		static const TModelDataLoadEntry entry[] = {
+			{ "ShipDolpic3.bmd",
+			  J3DMLF_MaterialPEFull | J3DMLF_UseUniqueMaterials
+			      | (1 << J3DMLF_TevStageNumShift),
+			  0 },
+			{ nullptr, 0, 0 },
+		};
 		createModelDataArray(entry);
 		break;
 	}
 	case 3:
 	default: {
-		static const TModelDataLoadEntry entry[]
-		    = { { "ShipDolpic4.bmd", 0x10210000, 0 }, { nullptr, 0, 0 } };
+		static const TModelDataLoadEntry entry[] = {
+			{ "ShipDolpic4.bmd",
+			  J3DMLF_MaterialPEFull | J3DMLF_UseUniqueMaterials
+			      | (1 << J3DMLF_TevStageNumShift),
+			  0 },
+			{ nullptr, 0, 0 },
+		};
 		createModelDataArray(entry);
 		break;
 	}
@@ -444,38 +477,36 @@ void TFruitsBoatManager::load(JSUMemoryInputStream& stream)
 
 TSpineEnemy* TFruitsBoatManager::createEnemyInstance() { return nullptr; }
 
-// TODO: frame-only, ours is 0x10 bytes smaller.
 DEFINE_NERVE(TNerveFruitsBoatGraphWander, TLiveActor)
 {
 	TFruitsBoat* self = (TFruitsBoat*)spine->getBody();
-	if (self->unk124->getGraph() == nullptr
-	    || self->unk124->getGraph()->isDummy())
+
+	if (!self->unk124->unk0 || self->unk124->unk0->isDummy())
 		return false;
 
 	if (self->isReachedToGoal()) {
 		TGraphNode& node = self->unk124->getCurrent();
 		if (node.checkFlag(0x100))
-			self->onLiveFlag(LIVE_FLAG_UNK10000);
+			self->onLiveFlag(LIVE_FLAG_UNK8000);
 		if (node.checkFlag(0x400))
 			self->unk150 ^= 1;
 
 		self->goToDirectedNextGraphNode(polarXZ(self->mRotation.y, 1.0f));
-		if (!self->checkLiveFlag(LIVE_FLAG_UNK10000))
+
+		if (!self->checkLiveFlag(LIVE_FLAG_UNK8000))
 			self->rowToCurPathNode(self->mMarchSpeed);
+
 		spine->pushAfterCurrent(&TNerveFruitsBoatGraphWander::theNerve());
 		return true;
 	}
 
-	if (self->checkLiveFlag(LIVE_FLAG_UNK10000))
+	if (self->checkLiveFlag(LIVE_FLAG_UNK8000))
 		return false;
 
 	self->rowToCurPathNode(self->mMarchSpeed);
 	return false;
 }
 
-// TODO: frame-only, ours is 8 bytes smaller. Reading the frame into a local
-// in traceBckTrack ("f32 frame = mBckTrackCtrl->getFrame();") closes the gap,
-// but nothing else points at that local, so it stays out.
 DEFINE_NERVE(TNerveFruitsBoatBckTrace, TLiveActor)
 {
 	TFruitsBoat* self = (TFruitsBoat*)spine->getBody();

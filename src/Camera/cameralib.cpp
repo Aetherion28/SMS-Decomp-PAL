@@ -318,7 +318,7 @@ void CLBCalcNearClipAngle(JGeometry::TVec3<f32>* out_pos, S16Vec* out_euler,
 {
 	JGeometry::TVec3<f32> direction;
 	unitVecTo(origin, lookat, &direction);
-	out_pos->scaleAdd(near_dist, origin, direction);
+	out_pos->scaleAdd(near_dist, direction, origin);
 
 	f32 dx       = origin.x - lookat.x;
 	f32 dz       = origin.z - lookat.z;
@@ -368,7 +368,7 @@ void CLBCalcNearNinePos(JGeometry::TVec3<f32>* out_grid, S16Vec* out_euler,
 	JGeometry::TVec3<f32> upH;
 	upH.scale(halfH, up);
 	out_grid[1].add(out_grid[4], upH);
-	out_grid[7].scaleAdd(-halfH, out_grid[4], up);
+	out_grid[7].scaleAdd(-halfH, up, out_grid[4]);
 	JGeometry::TVec3<f32> leftW;
 	leftW.scale(-halfW, right);
 	out_grid[3].add(out_grid[4], leftW);
@@ -382,16 +382,16 @@ void CLBCalcNearNinePos(JGeometry::TVec3<f32>* out_grid, S16Vec* out_euler,
 	d.set(leftW);
 	d += upH;
 	MsVECNormalize(&d, &d);
-	out_grid[0].scaleAdd(diag, out_grid[4], d);
+	out_grid[0].scaleAdd(diag, d, out_grid[4]);
 	d.negate();
-	out_grid[8].scaleAdd(diag, out_grid[4], d);
+	out_grid[8].scaleAdd(diag, d, out_grid[4]);
 
 	d.set(rightW);
 	d += upH;
 	MsVECNormalize(&d, &d);
-	out_grid[2].scaleAdd(diag, out_grid[4], d);
+	out_grid[2].scaleAdd(diag, d, out_grid[4]);
 	d.negate();
-	out_grid[6].scaleAdd(diag, out_grid[4], d);
+	out_grid[6].scaleAdd(diag, d, out_grid[4]);
 }
 
 // UNUSED (map size 0x104); no linked caller shows its body, so it stays empty

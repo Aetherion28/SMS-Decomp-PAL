@@ -2,7 +2,7 @@
 #include <Strategic/Spine.hpp>
 #include <Enemy/Graph.hpp>
 #include <MarioUtil/MathUtil.hpp>
-#include <M3DUtil/InfectiousStrings.hpp>
+#include <M3DUtil/MActorAnm.hpp>
 
 // @non-matching -- the issue seems to stem from the JDrama TNameRefGen
 // search/push_back calls.
@@ -147,7 +147,7 @@ DEFINE_NERVE(TNerveRHGraphWander, TLiveActor)
 		self->goToDirectedNextGraphNode(polar);
 	}
 
-	if (self->unk104.getPoint().distance(self->getPosition()) < 10.0f) {
+	if (self->getGoalDistance() < 10.0f) {
 		TGraphNode& node = self->unk124->getCurrent();
 
 		if (node.checkFlag(0x800)) {
@@ -165,7 +165,7 @@ DEFINE_NERVE(TNerveRHGraphWander, TLiveActor)
 			return false;
 		}
 
-		JGeometry::TVec3<f32> dPos = self->getUnkF4().getPoint();
+		JGeometry::TVec3<f32> dPos = self->getCurrentTarget().getPoint();
 		dPos.sub(self->getPosition());
 		PSVECNormalize(&dPos, &dPos);
 		dPos.scale(self->getMarchSpeed());

@@ -1,5 +1,5 @@
 #include <Enemy/Kazekun.hpp>
-#include <M3DUtil/InfectiousStrings.hpp>
+#include <M3DUtil/MActorAnm.hpp>
 #include <M3DUtil/MActor.hpp>
 #include <MSound/MSound.hpp>
 #include <MarioUtil/MtxUtil.hpp>
@@ -11,18 +11,18 @@
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
 
-void SMS_CalcToDirMatrix(TPosition3f& param_1,
-                         const JGeometry::TVec3<f32>& param_2,
-                         const JGeometry::TVec3<f32>& param_3)
+void SMS_CalcToDirMatrix(TPosition3f& outMatrix,
+                         const JGeometry::TVec3<f32>& dir,
+                         const JGeometry::TVec3<f32>& up)
 {
-	JGeometry::TVec3<f32> zDir = param_2;
+	JGeometry::TVec3<f32> zDir = dir;
 	if (zDir.isZero())
 		zDir.set(0.0f, 0.0f, 1.0f);
 	else
 		zDir.normalize();
 
 	JGeometry::TVec3<f32> xDir;
-	xDir.cross(param_3, zDir);
+	xDir.cross(up, zDir);
 	if (xDir.isZero())
 		xDir.set(1.0f, 0.0f, 0.0f);
 	else
@@ -32,9 +32,9 @@ void SMS_CalcToDirMatrix(TPosition3f& param_1,
 	yDir.cross2(zDir, xDir);
 	yDir.normalize();
 
-	param_1.setXDir(xDir);
-	param_1.setYDir(yDir);
-	param_1.setZDir(zDir);
+	outMatrix.setXDir(xDir);
+	outMatrix.setYDir(yDir);
+	outMatrix.setZDir(zDir);
 }
 
 TKazekun::TKazekun(const char* param_1)
@@ -244,15 +244,16 @@ bool TKazekun::doAttackPose(bool start)
 		mVelocity = velocity;
 	}
 
+	JGeometry::TQuat4<f32>& orientation = unk1A0;
 	JGeometry::TVec3<f32> spinAxis;
-	unk1A0.rotate(JGeometry::TVec3<f32>(-1.0f, 0.0f, 0.0f), spinAxis);
+	orientation.rotate(JGeometry::TVec3<f32>(-1.0f, 0.0f, 0.0f), spinAxis);
 
 	JGeometry::TQuat4<f32> spin;
 	spin.setRotate(
 	    spinAxis,
 	    M_PI * ((TKazekunParams*)getSaveParam())->mPoseOmegaRate.get());
-	spin.mul(spin, unk1A0);
-	unk1A0 = spin;
+	spin.mul(spin, orientation);
+	orientation = spin;
 
 	JGeometry::TVec3<f32> forward(0.0f, 0.0f, getVelocity().length());
 	spin.rotate(forward, forward);
@@ -264,7 +265,7 @@ bool TKazekun::doAttackPose(bool start)
 void TKazekun::doAttack(bool start)
 {
 	if (start) {
-		JGeometry::TVec3<f32> dir = getUnk104().getPoint();
+		JGeometry::TVec3<f32> dir = getGoal().getPoint();
 		dir -= mPosition;
 		dir.setLength(((TKazekunParams*)getSaveParam())->mAttackSpeed.get());
 		mVelocity = dir;
@@ -415,7 +416,7 @@ DEFINE_NERVE(TNerveKazekunPreAttack, TLiveActor)
 	if (((TKazekunParams*)self->getSaveParam())->mPoseTime.get()
 	        * ((TKazekunParams*)self->getSaveParam())->mDicideTiming.get()
 	    < spine->getTime()) {
-		self->setGoalPath(TPathNode(SMS_GetMarioPos()));
+		self->setGoal(SMS_GetMarioPos());
 	}
 
 	self->doAttackPose(false);

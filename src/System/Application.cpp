@@ -48,7 +48,6 @@
 // rogue includes needed for matching sinit & bss
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
-#include <System/DummyStrings.hpp>
 
 TMarDirector* gpMarDirector;
 MSound* gpMSound;
@@ -66,7 +65,7 @@ static void* arcBufMario;
 static void* arcBufCmn;
 static void* bufStageArcBin;
 static void* spGameHeapBlock;
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 static JKRMemArchive* sCmn2DArc;
 static void* sCmn2DArcBuf;
 #endif
@@ -77,7 +76,7 @@ TARAMBlock gArBkGuide;
 extern "C" void ReInitializeGX();
 u8 SMS_getShineIDofExStage(u8);
 
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 f32 SMSGetRealVSyncTimesPerSec()
 {
 	f32 result = 60.0f;
@@ -165,7 +164,7 @@ void SMSLoadArchiveARAM(TARAMBlock* out_block, const char* path)
 	// Try to load a compressed version of the archive first
 	char compressedArcPath[64];
 	strcpy(compressedArcPath, path);
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 	out_block->mBlock = nullptr;
 #endif
 	char* loc = strstr(compressedArcPath, ".arc");
@@ -191,14 +190,14 @@ void SMSMountAramArchive(JKRMemArchive* archive, TARAMBlock& block)
 {
 	if (block.mIsCompressed) {
 		JKRAram::aramToMainRam(
-		    block.mBlock, (u8*)SMSGetMarDirector()->getUnkD4(), 0, 0,
+		    block.mBlock, (u8*)SMSGetMarDirector()->get2DArchiveBuffer(), 0, 0,
 		    EXPAND_SWITCH_DECOMPRESS, 0x64000, nullptr, -1, nullptr);
 	} else {
-		JKRAram::aramToMainRam(block.mBlock,
-		                       (u8*)SMSGetMarDirector()->getUnkD4(), 0, 0,
-		                       EXPAND_SWITCH_DEFAULT, 0, nullptr, -1, nullptr);
+		JKRAram::aramToMainRam(
+		    block.mBlock, (u8*)SMSGetMarDirector()->get2DArchiveBuffer(), 0, 0,
+		    EXPAND_SWITCH_DEFAULT, 0, nullptr, -1, nullptr);
 	}
-	archive->mountFixed(SMSGetMarDirector()->getUnkD4(), MBF_0);
+	archive->mountFixed(SMSGetMarDirector()->get2DArchiveBuffer(), MBF_0);
 }
 
 JKRArchive* SMSSwitch2DArchive(const char* arc_path, TARAMBlock& block)
@@ -286,7 +285,7 @@ void TApplication::initialize()
 	OSResumeThread(&gSetupThread);
 }
 
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 #pragma dont_inline on
 void load2DResource2Aram()
 {
@@ -341,7 +340,7 @@ void* TApplication::setupThreadFuncLogo()
 	    "/data/stageArc.bin", nullptr, EXPAND_SWITCH_DEFAULT, 0, mHeap,
 	    JKRDvdRipper::ALLOC_DIRECTION_FORWARD, 0, nullptr);
 
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 	load2DResource2Aram();
 #else
 	SMSLoadArchiveARAM(&gArBkConsole, "/data/game_6.arc");
@@ -392,7 +391,7 @@ void TApplication::initialize_bootAfter()
 	                                 workerThreadStack, 0x1000);
 	gpCardManager->readOptionBlock();
 
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 	sCmn2DArcBuf = new (0x20) u8[0xA000];
 	sCmn2DArc    = new JKRMemArchive;
 #endif
@@ -436,7 +435,7 @@ void TApplication::initialize_nlogoAfter()
 	JKRMemArchive* this_00 = new JKRMemArchive(arcBufMario, 0, MBF_0);
 	gpCardManager->setIcons(
 	    (ResTIMG*)piVar2->getResource("/card/mario_icon.bti") + 1);
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 	gpCardManager->setBanner((ResTIMG*)piVar2->getResource("/card/mariobnr.bti")
 	                         + 1);
 #else
@@ -568,7 +567,7 @@ bool TApplication::checkAdditionalMovie()
 void TApplication::proc()
 {
 	while (mAppState != APP_STATE_QUIT) {
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 		mDisplay->unk4C = 2;
 #endif
 		u8 nextState = APP_STATE_DEFAULT;
@@ -601,7 +600,7 @@ void TApplication::proc()
 			if (checkAdditionalMovie()) {
 				// Show a movie before entering a stage, e.g. the secret levels
 				SMSSetupMovieRenderingInfo(mDisplay);
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 				if ((mDisplay->getRenderMode().viTVmode >> 2) == VI_PAL)
 					mDisplay->unk4C = 1;
 #endif
@@ -639,7 +638,7 @@ void TApplication::proc()
 
 		case APP_STATE_MOVIE: {
 			SMSSetupMovieRenderingInfo(mDisplay);
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 			if ((mDisplay->getRenderMode().viTVmode >> 2) == VI_PAL)
 				mDisplay->unk4C = 1;
 #endif
@@ -783,7 +782,7 @@ int TApplication::gameLoop()
 	return nextState;
 }
 
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 static const char* sDvdErrMsgs[][6] = {
 	{
 	    "An error has occurred. Turn the\npower OFF and check the \n"
@@ -882,14 +881,14 @@ int TApplication::drawDVDErr()
 {
 	char message[512];
 	u32 error = 0;
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 	u32 language;
 	language = TFlagManager::getInstance()->getFlag(MSF_LANGUAGE);
 #endif
 
 	switch (DVDGetDriveStatus()) {
 	case -1:
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 		snprintf(message, 512, sDvdErrMsgs[language][0]);
 #else
 		snprintf(message, 512,
@@ -901,7 +900,7 @@ int TApplication::drawDVDErr()
 		break;
 
 	case 11:
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 		snprintf(message, 512, sDvdErrMsgs[language][1]);
 #else
 		snprintf(message, 512,
@@ -914,7 +913,7 @@ int TApplication::drawDVDErr()
 
 	case 1:
 		if (DVDCheckDisk() == 0) {
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 			snprintf(message, 512, sDvdErrMsgs[language][2]);
 #else
 			snprintf(message, 512, "ディスクを読み込んでいます。");
@@ -924,7 +923,7 @@ int TApplication::drawDVDErr()
 		break;
 
 	case 5:
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 		snprintf(message, 512, sDvdErrMsgs[language][3]);
 #else
 		snprintf(message, 512,
@@ -936,7 +935,7 @@ int TApplication::drawDVDErr()
 		break;
 
 	case 4:
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 		snprintf(message, 512, sDvdErrMsgs[language][4]);
 #else
 		snprintf(message, 512,
@@ -947,7 +946,7 @@ int TApplication::drawDVDErr()
 		break;
 
 	case 6:
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 		snprintf(message, 512, sDvdErrMsgs[language][5]);
 #else
 		snprintf(message, 512,
@@ -1006,8 +1005,8 @@ int TApplication::drawDVDErr()
 		if (gpSystemFont != nullptr)
 			font = gpSystemFont;
 		J2DPrint print(font, 0);
-		print.unk44  = (GXColor) { 0xff, 0xff, 0, 0xff };
-		print.unk48  = (GXColor) { 0xff, 0xff, 0, 0xff };
+		print.setCharColor((GXColor) { 0xff, 0xff, 0, 0xff });
+		print.setGradColor((GXColor) { 0xff, 0xff, 0, 0xff });
 		f32 msgWidth = print.getWidth(message);
 		print.print(0.5f * (600.0f - msgWidth), 230, message);
 	}

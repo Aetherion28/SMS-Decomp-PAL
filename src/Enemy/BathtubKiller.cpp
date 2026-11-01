@@ -26,7 +26,6 @@
 // rogue includes needed for matching sinit & bss
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
-#include <M3DUtil/InfectiousStrings.hpp>
 
 static const char* bathtubkiller_bastable[] = {
 	"/scene/bathtubkiller/bas/bathtubdownkiller_down1.bas",
@@ -275,7 +274,7 @@ void TBathtubKiller::generateItemBathtubKiller()
 	TBathtubKillerManager* manager = (TBathtubKillerManager*)mManager;
 	s32 lives = TFlagManager::getInstance()->getFlag(MSF_LIFE_COUNT);
 
-	if (SMS_GetMarioWaterGun()->mCurrentWater == 0) {
+	if (SMS_GetMarioWaterGun()->getCurrentWater() == 0) {
 		item = gpItemManager->makeObjAppear(mPosition.x, mPosition.y,
 		                                    mPosition.z,
 		                                    ACTOR_TYPE_BOTTLE_LARGE, true);
@@ -654,9 +653,9 @@ bool TBathtubKiller::isAboided()
 	f32 distanceY                  = fabsf(mario.y - position.y);
 	mario.y                        = 0.0f;
 	position.y                     = 0.0f;
-	JGeometry::TVec3<f32> direction;
-	direction.sub(mario, position);
-	f32 distance = direction.length();
+	JGeometry::TVec3<f32> diff;
+	diff.sub(mario, position);
+	f32 distance = diff.length();
 	if (distanceY > getSaveParam2()->mSLAboidDistanceY.get()
 	    && distance <= getSaveParam2()->mSLAboidDistance.get())
 		return true;
@@ -667,6 +666,8 @@ bool TBathtubKiller::isAboided()
 		onHitFilter(HIT_FILTER_NO_COLLISION);
 		return true;
 	}
+	JGeometry::TVec3<f32> direction;
+	direction.set(diff);
 	direction.normalize();
 	TDirectionCalc target(direction);
 	JGeometry::TVec3<f32> forward;
@@ -808,8 +809,10 @@ TBathtubKillerManager::TBathtubKillerManager(const char* name)
 
 void TBathtubKillerManager::load(JSUMemoryInputStream& stream)
 {
+	getActiveObjNum();
 	TSmallEnemyManager::load(stream);
 	unk38 = new TBathtubKillerParams("/enemy/bathtubkiller.prm");
+	getActiveObjNum();
 }
 
 void TBathtubKillerManager::loadAfter()
@@ -823,6 +826,7 @@ void TBathtubKillerManager::loadAfter()
 	mMushroom         = nullptr;
 	mFinalMushroomRequested = 0;
 	mEarlyMushroomRequests  = 0;
+	getActiveObjNum();
 
 	static const char* loopFilenames[1] = {
 		"/scene/map/map/ms_kp_kill_smoke.jpa",

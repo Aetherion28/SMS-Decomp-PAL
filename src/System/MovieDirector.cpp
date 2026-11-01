@@ -18,7 +18,7 @@
 #include <GC2D/CardSave.hpp>
 #include <GC2D/ScrnFader.hpp>
 #include <GC2D/hx_wiper.h>
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 #include <JSystem/J2D/J2DOrthoGraph.hpp>
 #include <dolphin/vi.h>
 #endif
@@ -27,9 +27,8 @@
 // rogue includes needed for matching sinit & bss
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
-#include <System/DummyStrings.hpp>
 
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 #pragma dont_inline on
 TEndingString::TEndingString(const char* name)
     : JDrama::TViewObj(name)
@@ -128,7 +127,7 @@ TMovieDirector::TMovieDirector()
     , unk20(nullptr)
     , unk24(nullptr)
     , unk30(0)
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
     , mEndingString(nullptr)
     , mEndingTimer(0)
 #endif
@@ -158,7 +157,7 @@ void TMovieDirector::setup(JDrama::TDisplay* param_1, TMarioGamePad* param_2)
 
 int TMovieDirector::rsetup()
 {
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 	static const char* subtitleNames[] = {
 		"/data/subtitle_en.arc", "/data/subtitle_ge.arc",
 		"/data/subtitle_fr.arc", "/data/subtitle_sp.arc",
@@ -184,7 +183,7 @@ int TMovieDirector::rsetup()
 	case 17:
 	case 18:
 	case 19: {
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 		void* arcBlob = SMSLoadArchive(
 		    endsaveNames[TFlagManager::getInstance()->getFlag(MSF_LANGUAGE)],
 		    nullptr, 0, nullptr);
@@ -196,7 +195,7 @@ int TMovieDirector::rsetup()
 		arc->mountFixed(arcBlob, MBF_0);
 	} break;
 	}
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 	load2DResource2Aram();
 #endif
 
@@ -232,7 +231,7 @@ int TMovieDirector::rsetup()
 	switch (SMSGetApplication()->getMovie()) {
 	case 16:
 	case 17:
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 		mEndingString = new TEndingString("EndingString");
 		group2d->getChildren().push_back(mEndingString);
 #endif
@@ -334,7 +333,7 @@ u32 TMovieDirector::decideNextMode(s32* param_1)
 	} else if (SMSGetApplication()->getMovie() == 0x13) {
 		*param_1 = 4;
 	} else if (SMSGetApplication()->getMovie() == 0xc) {
-		TGameSequence& nextArea = SMSGetApplication()->mNextArea;
+		TGameSequence& nextArea = SMSGetApplication()->getNextArea();
 		nextArea.set(15, 0, 0);
 		nextMode = 5;
 	} else if (SMSGetApplication()->getMovie() == 0xe) {
@@ -374,7 +373,7 @@ int TMovieDirector::direct()
 		unk30.on(0x1);
 
 		gpMSound->initSound();
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 		if (SMSGetApplication()->getMovie() == 16)
 			mEndingString->startFadeIn();
 #endif
@@ -409,7 +408,7 @@ int TMovieDirector::direct()
 		JDrama::TGraphics graphics;
 		graphics.unk0 = 1;
 		unk10->testPerform(CUE_MOVE, &graphics);
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 		if (VIGetTvFormat() != VI_PAL) {
 			graphics.unk0 = 0;
 			unk10->testPerform(CUE_MOVE, &graphics);
@@ -455,7 +454,7 @@ int TMovieDirector::direct()
 		} else if (THPPlayerGetState() == 3) {
 			desiredAppState = decideNextMode(&nextState);
 		}
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 		if (mEndingTimer < 300)
 			++mEndingTimer;
 		if (SMSGetApplication()->getMovie() == 17 && mEndingTimer == 30)
@@ -521,7 +520,9 @@ int TMovieDirector::direct()
 			SMSGetApplication()->getFader()->startWipe(14, 0.3f, 0.0f);
 			SMSGetApplication()->getFader()->setColor(
 			    JUtility::TColor(0, 0, 0, 255));
-			unk24->init(SMSGetApplication()->getMovie() == 17 ? 8 : 0);
+			unk24->init(SMSGetApplication()->getMovie() == 17
+			                ? TCardSave::PURPOSE_ALL_SHINES_SAVE
+			                : TCardSave::PURPOSE_SAVE);
 			break;
 
 		case STATE_SAVE_AND_CONTINUE:
@@ -531,7 +532,7 @@ int TMovieDirector::direct()
 			SMSGetApplication()->getFader()->startWipe(14, 0.3f, 0.0f);
 			SMSGetApplication()->getFader()->setColor(
 			    JUtility::TColor(0, 0, 0, 255));
-			unk24->init(9);
+			unk24->init(TCardSave::PURPOSE_EXPLANATION_AGAIN);
 			break;
 
 		case STATE_FADE_OUT:

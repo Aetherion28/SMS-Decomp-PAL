@@ -40,3 +40,16 @@ That is why frame-only mismatches are so common: every missing inline call, acce
 
 `slot_gaps.py` lines our slots up against the target's live stack offsets.
 It shows where in that list the target has extra bytes.
+
+## Inline trace
+
+With `INLINE_TRACE=1` in the environment, the patched debugger logs every `can_inline()` verdict made for one function: the pass level, `INLINE` or `call`, and the callee.
+`can_inline` is only the first gate; a call it accepts can still stay out of line (statement-level inlines in the right operand of `&&`, `||` or `?:`, or more than 16 per statement).
+
+```sh
+python tools/mwcc-debugger-gc125/inline_trace.py mario/Enemy/Koopa "execute__16TNerveKoopaTurnLCFP24TSpineBase<10TLiveActor>" out ../mwcc-debugger/mwcc_debugger.py path/to/retrowin32
+```
+
+The GC/1.2.5 addresses (`can_inline` and its return sites, the pass counter) come from rayanht/mwcc's symbol map.
+
+Each traced callee also shows its saved inline info as `[linkname kind=K nstmts=N]` (kind 6: inlined as an expression; kind 3: only at statement level, never in the right operand of `&&`, `||`, `?:`, `,` or the null check of `new`). `variables.txt` now tags each stack object with its type kind (`:int`, `:float`, `:class`, ...).

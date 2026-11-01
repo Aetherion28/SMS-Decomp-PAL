@@ -1,6 +1,7 @@
 #include <Camera/Camera.hpp>
 #include <GC2D/BoundPane.hpp>
 #include <GC2D/GCConsole2.hpp>
+#include <GC2D/Helpers.hpp>
 #include <GC2D/MessageLoader.hpp>
 #include <GC2D/MessageUtil.hpp>
 #include <GC2D/Talk2D2.hpp>
@@ -8,6 +9,7 @@
 #include <JSystem/J2D/J2DOrthoGraph.hpp>
 #include <JSystem/J2D/J2DPane.hpp>
 #include <JSystem/J2D/J2DPicture.hpp>
+#include <JSystem/J2D/J2DPrint.hpp>
 #include <JSystem/J2D/J2DScreen.hpp>
 #include <JSystem/J2D/J2DTextBox.hpp>
 #include <JSystem/JAudio/JALibrary/JALSystem.hpp>
@@ -28,7 +30,6 @@
 #include <JSystem/JUtility/JUTResFont.hpp>
 #include <JSystem/JUtility/JUTTexture.hpp>
 #include <MSound/MSound.hpp>
-#include <MSound/MSoundBGM.hpp>
 #include <MSound/MSoundSE.hpp>
 #include <MSound/SoundEffects.hpp>
 #include <MarioUtil/DrawUtil.hpp>
@@ -41,13 +42,15 @@
 #include <System/MarDirector.hpp>
 #include <System/MarioGamePad.hpp>
 #include <dolphin/gx.h>
+#include <dolphin/os.h>
 #include <math.h>
 #include <stdio.h>
 #include <macros.h>
+#include <version.h>
 
 // rogue includes needed for matching sinit & bss
-#include <M3DUtil/InfectiousStrings.hpp>
 #include <MSound/MSSetSound.hpp>
+#include <MSound/MSoundBGM.hpp>
 
 TTalk2D2* gpTalk2D;
 
@@ -124,9 +127,56 @@ void TTalk2D2::load(JSUMemoryInputStream& param_1)
 	unk90 = unk2C->search('me_0');
 
 	unk258 = new TMessageLoader;
+#if defined(VERSION_GMSP01)
+	switch (TFlagManager::getInstance()->getFlag(MSF_LANGUAGE)) {
+	case MSLANG_ENGLISH:
+		unk258->loadMessageData("/scene/map/message_en.bmg");
+		break;
+	case MSLANG_GERMAN:
+		unk258->loadMessageData("/scene/map/message_ge.bmg");
+		break;
+	case MSLANG_FRENCH:
+		unk258->loadMessageData("/scene/map/message_fr.bmg");
+		break;
+	case MSLANG_SPANISH:
+		unk258->loadMessageData("/scene/map/message_sp.bmg");
+		break;
+	case MSLANG_ITALIAN:
+		unk258->loadMessageData("/scene/map/message_it.bmg");
+		break;
+	default:
+		unk258->loadMessageData("/scene/map/message.bmg");
+		break;
+	}
+#elif defined(VERSION_GMSP01_NX)
+	static const char* messageDataName[] = {
+		nullptr,
+		nullptr,
+		nullptr,
+		nullptr,
+		nullptr,
+		"/scene/map/message_jp.bmg",
+		"/scene/map/message_us.bmg",
+		"/scene/map/message_en.bmg",
+		"/scene/map/message_ge.bmg",
+		"/scene/map/message_fr.bmg",
+		"/scene/map/message_sp.bmg",
+		"/scene/map/message_it.bmg",
+	};
+	int lang = TFlagManager::getInstance()->getFlag(MSF_LANGUAGE);
+	if (lang < 5 || lang > 11) {
+		OSReport("Language overflow %d %s %d\n", lang, "Talk2D2.cpp", 194);
+		for (;;)
+			;
+	}
+	unk258->loadMessageData(messageDataName[lang]);
+#else
 	unk258->loadMessageData("/scene/map/message.bmg");
+#endif
 	unk25C = new TMessageLoader;
-	unk25C->loadMessageData("/common/2d/sys_message.bmg");
+	unk25C->loadMessageData(VERSION_SELECT(
+	    "/common/2d/sys_message.bmg", GMSP01("/cmn2d/sys_message.bmg"),
+	    GMSP01_NX("/cmn2d/sys_message.bmg")));
 
 	unk204 = unk2C->search('me_4');
 	unk208 = (J2DTextBox*)unk2C->search('slct');
@@ -231,8 +281,9 @@ void TTalk2D2::loadAfter()
 	for (f32 t = 0.01f; t <= 1.0f; t += 0.01f) {
 		f32 x, y;
 		makeLine(&x, &y, t, p0, p1, p2);
-		length += JGeometry::TVec2<f32>(x, y).distance(
-		    JGeometry::TVec2<f32>(prevX, prevY));
+		f32 dx = x - prevX;
+		f32 dy = y - prevY;
+		length += JGeometry::TUtil<f32>::sqrt(dx * dx + dy * dy);
 		prevX = x;
 		prevY = y;
 	}
@@ -248,6 +299,13 @@ void TTalk2D2::loadAfter()
 		unk9C[i] = new J2DTextBox(0, JUTRect(0, 0, 20, 20),
 		                          gpSystemFont->getResFont(), "あ", HBIND_LEFT,
 		                          VBIND_CENTER);
+#if defined(VERSION_GMSP01_NX)
+		if (TFlagManager::getInstance()->getFlag(MSF_LANGUAGE)
+		    != MSLANG_NX_JAPANESE)
+			unk9C[i]->setFontSize(20, 24);
+#elif !defined(VERSION_GMSJ01) && !defined(VERSION_GMSJ01_01)
+		unk9C[i]->setFontSize(20, 24);
+#endif
 		unk9C[i]->setBlackWhite(0xFFFFFF00, 0xFFFFFFFF);
 		unk9C[i]->hide();
 	}
@@ -258,10 +316,10 @@ void TTalk2D2::loadAfter()
 	unk244->mWrapT = 1;
 	unk244->mWrapS = 0;
 	unk90->move(393, 115);
-	unk90->mRotation = -18.0f;
-	unk330           = unk90->getBounds().x1;
-	unk332           = unk90->getBounds().y1;
-	unk334           = unk90->getRotation();
+	unk90->rotate(-18.0f);
+	unk330 = unk90->getBounds().x1;
+	unk332 = unk90->getBounds().y1;
+	unk334 = unk90->getRotate();
 	unk204->hide();
 	char* spaces = new char[0x5e];
 	for (int i = 0; i < 0x5d; i++)
@@ -272,7 +330,8 @@ void TTalk2D2::loadAfter()
 	unk260 = unk25C;
 	const char* names[10]
 	    = { "空港沈みモンテ", "モンテ1", "", "", "", "", "", "", "", "" };
-	const int ids[10] = { 0x26, 0x23 };
+	const int ids[10] = { VERSION_SELECT(0x2B, GMSJ01(0x26)),
+		                  VERSION_SELECT(0x28, GMSJ01(0x23)) };
 	for (int i = 0; i < ARRAY_COUNT(unk2E0); i++) {
 		unk2E0[i].unk0 = (TBaseNPC*)JDrama::TNameRefGen::search(names[i]);
 		unk2E0[i].unk4 = ids[i];
@@ -285,34 +344,34 @@ void TTalk2D2::setMessageID(u32 param_1, u32 param_2)
 
 	if (npc->checkActionFlag(TBaseNPC::NPC_ACTION_HAPPY)) {
 		if (npc->isMonte()) {
-			if (npc->isMonteW()) {
+			if (npc->isNormalMonteW() || npc->isSpecialMonteW()) {
 				if (npc->isChild())
-					unk264 = 0x2C;
+					unk264 = VERSION_SELECT(0x31, GMSJ01(0x2C));
 				else
-					unk264 = 0x27;
+					unk264 = VERSION_SELECT(0x2C, GMSJ01(0x27));
 			} else {
 				if (npc->isChild())
-					unk264 = 0x29;
+					unk264 = VERSION_SELECT(0x2E, GMSJ01(0x29));
 				else
-					unk264 = 0x23;
+					unk264 = VERSION_SELECT(0x28, GMSJ01(0x23));
 			}
 		} else {
 			if (npc->isMare()) {
-				if (npc->isMareW()) {
+				if (npc->isNormalMareW() || npc->isSpecialMareW()) {
 					if (npc->isChild())
-						unk264 = 0x2D;
+						unk264 = VERSION_SELECT(0x32, GMSJ01(0x2D));
 					else
-						unk264 = 0x28;
+						unk264 = VERSION_SELECT(0x2D, GMSJ01(0x28));
 				} else {
 					if (npc->isChild())
-						unk264 = 0x2A;
+						unk264 = VERSION_SELECT(0x2F, GMSJ01(0x2A));
 					else
-						unk264 = 0x24;
+						unk264 = VERSION_SELECT(0x29, GMSJ01(0x24));
 				}
 			} else if (npc->getActorType() == ACTOR_TYPE_NPC_KINOPIO) {
-				unk264 = 0x25;
+				unk264 = VERSION_SELECT(0x2A, GMSJ01(0x25));
 			} else if (npc->getActorType() == ACTOR_TYPE_NPC_MARE_MB) {
-				unk264 = 0x2B;
+				unk264 = VERSION_SELECT(0x30, GMSJ01(0x2B));
 			}
 		}
 
@@ -342,10 +401,15 @@ void TTalk2D2::setMessageID(u32 param_1, u32 param_2)
 	unk254 = nullptr;
 	unk29  = 0;
 
-	if (TFlagManager::getInstance()->getFlag(MSF_LANGUAGE) == 0x100)
+#if defined(VERSION_GMSJ01) || defined(VERSION_GMSP01_NX)
+	if (TFlagManager::getInstance()->getFlag(MSF_LANGUAGE)
+	    == VERSION_SELECT(5, GMSJ01(0x100)))
 		unk340 = 0x20;
 	else
 		unk340 = 0x40;
+#else
+	unk340 = VERSION_SELECT(0x40, GMSJ01_01(0x20));
+#endif
 
 	u32 msgID = unk264;
 	TMessageLoader* loader;
@@ -373,7 +437,8 @@ void TTalk2D2::setMessageID(u32 param_1, u32 param_2)
 	unk2DC = 0;
 
 	if (unk254 != nullptr) {
-		s32 soundID = scTalkSoundList[(u8)unk254->unk8[0]];
+		s32 soundID = scTalkSoundList[(u8)unk254->unk8[VERSION_SELECT(
+		    2, GMSJ01(0), GMSE01(0))]];
 		if (soundID != -1 && SMSGetMSound()->gateCheck(soundID)) {
 			if (soundID & 0x80000000)
 				MSBgm::startBGM(soundID);
@@ -383,7 +448,7 @@ void TTalk2D2::setMessageID(u32 param_1, u32 param_2)
 		}
 	}
 
-	if (getTalkMode() == STATE_UNK1) {
+	if (unk248 == STATE_UNK1) {
 		unk248 = STATE_UNK3;
 		unk90->setAlpha(0xFF);
 	}
@@ -412,7 +477,7 @@ void TTalk2D2::forceCloseTalk()
 void TTalk2D2::closeTalkWindow()
 {
 	if (unk270 & 1) {
-		if (unk264 == 25) {
+		if (unk264 == VERSION_SELECT(30, GMSJ01(25))) {
 			SMSGetMSound()->startSoundSystemSE(MSD_SE_SY_RACE_START, 0, nullptr,
 			                                   0);
 		} else if (unk28 != 0) {
@@ -446,30 +511,47 @@ void TTalk2D2::openTalkWindow(TBaseNPC* param_1)
 
 	unk90->setAlpha(0xFF);
 
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01)
+	int selectX, selectY, selectRotation;
+#endif
 	switch (gpCamera->mMode) {
 	case CAMERA_MODE_TALK_B:
 		unk330 = 160;
 		unk332 = 135;
 		unk334 = 20;
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01)
+		selectX        = 190;
+		selectY        = 210;
+		selectRotation = 22;
+#endif
 		break;
 	case CAMERA_MODE_TALK_A:
 	default:
 		unk330 = 388;
 		unk332 = 115;
 		unk334 = -18;
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01)
+		selectX        = 366;
+		selectY        = 191;
+		selectRotation = 342;
+#endif
 		break;
 	}
 
 	unk90->move(unk330, unk332);
-	unk90->mRotation = unk334;
-	unk250           = 1;
+	unk90->rotate(unk334);
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01)
+	unk204->move(selectX, selectY);
+	unk204->rotate(selectRotation);
+#endif
+	unk250 = 1;
 
 	SMSGetMarDirector()->getConsole()->startDisappearTelop();
 	SMSGetMarDirector()->getConsole()->startDisappearBalloon(
 	    SMSGetMarDirector()->getConsole()->unk3E0, true);
 	SMSGetMarDirector()->getConsole()->startDisappearMario();
 
-	if (unk264 == 25) {
+	if (unk264 == VERSION_SELECT(30, GMSJ01(25))) {
 		SMSGetMSound()->startSoundSystemSE(MSD_SE_SY_PROBLEM_SIGN, 0, nullptr,
 		                                   0);
 	} else if (unk28 != 0) {
@@ -481,6 +563,94 @@ void TTalk2D2::openTalkWindow(TBaseNPC* param_1)
 
 	SMSRumbleMgr->startPause();
 }
+
+#if defined(VERSION_GMSP01_NX)
+class Offsetter {
+public:
+	Offsetter()
+	{
+		mX[0]  = 0.068858f;
+		mX[1]  = 0.137716f;
+		mX[2]  = 0.162964f;
+		mX[3]  = 0.206574f;
+		mX[4]  = 0.231822f;
+		mX[5]  = 0.275432f;
+		mX[6]  = 0.30068f;
+		mX[7]  = 0.34429f;
+		mX[8]  = 0.369538f;
+		mX[9]  = 0.413148f;
+		mX[10] = 0.438396f;
+		mX[11] = 0.482006f;
+		mX[12] = 0.507254f;
+		mX[13] = 0.550864f;
+		mX[14] = 0.576112f;
+		mX[15] = 0.587971f;
+		mX[16] = 0.619722f;
+		mX[17] = 0.64497f;
+		mX[18] = 0.68858f;
+		mX[19] = 0.713828f;
+		mX[20] = 0.757438f;
+		mX[21] = 0.761646f;
+		mX[22] = 0.782686f;
+		mX[23] = 0.826296f;
+		mX[24] = 0.851544f;
+		mX[25] = 0.895154f;
+		mX[26] = 0.920402f;
+		mX[27] = 0.964012f;
+		mX[28] = 1.03287f;
+		mX[29] = 1.101728f;
+		mY[0]  = 1;
+		mY[1]  = -4;
+		mY[2]  = -6;
+		mY[3]  = -8;
+		mY[4]  = -10;
+		mY[5]  = -12;
+		mY[6]  = -13;
+		mY[7]  = -15;
+		mY[8]  = -16;
+		mY[9]  = -17;
+		mY[10] = -17;
+		mY[11] = -18;
+		mY[12] = -19;
+		mY[13] = -19;
+		mY[14] = -19;
+		mY[15] = -18;
+		mY[16] = -18;
+		mY[17] = -18;
+		mY[18] = -17;
+		mY[19] = -16;
+		mY[20] = -16;
+		mY[21] = -15;
+		mY[22] = -14;
+		mY[23] = -13;
+		mY[24] = -12;
+		mY[25] = -9;
+		mY[26] = -8;
+		mY[27] = -4;
+		mY[28] = 1;
+		mY[29] = 7;
+	}
+
+	int GetY(f32 x) const
+	{
+		int i;
+		for (i = 0; i < 30; i++) {
+			if (x < mX[i])
+				break;
+		}
+
+		if (i == 0 || i == 29)
+			return mY[i];
+
+		f32 y = (f32)(mY[i] - mY[i - 1]) / (mX[i] - mX[i - 1]) * (x - mX[i - 1])
+		        + mY[i - 1];
+		return y > 0.0f ? (int)(y + 0.5f) : (int)(y - 0.5f);
+	}
+
+	/* 0x00 */ f32 mX[30];
+	/* 0x78 */ s16 mY[30];
+};
+#endif
 
 void TTalk2D2::makeBoxLine(s8 param_1, char* param_2)
 {
@@ -510,36 +680,113 @@ void TTalk2D2::makeBoxLine(s8 param_1, char* param_2)
 			}
 		}
 
+#if defined(VERSION_GMSP01)
 		u16 code = *unk9C[idx]->getStringPtr();
+#else
+		char* str = unk9C[idx]->getStringPtr();
+		u16 code  = str[0];
+#if defined(VERSION_GMSP01_NX)
+		if (TFlagManager::getInstance()->getFlag(MSF_LANGUAGE)
+		        == MSLANG_NX_JAPANESE
+		    && code >= 0x80)
+#else
+		if (code >= 0x80)
+#endif
+			code |= str[0];
+#endif
 		if (code == 0)
 			break;
 
 		JUTFont::TWidth width;
-		gpSystemFont->getWidthEntry(code, &width);
-		if (TFlagManager::getInstance()->getFlag(MSF_LANGUAGE) == 0x100)
+		gpSystemFont->getWidthEntry(
+		    VERSION_SELECT((u8)code, GMSJ01(code), GMSE01(code)), &width);
+
+#if defined(VERSION_GMSP01)
+		int yOffset   = 0;
+		bool noResize = false;
+		switch ((u8)*unk9C[idx]->getStringPtr()) {
+		case '#':
+		case '%':
+		case '@':
+			yOffset = 2;
+			break;
+		case 0xA5:
+			w += 0.03f;
+		case '+':
+			yOffset = 2;
+			break;
+		case '<':
+		case '>':
+			yOffset = 1;
+			break;
+		case '$':
+			w += 0.04f;
+			noResize = true;
+			yOffset  = 1;
+			break;
+		case '*':
+			w += 0.01f;
+			yOffset = 0;
+			break;
+		}
+#endif
+
+#if defined(VERSION_GMSJ01) || defined(VERSION_GMSP01_NX)
+		if (TFlagManager::getInstance()->getFlag(MSF_LANGUAGE)
+		    == VERSION_SELECT(5, GMSJ01(0x100)))
 			w += unk94 * (f32)width.field_0x1;
 		else
 			w += unk94 * (0.7f * (f32)width.field_0x1 + 4.0f);
+#elif defined(VERSION_GMSJ01_01)
+		w += unk94 * (f32)width.field_0x1;
+#else
+		w += unk94 * (0.7f * (f32)width.field_0x1 + 4.0f);
+#endif
 
 		f32 curX, curY;
 		makeLine(&curX, &curY, w, p0, p1, p2);
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01)
+		if (charIdx < 29
+		    && *unk9C[charIdx + param_1 * 30 + 1]->getStringPtr() == 'm')
+			w += 0.01f;
+#endif
 		f32 ang = fabsf(atan2f(curY - posY, curX - posX));
 		if (curX > 0.0f)
 			ang *= -1.0f;
 
 		JGeometry::TVec2<f32> sum(posX + curX, posY + curY);
 		JGeometry::TVec2<f32> pos = sum * -0.5f;
-		JGeometry::TVec2<f32> rotated(posX, posY);
-		rotated.rotate(ang);
+		f32 cosA                  = cosf(ang);
+		f32 sinA                  = sinf(ang);
+		JGeometry::TVec2<f32> rotated(posX * cosA + posY * -sinA,
+		                              posX * sinA + posY * cosA);
 		pos += rotated;
 		pos += sum * 0.5f;
 		int ix = (int)(pos.x + (pos.x > 0.0f ? 0.5f : -0.5f));
 		int iy = (int)(pos.y + (pos.y > 0.0f ? 0.5f : -0.5f));
-		unk9C[idx]->move((s16)ix, -0x25 - (s16)iy);
+#if defined(VERSION_GMSP01)
+		if (!noResize)
+			unk9C[idx]->setFontSize(20, 22);
+		unk9C[idx]->move((s16)ix, -0x26 - (s16)iy + yOffset);
+#elif defined(VERSION_GMSP01_NX)
+		if (TFlagManager::getInstance()->getFlag(MSF_LANGUAGE)
+		    == MSLANG_NX_JAPANESE) {
+			unk9C[idx]->move((s16)ix, -0x25 - (s16)iy);
+		} else {
+			static Offsetter offset;
+			unk9C[idx]->move((s16)ix, (s16)(Helpers::IsSpecialChar(
+			                                    *unk9C[idx]->getStringPtr())
+			                                    ? offset.GetY(w)
+			                                    : -0x26 - iy));
+		}
+#else
+		unk9C[idx]->move((s16)ix,
+		                 VERSION_SELECT(-0x25, GMSE01(-0x28)) - (s16)iy);
+#endif
 		unk9C[idx]->setBasePosition(J2DBasePosition_4);
-		unk9C[idx]->mRotation = 180.0f * ang / 3.1415927f;
-		unk30[param_1]->mPaneTree.appendChild(&unk9C[idx]->mPaneTree);
-		if (w > 1.1f) {
+		unk9C[idx]->rotate(180.0f * ang / 3.1415927f);
+		unk30[param_1]->appendChild(unk9C[idx]);
+		if (w > VERSION_SELECT(1.05f, GMSJ01(1.1f))) {
 			if (unk228[param_1] > charIdx)
 				unk228[param_1] = charIdx;
 			break;
@@ -578,10 +825,15 @@ bool TTalk2D2::openNormalWindow()
 
 	if (unk2DE > 2 && unk24C->checkMeaning(TMarioGamePad::MEANING_SELECT_A)) {
 		unk26C = 1;
-		if (TFlagManager::getInstance()->getFlag(MSF_LANGUAGE) == 0x100)
+#if defined(VERSION_GMSJ01) || defined(VERSION_GMSP01_NX)
+		if (TFlagManager::getInstance()->getFlag(MSF_LANGUAGE)
+		    == VERSION_SELECT(5, GMSJ01(0x100)))
 			unk340 = 0x5A;
 		else
 			unk340 = 0x80;
+#else
+		unk340 = VERSION_SELECT(0x80, GMSJ01_01(0x5A));
+#endif
 	}
 
 	bool finished = true;
@@ -691,7 +943,23 @@ void TTalk2D2::checkBoardControler()
 
 			unk14->setPanePosition(60, JUTPoint(0, 0), JUTPoint(0, 0),
 			                       JUTPoint(0, -600));
-			closeTalkWindow();
+			if (unk270 & 1) {
+				if (unk264 == VERSION_SELECT(30, GMSJ01(25))) {
+					SMSGetMSound()->startSoundSystemSE(MSD_SE_SY_RACE_START, 0,
+					                                   nullptr, 0);
+				} else if (unk28 != 0) {
+					SMSGetMSound()->startSoundSystemSE(MSD_SE_SY_2D_OUT, 0,
+					                                   nullptr, 0);
+					SMSGetMSound()->talkModeOut();
+				} else {
+					SMSGetMSound()->talkModeOut();
+				}
+				gpCamera->makeMtxForPrevTalk();
+				SMSGetMarDirector()->getConsole()->startAppearTelop(false);
+				SMSRumbleMgr->finishPause();
+				unk252 = 0;
+			}
+			unk248 = STATE_UNK6;
 		}
 	} else if (unk24C->checkFrameMeaning(TMarioGamePad::MEANING_SELECT_A
 	                                     | TMarioGamePad::MEANING_SELECT_B)) {
@@ -770,17 +1038,27 @@ void TTalk2D2::moveTalkWindow()
 
 		u8 color = fadeAlpha;
 		if (unk214 == 1) {
+			// clang-format off
 			snprintf(unk208->getStringPtr(), 0x5E,
-			         "\x1B"
-			         "CC[ffffff60]\x1BGC[ffffff60]%s\x1B"
-			         "CC[ffffff%02x]\x1BGC[ffffff%02x]\n%s",
-			         unk218[0], color, color, unk218[1]);
+				J2DPRINT_CHAR_COLOR("ffffff60")
+				J2DPRINT_GRADIENT_COLOR("ffffff60")
+				"%s"
+				J2DPRINT_CHAR_COLOR("ffffff%02x")
+			  J2DPRINT_GRADIENT_COLOR("ffffff%02x")
+				"\n%s",
+				unk218[0], color, color, unk218[1]);
+			// clang-format on
 		} else if (unk214 == 0) {
+			// clang-format off
 			snprintf(unk208->getStringPtr(), 0x5E,
-			         "\x1B"
-			         "CC[ffffff%02x]\x1BGC[ffffff%02x]%s\n\x1B"
-			         "CC[ffffff60]\x1BGC[ffffff60]%s",
-			         color, color, unk218[0], unk218[1]);
+			  J2DPRINT_CHAR_COLOR("ffffff%02x")
+				J2DPRINT_GRADIENT_COLOR("ffffff%02x")
+				"%s\n"
+				J2DPRINT_CHAR_COLOR("ffffff60")
+			  J2DPRINT_GRADIENT_COLOR("ffffff60")
+				"%s",
+			  color, color, unk218[0], unk218[1]);
+			// clang-format on
 		}
 	} else {
 		pane->show();
@@ -898,10 +1176,15 @@ bool TTalk2D2::eraseNormalWindow()
 		setupTextBox(unk260->getMessageData(),
 		             unk260->getMessageEntry(unk264 & 0xFFFF));
 		unk26C = 0;
-		if (TFlagManager::getInstance()->getFlag(MSF_LANGUAGE) == 0x100)
+#if defined(VERSION_GMSJ01) || defined(VERSION_GMSP01_NX)
+		if (TFlagManager::getInstance()->getFlag(MSF_LANGUAGE)
+		    == VERSION_SELECT(5, GMSJ01(0x100)))
 			unk340 = 0x20;
 		else
 			unk340 = 0x40;
+#else
+		unk340 = VERSION_SELECT(0x40, GMSJ01_01(0x20));
+#endif
 		unk27C = -1;
 		unk2DE = 0;
 		unk2DC = 0;
@@ -942,11 +1225,11 @@ bool TTalk2D2::appearBoardBoxWindow()
 	return result;
 }
 
-void TTalk2D2::perform(u32 param_1, JDrama::TGraphics* param_2)
+void TTalk2D2::perform(u32 cue, JDrama::TGraphics* param_2)
 {
-	if (param_1 & CUE_MOVE) {
-		switch (SMSGetMarDirector()->unk124) {
-		case 2:
+	if (cue & CUE_MOVE) {
+		switch (SMSGetMarDirector()->getGameMode()) {
+		case TMarDirector::GAME_MODE_TALK:
 			switch (unk248) {
 			case STATE_UNK2:
 				if (gpCamera->isThing()) {
@@ -967,14 +1250,20 @@ void TTalk2D2::perform(u32 param_1, JDrama::TGraphics* param_2)
 					checkControler();
 				}
 				break;
-			case STATE_UNK6:
-				if (unk28 != 0 ? closeBoardWindow() : closeNormalWindow()) {
+			case STATE_UNK6: {
+				bool closed;
+				if (unk28 != 0)
+					closed = closeBoardWindow();
+				else
+					closed = closeNormalWindow();
+				if (closed) {
 					if (unk270 & 1)
 						unk248 = STATE_UNK0;
 					else
 						unk248 = STATE_UNK1;
 				}
 				break;
+			}
 			case STATE_UNK7:
 				if (unk28 != 0 ? eraseBoardWindow() : eraseNormalWindow()) {
 					if (unk28 != 0)
@@ -992,10 +1281,12 @@ void TTalk2D2::perform(u32 param_1, JDrama::TGraphics* param_2)
 		}
 	}
 
-	if (param_1 & CUE_CALC_ANIM) {
-		switch (SMSGetMarDirector()->unk124) {
-		case 2:
+	if (cue & CUE_CALC_ANIM) {
+		switch (SMSGetMarDirector()->getGameMode()) {
+		case TMarDirector::GAME_MODE_TALK:
 			switch (unk248) {
+			case STATE_UNK2:
+				break;
 			case STATE_UNK3:
 				unk251--;
 				if ((s8)unk251 < 0) {
@@ -1003,20 +1294,50 @@ void TTalk2D2::perform(u32 param_1, JDrama::TGraphics* param_2)
 					unk248 = STATE_UNK4;
 				}
 				break;
-			case STATE_UNK7:
-				if (eraseNormalWindow()) {
+			case STATE_UNK7: {
+				s16 alpha = unk90->getAlpha();
+				alpha -= 0x10;
+				if (alpha < 0) {
+					alpha = 0xFF;
+					for (int i = 0; i < ARRAY_COUNT(unk234); ++i) {
+						unk234[i] = i + 1.0f;
+						unk3C[i]->hide();
+						unk224[i] = 0;
+						unk6C[i]->hide();
+					}
+					for (int i = 0; i < ARRAY_COUNT(unk9C); ++i) {
+						if (unk9C[i] != nullptr)
+							unk9C[i]->hide();
+					}
+					setupTextBox(unk260->getMessageData(),
+					             unk260->getMessageEntry(unk264 & 0xFFFF));
+					unk26C = 0;
+#if defined(VERSION_GMSJ01) || defined(VERSION_GMSP01_NX)
+					if (TFlagManager::getInstance()->getFlag(MSF_LANGUAGE)
+					    == VERSION_SELECT(5, GMSJ01(0x100)))
+						unk340 = 0x20;
+					else
+						unk340 = 0x40;
+#else
+					unk340 = VERSION_SELECT(0x40, GMSJ01_01(0x20));
+#endif
+					unk27C = -1;
+					unk2DE = 0;
+					unk2DC = 0;
 					unk27C = -1;
 					unk248 = STATE_UNK4;
 				}
+				unk90->setAlpha(alpha);
 				break;
+			}
 			}
 			break;
 		}
 	}
 
-	if (param_1 & CUE_DRAW) {
-		switch (SMSGetMarDirector()->unk124) {
-		case 2: {
+	if (cue & CUE_DRAW) {
+		switch (SMSGetMarDirector()->getGameMode()) {
+		case TMarDirector::GAME_MODE_TALK: {
 			ReInitializeGX();
 			SMS_DrawInit();
 
@@ -1050,7 +1371,7 @@ void TTalk2D2::perform(u32 param_1, JDrama::TGraphics* param_2)
 					unk10->draw(0, 0, &ortho);
 				} else {
 					unk90->move(unk330, unk332);
-					unk90->mRotation = unk334;
+					unk90->rotate(unk334);
 					unk2C->draw(0, 0, &ortho);
 				}
 				break;
@@ -1119,6 +1440,11 @@ void TTalk2D2::setupBoardTextBox(const void* param_1, JMSMesgEntry* param_2)
 			out << u8(0);
 		}
 	}
+#if !defined(VERSION_GMSJ01)
+	else {
+		out << u8(0);
+	}
+#endif
 
 	unk278 += stream.getPosition();
 }
@@ -1142,6 +1468,9 @@ void TTalk2D2::setupTextBox(const void* param_1, JMSMesgEntry* param_2)
 
 	while (lineIdx < 3) {
 		char* dest = unk9C[charIdx + lineIdx * 30]->getStringPtr();
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01)
+		dest[0] = 0;
+#endif
 
 		s8 code;
 		stream >> code;
@@ -1175,18 +1504,92 @@ void TTalk2D2::setupTextBox(const void* param_1, JMSMesgEntry* param_2)
 
 			stream.skip(-1);
 			dest[0] = stream.readU8();
+#if defined(VERSION_GMSJ01) || defined(VERSION_GMSE01)
 			if ((u8)dest[0] >= 0x80) {
 				dest[1] = stream.readU8();
 			} else {
 				dest[1] = 0;
 			}
 
-			unk9C[charIdx + lineIdx * 30]->mCharColor = unk27C;
-			unk9C[charIdx + lineIdx * 30]->mGradColor = unk27C;
-			unk9C[charIdx + lineIdx * 30]->setBlackWhite(unk27C & 0xFFFFFF00,
-			                                             unk27C);
+			int idx = charIdx + lineIdx * 30;
+			unk9C[idx]->setFontColor(unk27C, unk27C);
+			unk9C[idx]->setBlackWhite(unk27C & 0xFFFFFF00, unk27C);
 			unk281[unk2DE] = unk280;
-			unk2DE         = charIdx + lineIdx * 30;
+			unk2DE         = idx;
+#else
+			JUtility::TColor color;
+			int idx = charIdx + lineIdx * 30;
+#if defined(VERSION_GMSP01)
+			bool special = true;
+			switch ((u8)dest[0]) {
+			case '@':
+				color.set(100, 255, 100, 255);
+				break;
+			case '#':
+				color.set(255, 160, 100, 255);
+				break;
+			case '%':
+				color.set(255, 255, 0, 255);
+				break;
+			case '+':
+			case '<':
+			case '>':
+			case 0xA5:
+				color.set(220, 220, 220, 255);
+				break;
+			case '$':
+				unk9C[idx]->setFontSize(30, 30);
+				color.set(200, 180, 255, 255);
+				break;
+			case '*':
+				color.set(220, 220, 220, 255);
+				break;
+			default:
+				special = false;
+				break;
+			}
+			dest[1] = 0;
+
+			if (special) {
+				unk9C[idx]->setFontColor(color, color);
+				unk9C[idx]->setBlackWhite(color & 0xFFFFFF00, color);
+			} else {
+				unk9C[idx]->setFontColor(unk27C, unk27C);
+				unk9C[idx]->setBlackWhite(unk27C & 0xFFFFFF00, unk27C);
+				unk9C[idx]->setFontSize(20, 24);
+			}
+#else
+#if defined(VERSION_GMSP01_NX)
+			if (TFlagManager::getInstance()->getFlag(MSF_LANGUAGE)
+			    == MSLANG_NX_JAPANESE) {
+#endif
+				if ((u8)dest[0] >= 0x80) {
+					dest[1] = stream.readU8();
+				} else {
+					dest[1] = 0;
+				}
+#if defined(VERSION_GMSP01_NX)
+			} else {
+				bool special = Helpers::IsSpecialChar(dest[0]);
+				bool round   = Helpers::IsSpecialRound(dest[0]);
+				dest[1]      = 0;
+
+				unk9C[idx]->setFontColor(unk27C, unk27C);
+				unk9C[idx]->setBlackWhite(unk27C & 0xFFFFFF00, unk27C);
+				if (special) {
+					if (round)
+						unk9C[idx]->setFontSize(21, 22);
+					else
+						unk9C[idx]->setFontSize(20, 24);
+				} else {
+					unk9C[idx]->setFontSize(20, 24);
+				}
+			}
+#endif
+#endif
+			unk281[unk2DE] = unk280;
+			unk2DE         = idx;
+#endif
 			charIdx++;
 			break;
 		}
@@ -1201,20 +1604,27 @@ void TTalk2D2::setupTextBox(const void* param_1, JMSMesgEntry* param_2)
 	}
 
 	if (unk214 != -1) {
-		if (unk214 == 0)
+		if (unk214 == 0) {
+			// clang-format off
 			snprintf(unk208->getStringPtr(), 0x5E,
-			         "%s\n\x1B"
-			         "CC[7f7f7f]\x1B"
-			         "GC[7f7f7f]%s",
-			         unk218[0], unk218[1]);
-		else
+			  "%s\n"
+				J2DPRINT_CHAR_COLOR("7f7f7f")
+			  J2DPRINT_GRADIENT_COLOR("7f7f7f")
+				"%s",
+			  unk218[0], unk218[1]);
+			// clang-format on
+		} else {
+			// clang-format off
 			snprintf(unk208->getStringPtr(), 0x5E,
-			         "\x1B"
-			         "CC[7f7f7f]\x1B"
-			         "GC[7f7f7f]%s\x1B"
-			         "CC[ffffff]\x1B"
-			         "GC[ffffff]\n%s",
-			         unk218[0], unk218[1]);
+			  J2DPRINT_CHAR_COLOR("7f7f7f")
+				J2DPRINT_GRADIENT_COLOR("7f7f7f")
+				"%s"
+				J2DPRINT_CHAR_COLOR("ffffff")
+			  J2DPRINT_GRADIENT_COLOR("ffffff")
+				"\n%s",
+			  unk218[0], unk218[1]);
+			// clang-format on
+		}
 	}
 
 	unk278 += stream.getPosition();
@@ -1223,9 +1633,9 @@ void TTalk2D2::setupTextBox(const void* param_1, JMSMesgEntry* param_2)
 void TTalk2D2::setTagParam(JSUMemoryInputStream& param_1, J2DTextBox& param_2,
                            int* param_3, int* param_4)
 {
-	int size  = param_1.readU8();
-	int group = param_1.readU8();
-	u16 tag   = param_1.readU16();
+	u8 size  = param_1.readU8();
+	u8 group = param_1.readU8();
+	u16 tag  = param_1.readU16();
 
 	switch (group) {
 	case 0:
@@ -1250,8 +1660,8 @@ void TTalk2D2::setTagParam(JSUMemoryInputStream& param_1, J2DTextBox& param_2,
 				unk20C[1]->hide();
 				unk20C[0]->show();
 			}
-			snprintf(unk218[0], size - 4 < 17 ? size - 4 : 17, "%s",
-			         (const char*)param_1.getCurrent());
+			int len = size - 4 < 17 ? size - 4 : 17;
+			snprintf(unk218[0], len, "%s", (const char*)param_1.getCurrent());
 			param_1.skip(size - 5);
 			return;
 		}
@@ -1262,8 +1672,8 @@ void TTalk2D2::setTagParam(JSUMemoryInputStream& param_1, J2DTextBox& param_2,
 				unk20C[0]->hide();
 				unk20C[1]->show();
 			}
-			snprintf(unk218[1], size - 4 < 17 ? size - 4 : 17, "%s",
-			         (const char*)param_1.getCurrent());
+			int len = size - 4 < 17 ? size - 4 : 17;
+			snprintf(unk218[1], len, "%s", (const char*)param_1.getCurrent());
 			param_1.skip(size - 5);
 			return;
 		}
@@ -1316,8 +1726,8 @@ void TTalk2D2::setTagParam(JSUMemoryInputStream& param_1, J2DTextBox& param_2,
 			         "%d", hundredth % 10);
 
 			for (int i = 0; i < 8; i++) {
-				unk9C[*param_3 + *param_4 * 30 + i]->mCharColor = unk27C;
-				unk9C[*param_3 + *param_4 * 30 + i]->mGradColor = unk27C;
+				unk9C[*param_3 + *param_4 * 30 + i]->setFontColor(unk27C,
+				                                                  unk27C);
 				unk9C[*param_3 + *param_4 * 30 + i]->setBlackWhite(
 				    unk27C & 0xFFFFFF00, unk27C);
 				unk281[i + *param_3 + *param_4 * 30] = unk280;
@@ -1440,11 +1850,21 @@ void TTalk2D2::openWindow(s8 param_1, f32 param_2)
 {
 	Mtx mtxA;
 	Mtx mtxB;
-	f32 x = unk90->getGlobalBounds().x1 + 5;
-	f32 y = unk90->getGlobalBounds().y1 + 5;
+	f32 x = unk90->getGlbBounds().x1 + 5;
+	f32 y = unk90->getGlbBounds().y1 + 5;
 
 	MTXTrans(mtxA, -x, -y, 0.0f);
-	MTXRotRad(mtxB, 'Z', DEG_TO_RAD(-unk90->getRotation()));
+#if defined(VERSION_GMSP01_NX)
+	if (TFlagManager::getInstance()->getFlag(MSF_LANGUAGE)
+	    == MSLANG_NX_JAPANESE)
+		MTXRotRad(mtxB, 'Z', DEG_TO_RAD(-unk90->getRotate()));
+	else
+		MTXRotRad(mtxB, 'Z', DEG_TO_RAD(-unk90->getRotate() - 1.0f));
+#elif defined(VERSION_GMSJ01) || defined(VERSION_GMSJ01_01)
+	MTXRotRad(mtxB, 'Z', DEG_TO_RAD(-unk90->getRotate()));
+#else
+	MTXRotRad(mtxB, 'Z', DEG_TO_RAD(-unk90->getRotate() - 1.0f));
+#endif
 	MTXConcat(mtxB, mtxA, mtxA);
 	MTXTrans(mtxB, x, y, 0.0f);
 	MTXConcat(mtxB, mtxA, mtxA);
@@ -1498,7 +1918,7 @@ void TTalk2D2::openWindow(s8 param_1, f32 param_2)
 	                  GX_FALSE, GX_PTIDENTITY);
 	GXSetTevOrder(GX_TEVSTAGE1, GX_TEXCOORD1, GX_TEXMAP1, GX_COLOR_NULL);
 
-	JUTRect rect(unk3C[param_1]->getGlobalBounds());
+	JUTRect rect(unk3C[param_1]->getGlbBounds());
 
 	GXBegin(GX_QUADS, GX_VTXFMT0, 4);
 	GXPosition2f32(rect.x1, rect.y1);

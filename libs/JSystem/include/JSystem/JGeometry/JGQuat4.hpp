@@ -37,16 +37,16 @@ public:
 
 	void conjugate() { this->xyz().negate(); }
 
-	// The products are passed straight to set(): with temporaries the
-	// scheduler orders the fmadds chains differently (BeeHive, Kazekun).
 	void mul(const TQuat4& other)
 	{
 		// clang-format off
-		this->set(this->x * other.w + this->w * other.x + this->y * other.z - this->z * other.y,
-		          this->y * other.w + this->w * other.y + this->z * other.x - this->x * other.z,
-		          this->z * other.w + this->w * other.z + this->x * other.y - this->y * other.x,
-		          this->w * other.w - this->x * other.x - this->y * other.y - this->z * other.z);
+		T _x = this->x * other.w + this->w * other.x + this->y * other.z - this->z * other.y;
+		T _y = this->y * other.w + this->w * other.y + this->z * other.x - this->x * other.z;
+		T _z = this->z * other.w + this->w * other.z + this->x * other.y - this->y * other.x;
+		T _w = this->w * other.w - this->x * other.x - this->y * other.y - this->z * other.z;
 		// clang-format on
+
+		this->set(_x, _y, _z, _w);
 	}
 
 	void mul(const TQuat4& a, const TQuat4& b)
@@ -148,17 +148,16 @@ public:
 	// Assumes unit quaternion. These were renamed to "transform" in SMG.
 	void rotate(const TVec3<T>& v, TVec3<T>& rDest) const
 	{
-		// clang-format off
 		TQuat4 q;
-		q.x =  this->y * v.z - this->z * v.y + this->w * v.x;
+		q.x = this->y * v.z - this->z * v.y + this->w * v.x;
 		q.y = -this->x * v.z + this->z * v.x + this->w * v.y;
-		q.z =  this->x * v.y - this->y * v.x + this->w * v.z;
+		q.z = this->x * v.y - this->y * v.x + this->w * v.z;
 		q.w = -this->x * v.x - this->y * v.y - this->z * v.z;
 
-		rDest.set( q.x *  this->w + q.y * -this->z - q.z * -this->y + q.w * -this->x,
-		          -q.x * -this->z + q.y *  this->w + q.z * -this->x + q.w * -this->y,
-		           q.x * -this->y - q.y * -this->x + q.z *  this->w + q.w * -this->z);
-		// clang-format on
+		rDest.set(
+		    q.x * this->w + q.y * -this->z - q.z * -this->y + q.w * -this->x,
+		    -q.x * -this->z + q.y * this->w + q.z * -this->x + q.w * -this->y,
+		    q.x * -this->y - q.y * -this->x + q.z * this->w + q.w * -this->z);
 	}
 
 	void rotate(TVec3<T>& rDest) const { rotate(rDest, rDest); }
@@ -174,6 +173,7 @@ public:
 
 	void slerp(const TQuat4<T>& param_1, T param_2)
 	{
+		f32 fVar93 = param_2;
 		TQuat4<f32> q1;
 		q1.normalize(*this);
 		TQuat4<f32> q2;
@@ -189,24 +189,24 @@ public:
 			bVar9 = false;
 		}
 
+		f32 fVar11;
 		f32 fVar92;
 		if (1.0f - fVar13 <= TUtil<f32>::epsilon()) {
 			fVar92 = 1.0f - param_2;
 		} else {
-			f32 fVar11 = acosf(fVar13);
+			fVar11 = acosf(fVar13);
 			f32 fVar12 = sinf(fVar11);
 
-			fVar92  = sinf((1.0f - param_2) * fVar11) / fVar12;
-			param_2 = sinf(param_2 * fVar11) / fVar12;
+			fVar92 = sinf((1.0f - param_2) * fVar11) / fVar12;
+			fVar93 = sinf(param_2 * fVar11) / fVar12;
 		}
 
 		if (bVar9)
-			param_2 = -param_2;
+			fVar93 = -fVar93;
 
-		this->x = fVar92 * q1.x + param_2 * q2.x;
-		this->y = fVar92 * q1.y + param_2 * q2.y;
-		this->z = fVar92 * q1.z + param_2 * q2.z;
-		this->w = fVar92 * q1.w + param_2 * q2.w;
+		this->set(
+		    fVar92 * q1.x + fVar93 * q2.x, fVar92 * q1.y + fVar93 * q2.y,
+		    fVar92 * q1.z + fVar93 * q2.z, fVar92 * q1.w + fVar93 * q2.w);
 	}
 };
 

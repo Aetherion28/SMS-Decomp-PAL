@@ -1,3 +1,4 @@
+#include "JSystem/JUtility/JUTRect.hpp"
 #include <System/GCLogoDir.hpp>
 #include <dolphin/vi.h>
 #include <JSystem/JKernel/JKRFileLoader.hpp>
@@ -9,6 +10,10 @@
 #include <JSystem/JDrama/JDRScreen.hpp>
 #include <System/Application.hpp>
 #include <System/MarioGamePad.hpp>
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#include <System/CardManager.hpp>
+#include <System/FlagManager.hpp>
+#endif
 #include <System/Resolution.hpp>
 #include <MSound/MSound.hpp>
 #include <MSound/MSoundSE.hpp>
@@ -18,7 +23,6 @@
 // rogue includes needed for matching sinit & bss
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
-#include <System/DummyStrings.hpp>
 
 void TNintendo2D::perform(u32 cue, JDrama::TGraphics*)
 {
@@ -72,6 +76,27 @@ TGCLogoDir::TGCLogoDir()
 	unk3C          = 0;
 	mBHoldTimer    = 0;
 }
+
+#ifdef VERSION_GMSP01_NX
+inline JUTRect toWideScreen(s32 in_x1, s32 in_y1, s32 in_x2, s32 in_y2)
+{
+	f32 x1 = in_x1;
+	f32 y1 = in_y1;
+	f32 x2 = in_x2;
+	f32 y2 = in_y2;
+
+	f32 centerX = (x1 + x2) * 0.5f;
+	f32 centerY = (y1 + y2) * 0.5f;
+
+	f32 posX1 = 0.8035714f * ((x1 - centerX) / 1.13f);
+	f32 posY1 = 0.8035714f * (y1 - centerY);
+	f32 posX2 = 0.8035714f * ((x2 - centerX) / 1.13f);
+	f32 posY2 = 0.8035714f * (y2 - centerY);
+
+	return JUTRect(0.5f + posX1 + centerX, 0.5f + posY1 + centerY,
+	               0.5f + posX2 + centerX, 0.5f + posY2 + centerY);
+}
+#endif
 
 void TGCLogoDir::setup(JDrama::TDisplay* param_1, TMarioGamePad* param_2)
 {
@@ -158,6 +183,7 @@ int TGCLogoDir::direct()
 	switch (mOverallState) {
 	case OVERALL_STATE_NLOGO:
 		if (direct_nlogo()) {
+#ifndef VERSION_GMSP01_NX
 			if (mGamePad->isSomethingPushed()) {
 				desiredAppState = TApplication::APP_STATE_DONE;
 				break;
@@ -168,6 +194,7 @@ int TGCLogoDir::direct()
 			mLogoView->mRect    = JUTRect(254, 201, 404, 271);
 			mLogoView->mColor   = JUtility::TColor(255, 255, 255, 255);
 			SMSGetApplication()->getFader()->startWipe(14, 0.4f, 0.0f);
+#endif
 			nextState = OVERALL_STATE_DOLBY;
 		}
 		break;
@@ -188,6 +215,114 @@ int TGCLogoDir::direct()
 
 bool TGCLogoDir::direct_nlogo()
 {
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+	bool ended    = false;
+	int nextState = mState;
+	switch (mState) {
+	case STATE_WAIT_FADE_IN: {
+		bool force60Hz = false;
+		if (VIGetTvFormat() == VI_PAL) {
+			if (OSGetEuRgb60Mode() == 1) {
+				force60Hz = 1;
+			} else {
+				if (((float)mBHoldTimer / SMSGetVSyncTimesPerSec()) > 1.0f) {
+					force60Hz = 1;
+				} else if (mGamePad->mButton.mButton & JUTGamePad::B) {
+					mBHoldTimer += 1;
+				} else {
+					mBHoldTimer = 0;
+				}
+			}
+		}
+
+		if (SMSGetApplication()->getFader()->isFullyFadedIn()) {
+			nextState = force60Hz ? STATE_ASK_PROGRESSIVE : STATE_SHOW_LOGO;
+
+			SMSGetMSound()->startSoundSystemSE(MSD_SE_MV_CHAO, 0, nullptr, 0);
+			mLogoShowTimer = 0;
+		}
+		break;
+	}
+
+	case STATE_SHOW_LOGO: {
+		bool force60Hz = false;
+		if (VIGetTvFormat() == VI_PAL) {
+			if (OSGetEuRgb60Mode() == 1) {
+				force60Hz = 1;
+			} else {
+				if (mBHoldTimer / SMSGetVSyncTimesPerSec() > 1.0f) {
+					force60Hz = 1;
+				} else if (mGamePad->mButton.mButton & JUTGamePad::B) {
+					mBHoldTimer += 1;
+				} else {
+					mBHoldTimer = 0;
+				}
+			}
+		}
+
+		if (force60Hz) {
+			mLogoShowTimer = 0;
+			nextState      = STATE_ASK_PROGRESSIVE;
+		} else {
+			mLogoShowTimer += 1;
+			if (mLogoShowTimer / mRefreshRate >= 0.8f) {
+				nextState = STATE_FADE_OUT;
+				OSSetEuRgb60Mode(0);
+			}
+		}
+		break;
+	}
+
+	case STATE_ASK_PROGRESSIVE:
+		if (mProgSelect->mHideTextBoxes) {
+			mLogoShowTimer = 0;
+			nextState      = STATE_SHOW_PROG_RESULT;
+		}
+		break;
+
+	case STATE_SHOW_PROG_RESULT:
+		mLogoShowTimer += 1;
+		if (mLogoShowTimer / mRefreshRate >= 2.0f)
+			nextState = STATE_FADE_OUT;
+		break;
+
+	case STATE_FADE_OUT:
+		if (!SMSGetApplication()->getFader()->isFullyFadedOut())
+			ended = true;
+		break;
+	}
+
+	if (mState != STATE_FADE_OUT && mGamePad->isSomethingPushed())
+		nextState = STATE_FADE_OUT;
+
+	if (nextState != mState) {
+		if (mState == STATE_WAIT_FADE_IN) {
+			s32 cardStatus;
+			while ((cardStatus = gpCardManager->getLastStatus()) == -1) {
+				OSYieldThread();
+			}
+			if (cardStatus == 0) {
+				JSUMemoryInputStream stream;
+				gpCardManager->getOptionReadStream(&stream);
+				TFlagManager::getInstance()->loadOption(stream);
+			}
+		}
+
+		switch (nextState) {
+		case STATE_ASK_PROGRESSIVE:
+			mProgSelect->setLang(
+			    TFlagManager::getInstance()->getFlag(MSF_LANGUAGE));
+			mProgSelect->unkC = 0;
+			break;
+		case STATE_FADE_OUT:
+			SMSGetApplication()->getFader()->startWipe(15, 0.4f, 0.0f);
+			break;
+		}
+		mState = nextState;
+	}
+
+	return ended;
+#else
 	bool ended    = false;
 	int nextState = mState;
 	switch (mState) {
@@ -248,6 +383,7 @@ bool TGCLogoDir::direct_nlogo()
 	}
 
 	return ended;
+#endif
 }
 
 bool TGCLogoDir::direct_dolby()

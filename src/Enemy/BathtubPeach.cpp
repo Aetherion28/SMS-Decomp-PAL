@@ -18,7 +18,7 @@
 // rogue includes needed for matching sinit & bss
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
-#include <M3DUtil/InfectiousStrings.hpp>
+#include <M3DUtil/MActorAnm.hpp>
 
 // Peach's two nerves keep their theNerve() inline in the class (the map has
 // weak nerve$localstatic0$theNerve__... objects for them), and their

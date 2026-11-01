@@ -5,8 +5,7 @@
 #include <Player/MarioAccess.hpp>
 #include <string.h>
 
-static const char* dummyMactorStringValue1 = "\0\0\0\0\0\0\0\0\0\0\0";
-static const char* SMS_NO_MEMORY_MESSAGE   = "メモリが足りません\n";
+#include <System/Application.hpp>
 
 TCubeManagerBase* gpCubeCamera;
 TCubeManagerBase* gpCubeMirror;
@@ -105,7 +104,7 @@ bool TCubeManagerArea::isInAreaCube(const Vec& pos) const
 
 	if (unk1C == found) {
 		result = true;
-	} else if (SMSGetMarDirector()->getCurrentMap() == 7 && unk1C != -1
+	} else if (SMSGetMarDirector()->getCurrentStage() == 7 && unk1C != -1
 	           && found != -1) {
 		// Presumably hotel delphino floor transitions?
 		const char* curName = (*unk14)[unk1C].getName();

@@ -28,7 +28,7 @@
 // rogue includes needed for matching sinit & bss
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
-#include <M3DUtil/InfectiousStrings.hpp>
+#include <M3DUtil/MActorAnm.hpp>
 
 namespace {
 
@@ -336,7 +336,7 @@ void TKukku::doFlyToCurPathNode()
 // TODO: 99.0%, one register differs in the path node point.
 void TKukku::updateRotation()
 {
-	JGeometry::TVec3<f32> diff = unkF4.getPoint();
+	JGeometry::TVec3<f32> diff = mCurrentTarget.getPoint();
 	diff -= mPosition;
 
 	f32 dist = diff.length();

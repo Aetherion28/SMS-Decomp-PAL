@@ -24,7 +24,6 @@
 #include <GC2D/GCConsole2.hpp>
 #include <MSound/MSound.hpp>
 #include <MSound/SoundEffects.hpp>
-#include <M3DUtil/InfectiousStrings.hpp>
 #include <stdio.h>
 
 TBathtubParams::TBathtubParams()
@@ -233,24 +232,24 @@ BOOL TBathtubGrip::receiveMessage(THitActor* sender, u32 message)
 		f32 speed;
 		switch (dead) {
 		case 1:
-			count = unk244->unk16C->breakCount0.get();
 			speed = unk244->unk16C->animSpeed1.get();
+			count = unk244->unk16C->breakCount0.get();
 			break;
 		case 2:
-			count = unk244->unk16C->breakCount1.get();
 			speed = unk244->unk16C->animSpeed2.get();
+			count = unk244->unk16C->breakCount1.get();
 			break;
 		case 3:
-			count = unk244->unk16C->breakCount2.get();
 			speed = unk244->unk16C->animSpeed3.get();
+			count = unk244->unk16C->breakCount2.get();
 			break;
 		case 4:
-			count = unk244->unk16C->breakCount3.get();
 			speed = unk244->unk16C->animSpeed4.get();
+			count = unk244->unk16C->breakCount3.get();
 			break;
 		default:
-			count = unk244->unk16C->breakCount0.get();
 			speed = unk244->unk16C->animSpeed0.get();
+			count = unk244->unk16C->breakCount0.get();
 			break;
 		}
 		startBreak(dead, count, speed);
@@ -546,7 +545,7 @@ void TBathtub::perform(u32 cue, JDrama::TGraphics* graphics)
 	}
 
 	if (cue & CUE_MOVE) {
-		int ticks = SMSGetMarDirector()->mMoveTickCount;
+		int ticks = SMSGetMarDirector()->getMoveTickCount();
 		switch (getNumGripsDead()) {
 		case 0:
 			if (ticks >= 7200)
@@ -790,38 +789,46 @@ bool TBathtub::allowsTumble() const
 {
 	JGeometry::TVec3<f32> marioPos(SMS_GetMarioPos());
 	f32 grip;
-	if (!getNearGrip(marioPos, 18.0f, &grip))
-		return false;
-
-	JGeometry::TVec3<f32> delta = marioPos;
-	delta -= mBathtubData.mPos;
-	JGeometry::TVec3<f32> local;
-	mBathtubData.unk18.mult(delta, local);
-	local.y      = 0.0f;
-	f32 distance = local.length();
-	if (distance < 4200.0f)
-		return false;
-	if (!(4700.0f < distance))
-		return true;
-	if (!(mBathtubData.unk18.at(1, 1) > 0.99f))
-		return false;
-
-	TBathtubKillerManager* manager = static_cast<TBathtubKillerManager*>(
-	    JDrama::TNameRefGen::search("バスタブキラーマネージャー"));
-	u32 status = SMS_GetMarioStatus();
-	if (status == MARIO_STATUS_HIP_DROP || status == MARIO_STATUS_ROCKET
-	    || status == MARIO_STATUS_ROCKET_LANDING)
-		return false;
-
-	const TWaterGun* fludd = gpMarioOriginal->mWaterGun;
-	if (fludd != nullptr) {
-		TNozzleTrigger* nozzle
-		    = static_cast<TNozzleTrigger*>(fludd->getCurrentNozzle());
-		if (nozzle != nullptr && nozzle->getNozzleKind() == TWaterGun::Rocket
-		    && nozzle->mInsidePressure > 0.0f)
+	if (getNearGrip(marioPos, 18.0f, &grip)) {
+		JGeometry::TVec3<f32> delta;
+		delta.sub(marioPos, mBathtubData.mPos);
+		JGeometry::TVec3<f32> local;
+		mBathtubData.unk18.mult(delta, local);
+		JGeometry::TVec3<f32> flat = local;
+		flat.y       = 0.0f;
+		f32 distance = flat.length();
+		if (distance < 4200.0f)
 			return false;
+
+		if (4700.0f < distance) {
+			if (mBathtubData.unk18.at(1, 1) > 0.99f) {
+				TBathtubKillerManager* manager
+				    = static_cast<TBathtubKillerManager*>(
+				        JDrama::TNameRefGen::search("バスタブキラーマネージャー"));
+				u32 status = SMS_GetMarioStatus();
+				if (status == MARIO_STATUS_HIP_DROP)
+					return false;
+				if (status == MARIO_STATUS_ROCKET)
+					return false;
+				if (status == MARIO_STATUS_ROCKET_LANDING)
+					return false;
+
+				const TWaterGun* fludd = gpMarioOriginal->mWaterGun;
+				if (fludd != nullptr) {
+					TNozzleTrigger* nozzle = static_cast<TNozzleTrigger*>(
+					    fludd->getCurrentNozzle());
+					if (nozzle != nullptr
+					    && nozzle->getNozzleKind() == TWaterGun::Rocket
+					    && nozzle->getInsidePressure() > 0.0f)
+						return false;
+				}
+				return manager->countActiveKillers() == 0;
+			}
+			return false;
+		}
+		return true;
 	}
-	return manager->countActiveKillers() == 0;
+	return false;
 }
 
 void TBathtub::calcRootMatrix()
@@ -878,7 +885,7 @@ f32 getDir(MtxPtr mtx, const JGeometry::TVec3<f32>& pos,
 	JGeometry::TVec3<f32> normal;
 	normal.normalize(delta);
 	JGeometry::TVec3<f32> tangent;
-	tangent.scaleAdd(-normal.dot(direction), direction, normal);
+	tangent.scaleAdd(-normal.dot(direction), normal, direction);
 	delta += tangent;
 	f32 localZ = zDir.dot(delta);
 	f32 localX = xDir.dot(delta);
@@ -893,7 +900,8 @@ u8 TBathtub::getNearJuncture(const JGeometry::TVec3<f32>&) const { return 0; }
 bool TBathtub::getNearGrip(const JGeometry::TVec3<f32>& pos, f32 maxDiff,
                            f32* out) const
 {
-	f32 angle = getDir(*getRootJointMtx(), pos);
+	MtxPtr mtx = *getRootJointMtx();
+	f32 angle  = getDir(mtx, pos);
 
 	f32 best  = 360.0f;
 	int index = 0;
@@ -975,8 +983,9 @@ void TBathtub::updatePosture_()
 		JGeometry::TVec3<f32> axis;
 		axis.cross(y, up);
 		axis.normalize();
-		axis.scale(unk16C->rebound.get() * (rate * -acosf(y.dot(up))));
-		unk1E8.scaleAdd(unk16C->angleVelDamp.get(), axis, unk1E8);
+		f32 rebound = unk16C->rebound.get();
+		axis.scale(rebound * (rate * -acosf(y.dot(up))));
+		unk1E8.scaleAdd(unk16C->angleVelDamp.get(), unk1E8, axis);
 	} else {
 		unk250--;
 	}

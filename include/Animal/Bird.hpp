@@ -4,16 +4,14 @@
 #include <Enemy/Enemy.hpp>
 #include <Enemy/EnemyManager.hpp>
 #include <Strategic/Nerve.hpp>
-#include <System/ParamInst.hpp>
+#include <dolphin/gx/GXStruct.h>
 
 class TMapObjBase;
 class TWireBinder;
-struct _GXColorS10;
 
-// Member names come from the .prm strings.
 class TAnimalBirdParams : public TSpineEnemyParams {
 public:
-	TAnimalBirdParams(const char* path);
+	TAnimalBirdParams(const char*);
 
 	/* 0xA8 */ TParamRT<f32> mMarchSpeed;
 	/* 0xBC */ TParamRT<f32> mTurnSpeed;
@@ -35,12 +33,9 @@ public:
 	/* 0x1FC */ TParamRT<f32> mWaterPowerY;
 };
 
-// "(幸せの青い)鳥", the bluebird. Spraying it in flight enough times turns it
-// into the coin (or Shine) it was given in the scene file.
 class TAnimalBird : public TSpineEnemy {
 public:
 	TAnimalBird(const char* name = "(幸せの青い)鳥");
-	virtual ~TAnimalBird() { }
 
 	virtual void load(JSUMemoryInputStream&);
 	virtual void loadAfter();
@@ -51,7 +46,7 @@ public:
 	virtual void moveObject();
 	virtual const char** getBasNameTable() const;
 
-	void initTevColor(const _GXColorS10*);
+	void initTevColor(const GXColorS10*);
 	void initCollision();
 	void initParams();
 	void behaveHitWater();
@@ -83,32 +78,27 @@ public:
 	f32 getWaterPowerY() const;
 	f32 getFootGroundHeight();
 
-	// fabricated: the timer starts on every water hit, and while it runs
-	// further hits don't cost hit points.
-	bool isWaterproof() const { return mWaterproofTimer > 0; }
-
 	// fabricated
-	const TAnimalBirdParams* getParam() const
+	TAnimalBirdParams* getSaveParam2() const
 	{
-		return (const TAnimalBirdParams*)getSaveParam();
+		return (TAnimalBirdParams*)getSaveParam();
 	}
 
 public:
-	/* 0x150 */ TMapObjBase* mItem;
-	/* 0x154 */ TWireBinder* mWireBinder;
-	/* 0x158 */ JGeometry::TVec3<f32> mHomePos;
-	/* 0x164 */ JGeometry::TVec3<f32> mHomeRot;
-	/* 0x170 */ f32 mWalkDir;
-	/* 0x174 */ f32 mScale;
-	/* 0x178 */ s32 mWaterproofTimer;
-	/* 0x17C */ s32 mFloatingTimer;
-	/* 0x180 */ int mColorIndex;
+	/* 0x150 */ TMapObjBase* unk150;
+	/* 0x154 */ TWireBinder* unk154;
+	/* 0x158 */ JGeometry::TVec3<f32> unk158;
+	/* 0x164 */ JGeometry::TVec3<f32> unk164;
+	/* 0x170 */ f32 unk170;
+	/* 0x174 */ f32 unk174;
+	/* 0x178 */ s32 unk178;
+	/* 0x17C */ s32 unk17C;
+	/* 0x180 */ s32 unk180;
 };
 
 class TAnimalBirdManager : public TEnemyManager {
 public:
 	TAnimalBirdManager(const char* name = "(幸せの青い)鳥マネージャー");
-	virtual ~TAnimalBirdManager() { }
 
 	virtual void load(JSUMemoryInputStream&);
 	virtual void loadAfter();

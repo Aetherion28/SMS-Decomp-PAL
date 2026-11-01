@@ -5,6 +5,7 @@
 #include <MoveBG/MapObjBase.hpp>
 #include <JSystem/JDrama/JDRNameRefGen.hpp>
 #include <version.h>
+#include <M3DUtil/MActorAnm.hpp>
 
 THelpActor::THelpActor(const char* name)
     : THitActor(name)
@@ -25,7 +26,8 @@ void THelpActor::load(JSUMemoryInputStream& stream)
 	unk6C = stream.readString();
 	initHitActor(ACTOR_TYPE_HELP_ACTOR, 1, HIT_CATEGORY_PLAYER,
 	             mScaling.x * 100.0f, mScaling.y * 100.0f, 1.0f, 1.0f);
-	unk68 = local_10 + VERSION_SELECT(0x33, GMSJ01(0xE0030));
+	unk68
+	    = local_10 + VERSION_SELECT(0x33, GMSJ01(0xE0030), GMSJ01_01(0xE0033));
 }
 
 void THelpActor::loadAfter()

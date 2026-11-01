@@ -1,4 +1,5 @@
 #include <MoveBG/MapObjGeneral.hpp>
+#include <System/StageUtil.hpp>
 #include <System/FlagManager.hpp>
 #include <System/MarDirector.hpp>
 #include <Strategic/Binder.hpp>
@@ -15,6 +16,7 @@
 // rogue includes needed for matching sinit & bss
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
+#include <M3DUtil/MActorAnm.hpp>
 
 u32 TMapObjGeneral::mNormalLivingTime       = 960;
 u32 TMapObjGeneral::mNormalFlushTime        = 360;
@@ -349,9 +351,7 @@ void TMapObjGeneral::appear()
 		mScaling.z = mNormalAppearingScaleUp;
 	}
 
-	if (!isActorType(ACTOR_TYPE_COIN_BLUE)
-	    || !TFlagManager::smInstance->getBlueCoinFlag(
-	        SMSGetMarDirector()->getCurrentMap(), mEventId))
+	if (!isActorType(ACTOR_TYPE_COIN_BLUE) || !SMS_isGetBlueCoin(mEventId))
 		startSound(1);
 
 	appearing();

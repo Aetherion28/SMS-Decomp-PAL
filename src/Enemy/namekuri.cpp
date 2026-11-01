@@ -37,7 +37,6 @@
 // rogue includes needed for matching sinit & bss
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
-#include <M3DUtil/InfectiousStrings.hpp>
 
 f32 TNameKuriManager::mExplosionSpeed    = 1.2f;
 int TNameKuriManager::mStopMinScaleFrame = 8;
@@ -189,8 +188,10 @@ TNameIndParCallback::TNameIndParCallback(TNameKuri* owner)
 void TNameIndParCallback::execute(JPABaseEmitter* param_1,
                                   JPABaseParticle* param_2)
 {
-	if (mOwner->checkLiveFlag(LIVE_FLAG_CLIPPED_OUT)) {
-		MtxPtr mA = mOwner->getMActor()->getModel()->getAnmMtx(1);
+	if (!mOwner->checkLiveFlag(LIVE_FLAG_CLIPPED_OUT)) {
+		J3DModel* model = mOwner->getMActor()->getModel();
+		MtxPtr mA       = model->getAnmMtx(4);
+		MtxPtr mRoot    = model->getAnmMtx(0);
 
 		Mtx local_4c;
 		MsMtxSetRotX(local_4c, mOwner->unk1AC);
@@ -208,7 +209,7 @@ void TNameIndParCallback::execute(JPABaseEmitter* param_1,
 		JGeometry::TVec3<f32> tmp3(mA[0][2], mA[1][2], mA[2][2]);
 		local_7c.x = tmp3.length();
 
-		param_1->setGlobalRTMatrix(mA);
+		param_1->setGlobalRTMatrix(mRoot);
 
 		if (mOwner->unk1A8) {
 			param_1->setGlobalScale(mOwner->mScaling);
@@ -677,7 +678,7 @@ DEFINE_NERVE(TNerveNameKuriJumpAttack, TLiveActor)
 	TNameKuri* self = (TNameKuri*)spine->getBody();
 
 	if (spine->getTime() <= 1) {
-		self->setGoalPath(SMS_GetMarioHitActor());
+		self->setGoal(SMS_GetMarioHitActor());
 
 		self->unk1B0 = self->mScaling.y;
 		self->unk1AC = 0.0f;
@@ -705,7 +706,7 @@ DEFINE_NERVE(TNerveNameKuriJumpAttack, TLiveActor)
 				self->unk1AC = 0.0f;
 				self->unk1B8 = 0.0f;
 
-				self->setGoalPath(SMS_GetMarioPos());
+				self->setGoal(SMS_GetMarioPos());
 			}
 
 			self->walkToCurPathNode(0.0f, 6.0f, 0.0f);
@@ -729,7 +730,7 @@ DEFINE_NERVE(TNerveNameKuriJumpAttack, TLiveActor)
 				self->setBckAnm(2);
 		} else if (self->isBckAnm(2)) {
 			if (self->checkCurAnmEnd(0)) {
-				self->switchNextGoalPath();
+				self->switchNextGoalPathNode();
 				self->onLiveFlag(LIVE_FLAG_UNK20000);
 				spine->pushAfterCurrent(&TNerveSmallEnemyDie::theNerve());
 				return true;
@@ -746,7 +747,7 @@ DEFINE_NERVE(TNerveNameKuriJumpAttackPrepare, TLiveActor)
 {
 	TNameKuri* self = (TNameKuri*)spine->getBody();
 	if (spine->getTime() == 1) {
-		self->setGoalPath(SMS_GetMarioHitActor());
+		self->setGoal(SMS_GetMarioHitActor());
 		self->setBckAnm(6);
 	} else if (self->isBckAnm(6)) {
 		if (self->isInSight(SMS_GetMarioPos(), 100000.0f, 30.0f, 0.0f)
@@ -797,7 +798,7 @@ DEFINE_NERVE(TNerveNKFollowMario, TLiveActor)
 	TNameKuri* self = (TNameKuri*)spine->getBody();
 
 	if (spine->getTime() == 0)
-		self->setGoalPath(SMS_GetMarioHitActor());
+		self->setGoal(SMS_GetMarioHitActor());
 
 	self->walkToCurPathNode(self->getMarchSpeed(), 3.0f, 0.0f);
 

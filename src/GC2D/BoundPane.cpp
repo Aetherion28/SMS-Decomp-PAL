@@ -4,7 +4,7 @@
 TBoundPane::TBoundPane(J2DScreen* param_1, u32 param_2)
 {
 	unk0  = param_1->search(param_2);
-	unk4  = unk0->mBounds;
+	unk4  = unk0->getBounds();
 	unk28 = 0.0f;
 	unk2C = 0.0f;
 	unk30 = 0.0f;
@@ -80,6 +80,7 @@ void TBoundPane::makeNewPosition(f32 t, JUTPoint& out, JUTPoint& start,
 	f32 x = end.x * tt + (start.x * uu + control.x * ut);
 	f32 y = end.y * tt + (start.y * uu + control.y * ut);
 
-	out.x = (s16)(x + (x > 0.0f ? 0.5f : -0.5f));
-	out.y = (s16)(y + (y > 0.0f ? 0.5f : -0.5f));
+	s16 roundedX = x + (x > 0.0f ? 0.5f : -0.5f);
+	s16 roundedY = y + (y > 0.0f ? 0.5f : -0.5f);
+	out.set(roundedX, roundedY);
 }

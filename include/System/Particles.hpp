@@ -259,6 +259,7 @@ enum E_SMS_EFFECT_LOOP_NORMAL /* 1 */ {
 	PARTICLE_MS_M_MZBHAMON_A              = 0x10A,
 	PARTICLE_MS_M_MZBHAMON_C              = 0x10B,
 	PARTICLE_MS_M_AWA                     = 0x10C,
+	PARTICLE_MS_NOZZLESMOKE               = 0x10D,
 	PARTICLE_MS_M_BLUR1                   = 0x10E,
 	PARTICLE_MS_M_SLIDESAND_A             = 0x10F,
 	PARTICLE_MS_M_SLIDESAND_B             = 0x110,
@@ -317,6 +318,8 @@ enum E_SMS_EFFECT_LOOP_NORMAL /* 1 */ {
 	MAP_MAP_MS_MARE_GUNWAT_A              = 0x14C,
 	MAP_MAP_MS_MARE_GUNWAT_B              = 0x14D,
 	MAP_MAP_MS_MARE_GUNWAT_C              = 0x14E,
+	SCENE_MAPOBJ_MS_SHIB_CYL1             = 0x154,
+	SCENE_MAPOBJ_MS_SHIB_CUB1             = 0x155,
 	MAP_MAP_MS_MONTE_YUGE                 = 0x156,
 	MAPOBJ_ICEBLOCKA                      = 0x157,
 	MAPOBJ_ICEBLOCKB                      = 0x158,
@@ -335,13 +338,13 @@ enum E_SMS_EFFECT_LOOP_NORMAL /* 1 */ {
 	CANNON_JPA_MS_CANNON_SMOKE            = 0x166,
 	BWANWAN_JPA_MS_BWAN_HITYUGE           = 0x167,
 	BWANWAN_JPA_MS_BWAN_KIRA              = 0x168,
-	PARTICLE_MS_BOHA_JOUKI2_R_A          = 0x169,
-	PARTICLE_MS_BOHA_JOUKI2_R_B          = 0x16A,
-	PARTICLE_MS_BOHA_JOUKI2_L_A          = 0x16B,
-	PARTICLE_MS_BOHA_JOUKI2_L_B          = 0x16C,
-	PARTICLE_MS_BOHA_SANDSMO_SL          = 0x16D,
-	PARTICLE_MS_BOHA_SAND_SL             = 0x16E,
-	PARTICLE_MS_BOHA_KIZETSU             = 0x16F,
+	PARTICLE_MS_BOHA_JOUKI2_R_A           = 0x169,
+	PARTICLE_MS_BOHA_JOUKI2_R_B           = 0x16A,
+	PARTICLE_MS_BOHA_JOUKI2_L_A           = 0x16B,
+	PARTICLE_MS_BOHA_JOUKI2_L_B           = 0x16C,
+	PARTICLE_MS_BOHA_SANDSMO_SL           = 0x16D,
+	PARTICLE_MS_BOHA_SAND_SL              = 0x16E,
+	PARTICLE_MS_BOHA_KIZETSU              = 0x16F,
 	PARTICLE_MS_NPC_KOKUEN                = 0x170,
 	PARTICLE_MS_NPC_HAMON_A               = 0x171,
 	PARTICLE_MS_MNT_WASH                  = 0x172,
@@ -440,9 +443,8 @@ enum E_SMS_EFFECT_LOOP_NORMAL /* 1 */ {
 	PARTICLE_MS_MPK_FIRE_B                = 0x1D2,
 };
 
-// TODO: what is "type 2"?
-enum /* 2 */
-{
+// NOTE: name fabricated, the map has no instantiation for this type.
+enum E_SMS_EFFECT_ONETIME_INDIRECT /* 2 */ {
 	PARTICLE_MS_M_TOBIKOMI_C        = 0x1D4,
 	PARTICLE_MS_M_TOBIKOMI_S_C      = 0x1D5,
 	PARTICLE_MS_MARI_RAKUBALL       = 0x1D8,
@@ -482,38 +484,37 @@ enum E_SMS_EFFECT_LOOP_INDIRECT /* 3 */ {
 // NOTE: doing this makes inlining work out, specializations DON'T.
 template <class T> struct FabricatedParticleTypeToFlag;
 template <> struct FabricatedParticleTypeToFlag<E_SMS_EFFECT_ONETIME_NORMAL> {
-	enum { value = 0 };
+	enum { value = TMarioParticleManager::EFFECT_ONETIME_NORMAL };
 };
 template <> struct FabricatedParticleTypeToFlag<E_SMS_EFFECT_LOOP_NORMAL> {
-	enum { value = 1 };
+	enum { value = TMarioParticleManager::EFFECT_LOOP_NORMAL };
 };
 template <> struct FabricatedParticleTypeToFlag<E_SMS_EFFECT_LOOP_INDIRECT> {
-	enum { value = 3 };
+	enum { value = TMarioParticleManager::EFFECT_LOOP_INDIRECT };
 };
 
 // TODO: the fabricated setScale inline is most likely incorrect.
 
 template <class T>
-JPABaseEmitter*
-SMS_EasyEmitParticle(T param_1, const JGeometry::TVec3<f32>* param_2,
-                     const void* param_3, const JGeometry::TVec3<f32>& param_4)
+JPABaseEmitter* SMS_EasyEmitParticle(T id, const JGeometry::TVec3<f32>* pos_ptr,
+                                     const void* identity,
+                                     const JGeometry::TVec3<f32>& scale)
 {
 	JPABaseEmitter* emitter = gpMarioParticleManager->emitAndBindToPosPtr(
-	    param_1, param_2, FabricatedParticleTypeToFlag<T>::value, param_3);
+	    id, pos_ptr, FabricatedParticleTypeToFlag<T>::value, identity);
 	if (emitter)
-		emitter->setGlobalScale(param_4);
+		emitter->setGlobalScale(scale);
 	return emitter;
 }
 
 template <class T>
-JPABaseEmitter* SMS_EasyEmitParticle(T param_1, MtxPtr param_2,
-                                     const void* param_3,
-                                     const JGeometry::TVec3<f32>& param_4)
+JPABaseEmitter* SMS_EasyEmitParticle(T id, MtxPtr mtx_ptr, const void* identity,
+                                     const JGeometry::TVec3<f32>& scale)
 {
 	JPABaseEmitter* emitter = gpMarioParticleManager->emitAndBindToMtxPtr(
-	    param_1, param_2, FabricatedParticleTypeToFlag<T>::value, param_3);
+	    id, mtx_ptr, FabricatedParticleTypeToFlag<T>::value, identity);
 	if (emitter)
-		emitter->setGlobalScale(param_4);
+		emitter->setGlobalScale(scale);
 	return emitter;
 }
 

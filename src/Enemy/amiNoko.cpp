@@ -2,7 +2,6 @@
 #include <JSystem/JDrama/JDRNameRefGen.hpp>
 #include <JSystem/JParticle/JPAEmitter.hpp>
 #include <M3DUtil/MActor.hpp>
-#include <M3DUtil/InfectiousStrings.hpp>
 #include <MSound/MSound.hpp>
 #include <MarioUtil/MathUtil.hpp>
 #include <Map/Map.hpp>
@@ -86,9 +85,9 @@ BOOL TAmiHit::receiveMessage(THitActor* param_1, u32 param_2)
 	return unk68->receiveMessage(param_1, param_2);
 }
 
-void TAmiHit::perform(u32 param_1, JDrama::TGraphics* param_2)
+void TAmiHit::perform(u32 cue, JDrama::TGraphics* param_2)
 {
-	if (param_1 & CUE_MOVE) {
+	if (cue & CUE_MOVE) {
 		JGeometry::TVec3<f32> vec = unk68->unk19C;
 		vec.normalize();
 		vec.scale(100.0f);
@@ -104,7 +103,7 @@ void TAmiHit::perform(u32 param_1, JDrama::TGraphics* param_2)
 			}
 		}
 	}
-	THitActor::perform(param_1, param_2);
+	THitActor::perform(cue, param_2);
 }
 
 TAmiNoko::TAmiNoko(const char* name)
@@ -136,9 +135,9 @@ void TAmiNoko::init(TLiveManager* param_1)
 	setWalkAnm();
 	onLiveFlag(LIVE_FLAG_UNK10);
 	initialGraphNode();
-	if (SMSGetMarDirector()->getCurrentMap() == 8)
+	if (SMSGetMarDirector()->getCurrentStage() == 8)
 		unk210 = 0;
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 	unkE8 = 0;
 #endif
 	unk208 = new TAmiHit(this);
@@ -222,10 +221,10 @@ bool TAmiNoko::isHitValid(u32 param_1)
 	return false;
 }
 
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 void TAmiNoko::calcDirection()
 {
-	JGeometry::TVec3<f32> pos = unkF4.getPoint();
+	JGeometry::TVec3<f32> pos = mCurrentTarget.getPoint();
 	pos -= mPosition;
 	if (pos.isZero())
 		pos.set(1.0f, 0.0f, 0.0f);
@@ -458,7 +457,7 @@ void TAmiNoko::calcRootMatrix()
 
 	MtxPtr rootMtx = getModel()->getBaseTRMtx();
 
-	JGeometry::TVec3<f32> pos = unkF4.getPoint();
+	JGeometry::TVec3<f32> pos = mCurrentTarget.getPoint();
 	pos -= mPosition;
 	if (pos.x == 0.0f && pos.y == 0.0f && pos.z == 0.0f)
 		pos.x = 1.0f;
@@ -618,14 +617,14 @@ void TAmiNoko::bind()
 	}
 }
 
-void TAmiNoko::perform(u32 param_1, JDrama::TGraphics* param_2)
+void TAmiNoko::perform(u32 cue, JDrama::TGraphics* param_2)
 {
-#ifdef VERSION_GMSP01
-	if (param_1 & CUE_CALC_ANIM)
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+	if (cue & CUE_CALC_ANIM)
 		calcDirection();
 #endif
-	TSmallEnemy::perform(param_1, param_2);
-	unk208->perform(param_1, param_2);
+	TSmallEnemy::perform(cue, param_2);
+	unk208->perform(cue, param_2);
 }
 
 f32 TAmiNoko::getGravityY() const
@@ -638,8 +637,8 @@ f32 TAmiNoko::getGravityY() const
 
 void TAmiNoko::creepToCurPathNode(f32 param_1)
 {
-#ifdef VERSION_GMSP01
-	JGeometry::TVec3<f32> direction = unkF4.getPoint();
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+	JGeometry::TVec3<f32> direction = mCurrentTarget.getPoint();
 	direction -= mPosition;
 	if (!direction.isZero()) {
 		f32 speed = MsMin(param_1, direction.length());
@@ -651,7 +650,7 @@ void TAmiNoko::creepToCurPathNode(f32 param_1)
 	}
 #else
 	if (isBckAnm(4) || isBckAnm(7) || isBckAnm(10) || isBckAnm(13)) {
-		JGeometry::TVec3<f32> direction = unkF4.getPoint();
+		JGeometry::TVec3<f32> direction = mCurrentTarget.getPoint();
 		direction -= mPosition;
 		if (direction.x == 0.0f && direction.y == 0.0f && direction.z == 0.0f)
 			direction.x = 1.0f;
@@ -700,7 +699,7 @@ DEFINE_NERVE(TNerveAmiNokoWalkOnFence, TLiveActor)
 		}
 	}
 
-	JGeometry::TVec3<f32> pos = self->getUnkF4().getPoint();
+	JGeometry::TVec3<f32> pos = self->getCurrentTarget().getPoint();
 	pos -= self->mPosition;
 	if (pos.length() < 1.5f && self->checkCurAnmEnd(0)) {
 		if (self->isBckAnm(3) || self->isBckAnm(6)) {
@@ -737,7 +736,7 @@ DEFINE_NERVE(TNerveAmiNokoTurn, TLiveActor)
 		}
 	}
 
-	JGeometry::TVec3<f32> pos = self->getUnkF4().getPoint();
+	JGeometry::TVec3<f32> pos = self->getCurrentTarget().getPoint();
 	pos -= self->mPosition;
 	if (pos.x == 0.0f && pos.y == 0.0f && pos.z == 0.0f)
 		pos.x = 1.0f;
@@ -771,7 +770,7 @@ DEFINE_NERVE(TNerveAmiNokoDie, TLiveActor)
 	if (spine->getTime() == 0) {
 		self->setBckAnm(1);
 		self->onHitFilter(HIT_FILTER_NO_COLLISION);
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 		self->unk208->onHitFilter(HIT_FILTER_NO_COLLISION);
 #endif
 	}

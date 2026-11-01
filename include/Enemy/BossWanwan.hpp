@@ -22,7 +22,7 @@ class TBWLeash;
 // Actor types used by this boss:
 //   ACTOR_TYPE_BOSS_UNKB - the chomp itself and its two TBWHit hit volumes
 //   ACTOR_TYPE_BOSS_UNKC - a link of the chain (TBWLeashNode)
-//   ACTOR_TYPE_BOSS_UNKD - the picket at the end of the chain (TBWPicket)
+//   ACTOR_TYPE_BOSS_WANWAN - the picket at the end of the chain (TBWPicket)
 
 DECLARE_NERVE(TNerveBWGraphWander, TLiveActor);
 DECLARE_NERVE(TNerveBWRoll, TLiveActor);

@@ -8,7 +8,7 @@
 #include <dolphin/types.h>
 
 // rogue include
-#include <M3DUtil/InfectiousStrings.hpp>
+#include <M3DUtil/MActorAnm.hpp>
 
 TGraphNode::TGraphNode()
     : unk0(nullptr)
@@ -757,7 +757,7 @@ TGraphWeb::getNearestPosOnGraphLink(const JGeometry::TVec3<f32>& param_1) const
 			thing.sub(param_1);
 			f32 dVar18 = thing.squared();
 			if (bVar9 || dVar18 < min) {
-				local_48.scaleAdd(fVar4, point2, point);
+				local_48.scaleAdd(fVar4, point, point2);
 				bVar9 = false;
 				min   = dVar18;
 			}

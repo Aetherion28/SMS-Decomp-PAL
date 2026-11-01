@@ -11,7 +11,6 @@
 #include <Player/MarioFlags.hpp>
 
 class TLiveActor;
-class TWaterGun;
 class TBGCheckData;
 class J3DAnmTexPattern;
 class J3DModelData;
@@ -1206,6 +1205,7 @@ public:
 	THitActor* getFloorHitActor() { return &mFloorHitActor; }
 	s16 getHealth() const { return mHealth; }
 	s16 getAir() const { return mAir; }
+	void setPlayerType(int type) { mPlayerType = type; }
 
 	// fabricated
 	bool isTouchGround4cm() const
@@ -1270,9 +1270,6 @@ public:
 
 	// Fabricated
 	bool isStatus(u32 status) const { return mStatus == status; }
-
-	// Fabricated
-	const JGeometry::TVec3<f32>& getVelocity() const { return mVel; }
 
 	// Fabricated
 	bool isSleeping() const
@@ -1346,6 +1343,12 @@ public:
 	}
 
 	// Fabricated
+	const JGeometry::TVec3<f32>& getFloorPosition() const
+	{
+		return mFloorPosition;
+	}
+
+	// Fabricated
 	TWaterGun* const getWaterGun() { return mWaterGun; }
 
 	// Fabricated
@@ -1362,6 +1365,9 @@ public:
 
 	// Fabricated
 	TYoshi* const getYoshi() { return mYoshi; }
+
+	// Fabricated
+	u16 getAnimationId() const { return mAnimationId; }
 
 public:
 	/* 0x74 */ u32 mInput;

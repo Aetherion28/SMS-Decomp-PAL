@@ -28,15 +28,14 @@ JGeometry::TQuat4<f32> SMS_Eular2Quat(const JGeometry::TVec3<f32>& rot)
 	qz.setEulerZ(0.017453294f * rot.z);
 	JGeometry::TQuat4<f32> qy;
 	qy.setEulerY(0.017453294f * rot.y);
-	(void)&qy;
+	JGeometry::TQuat4<f32>& rotation = qy;
 	JGeometry::TQuat4<f32> qx;
 	qx.setEulerX(0.017453294f * rot.x);
 
-	JGeometry::TQuat4<f32> result2;
-	result2.mul(qx, qz);
 	JGeometry::TQuat4<f32> result;
-	result.mul(qy, result2);
-	return result;
+	result.mul(qx, qz);
+	rotation.mul(rotation, result);
+	return rotation;
 }
 
 TAnimalBase::TAnimalBase(u32 actorType, const char* name)
@@ -220,7 +219,7 @@ void TAnimalBase::perform(u32 cue, JDrama::TGraphics* graphics)
 
 void TAnimalBase::resetRandomCurPathNode()
 {
-	TPathNode curNode = unkF4;
+	TPathNode curNode = mCurrentTarget;
 	if (curNode.unk0 != nullptr)
 		return;
 
@@ -234,7 +233,7 @@ void TAnimalBase::resetRandomCurPathNode()
 		pos.y -= 250.0f * MsRandF();
 	}
 
-	setGoalPath(pos);
+	setGoal(pos);
 }
 
 void TAnimalBase::getRotationFlyToDir(JGeometry::TVec3<f32>* current_rot,
@@ -289,7 +288,7 @@ void TAnimalBase::execWalk(bool moving)
 	f32 turnSpeed  = mTurnSpeed;
 	f32 marchSpeed = mMarchSpeed;
 
-	JGeometry::TVec3<f32> diff = unkF4.getPoint();
+	JGeometry::TVec3<f32> diff = mCurrentTarget.getPoint();
 	diff -= mPosition;
 
 	f32 dist = diff.length();

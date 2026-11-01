@@ -48,21 +48,21 @@ f32 FConverge(f32 value, f32 target, f32 inc, f32 dec);
 s16 matan(f32 x, f32 y);
 
 // fabricated
-inline f32 MsAtan2(f32 y, f32 x)
-{
-	return abs(matan(y, x) * (360.0f / 65536.0f));
-}
+inline f32 MsAtan2(f32 x, f32 y) { return matan(x, y) * (360.0f / 65536.0f); }
 
 inline f32 MsGetRotFromZaxisY(const JGeometry::TVec3<f32>& axis)
 {
-	if (axis.z == 0.0f)
-		return axis.x >= 0.0f ? 90.0f : -90.0f;
+	if (axis.z == 0.0f) {
+		if (axis.x >= 0.0f)
+			return 90.0f;
+		else
+			return -90.0f;
+	}
 
 	if (axis.z >= 0.0f) {
-		return (360.0f / 65536.0f) * matan(axis.z, axis.x);
+		return MsAtan2(axis.z, axis.x);
 	} else {
-		f32 theta = matan(-axis.z, axis.x) * (360.0f / 65536.0f);
-		return 180.0f - theta;
+		return 180.0f - MsAtan2(-axis.z, axis.x);
 	}
 }
 
@@ -248,8 +248,8 @@ inline f32 MsSqrtf(f32 x)
 }
 
 // NOTE: MsCos is **real**.
-inline f32 MsSin(f32 v) { return JMASSin(v * (65536.0f / 360.0f)); }
-inline f32 MsCos(f32 v) { return JMASCos(v * (65536.0f / 360.0f)); }
+inline f32 MsSin(f32 deg) { return JMASSin(deg * (65536.0f / 360.0f)); }
+inline f32 MsCos(f32 deg) { return JMASCos(deg * (65536.0f / 360.0f)); }
 
 inline void MsMtxSetRotX(MtxPtr mtx, f32 x)
 {

@@ -2,13 +2,13 @@
 #include <GC2D/hx_wiper.h>
 #include <JSystem/JKernel/JKRFileLoader.hpp>
 #include <dolphin/gx.h>
+#include <version.h>
 
 // rogue includes needed for matching sinit & bss
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
 
-static const char* dummyMactorStringValue1 = "\0\0\0\0\0\0\0\0\0\0\0";
-static const char* SMS_NO_MEMORY_MESSAGE   = "メモリが足りません\n";
+#include <System/Application.hpp>
 
 namespace {
 
@@ -163,7 +163,8 @@ void TSMSFader::updateRequest()
 	if (mWipeRequest.unk0 == UNK30_UNK_18)
 		return;
 
-	f32 fVar1 = mWipeRequest.unk8 - 1.0f / mRate;
+	f32 fVar1 = mWipeRequest.unk8;
+	fVar1 -= 1.0f / mRate;
 	if (fVar1 < 0.0f)
 		fVar1 = 0.0f;
 	mWipeRequest.unk8 = fVar1;
@@ -382,15 +383,12 @@ void TSMSFader::load(JSUMemoryInputStream& stream)
 {
 	JDrama::TViewObj::load(stream);
 
-	s32 local_1c = stream.readS32();
+	startFadein(stream.readS32());
 
-	startFadein(local_1c);
+	u32 local_18 = stream.readU32();
 
-	u32 local_18;
-	stream >> local_18;
-
-	setColor(JUtility::TColor(local_18 >> 24, local_18 >> 16 & 0xFF,
-	                          local_18 >> 8 & 0xFF, local_18 & 0xFF));
+	setColor(JUtility::TColor(local_18 >> 24, local_18 >> 16, local_18 >> 8,
+	                          local_18));
 }
 
 void TSMSFader::setDisplaySize(int param_1, int param_2)
@@ -417,7 +415,11 @@ void TSMSFader::setFadeStatus(TSMSFader::EFadeStatus param_1)
 void TSMSFader::getGameOverBtiResource()
 {
 	Hx_RemoveResource();
-	Hx_ProvideResource(JKRGetResource("/common/2d/wipe_gameover.bti"), 0);
+	Hx_ProvideResource(
+	    JKRGetResource(VERSION_SELECT("/common/2d/wipe_gameover.bti",
+	                                  GMSP01("/cmn2d/wipe_gameover.bti"),
+	                                  GMSP01_NX("/cmn2d/wipe_gameover.bti"))),
+	    0);
 }
 
 void TSMSFader::getMmarkBtiResource()

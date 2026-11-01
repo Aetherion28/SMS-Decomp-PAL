@@ -10,23 +10,14 @@ class J2DScreen;
 class JUTTexture;
 class J2DPane;
 
-// fabricated
-inline static s16 clapAlpha(s16 alpha)
-{
-	s16 a = alpha < 0 ? s16(0) : alpha;
-	if (a > 255)
-		return 255;
-	return a;
-}
-
 /**
  * @brief Wrapper around J2DPane that supports animating the pane's position,
  * size, and alpha over a specified number of frames.
  */
 class TExPane {
 public:
-	TExPane(JUTTexture*, GXCullMode);
-	TExPane(J2DScreen*, u32);
+	TExPane(JUTTexture* texture, GXCullMode cullMode);
+	TExPane(J2DScreen* screen, u32 tag);
 
 	/// Performs one frame of the animations.
 	bool update();
@@ -71,7 +62,9 @@ public:
 	/// Initiates a pane's alpha animation.
 	void setPaneAlpha(s32 time, s16 target_alpha, s16 initial_alpha)
 	{
-		mPane->setAlpha(clapAlpha(initial_alpha));
+		s16 lower = initial_alpha < 0 ? s16(0) : initial_alpha;
+		s16 alpha = lower > 255 ? s16(255) : lower;
+		mPane->setAlpha(alpha);
 
 		mCurrentAlpha     = initial_alpha;
 		mAlphaStep        = f32(target_alpha - initial_alpha) / time;
@@ -101,6 +94,16 @@ public:
 
 	J2DPane* getPane() const { return mPane; }
 	const JUTRect& getInitialBounds() const { return mInitialBounds; }
+
+	// fabricated
+	void adjustBounds(int x, int y, int width, int height)
+	{
+		J2DPane* pane  = getPane();
+		JUTRect bounds = pane->getBounds();
+		pane->add(x, y);
+		pane->resize(bounds.getWidth() + width, bounds.getHeight() + height);
+		mInitialBounds = mPane->getBounds();
+	}
 
 	bool isBoundsAnimationCompleted() const
 	{

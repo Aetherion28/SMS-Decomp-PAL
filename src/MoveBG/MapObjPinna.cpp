@@ -1,6 +1,7 @@
 // rogue includes needed for matching sinit & bss
 #include <JSystem/JAudio/JALibrary/JALSystem.hpp>
-#include <M3DUtil/InfectiousStrings.hpp>
+#include <System/StageUtil.hpp>
+#include <M3DUtil/MActorAnm.hpp>
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
 
@@ -34,7 +35,7 @@
 
 static s32 switchSnd;
 
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 static f32 rotate_frame_rate = 1.0f;
 #endif
 
@@ -91,13 +92,13 @@ void TFerrisWheel::initMapObj()
 		unk13C[i] = TMapObjBaseManager::newAndRegisterObj("FerrisGondola");
 		unk13C[i]->appear();
 	}
-#ifdef VERSION_GMSP01
-	if ((SMSGetMarDirector()->getCurrentMap() == 13
-	     && SMSGetMarDirector()->getCurrentStage() == 2)
-	    || (SMSGetMarDirector()->getCurrentMap() == 5
-	        && SMSGetMarDirector()->getCurrentStage() == 4)) {
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+	if ((SMSGetMarDirector()->getCurrentStage() == 13
+	     && SMSGetMarDirector()->getCurrentScenario() == 2)
+	    || (SMSGetMarDirector()->getCurrentStage() == 5
+	        && SMSGetMarDirector()->getCurrentScenario() == 4)) {
 #else
-	if (SMSGetMarDirector()->getCurrentStage() == 2) {
+	if (SMSGetMarDirector()->getCurrentScenario() == 2) {
 #endif
 		unk140 = 10.0f;
 	} else {
@@ -465,8 +466,7 @@ void TShellCup::loadAfter()
 	unk49C = gpItemManager->newAndRegisterCoinReal();
 	unk4A0 = gpItemManager->newAndRegisterCoinReal();
 	unk498->setEventId(2);
-	if (!TFlagManager::getInstance()->getBlueCoinFlag(
-	        SMSGetMarDirector()->getCurrentMap(), unk498->getEventId())) {
+	if (!SMS_isGetBlueCoin(unk498->getEventId())) {
 		unk498->makeObjAppeared();
 		unk138[0].unk80 = unk498;
 	}
@@ -573,7 +573,7 @@ void TMerrygoround::initMapObj()
 	}
 	unk1A0 = static_cast<TMapObjChangeStage*>(
 	    TMapObjBaseManager::newAndRegisterObj("ChangeStageMerrygoround"));
-	unk1A0->unk138 = 0x29;
+	unk1A0->mDestinationStage = 0x29;
 	unk1A0->mScaling.y *= 1.5f;
 	unk1A0->makeObjAppeared();
 	TMapObjBase::joinToGroup("マップグループ", unk1A0);
@@ -738,7 +738,7 @@ void TAmiKing::moveObject()
 	}
 }
 
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 void TAmiKing::calc()
 #else
 void TAmiKing::calcRootMatrix()

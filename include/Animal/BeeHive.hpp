@@ -2,17 +2,15 @@
 #define ANIMAL_BEE_HIVE_HPP
 
 #include <Animal/fishoid.hpp>
-#include <Enemy/EnemyManager.hpp>
-#include <Strategic/Spine.hpp>
-#include <System/ParamInst.hpp>
+#include <JSystem/JGeometry/JGQuat4.hpp>
+#include <Strategic/Nerve.hpp>
 
-class TBeeHive;
 class TMapObjBase;
+class TBeeHive;
 
-// Member names come from the .prm strings.
 class TBeeHiveParams : public TSpineEnemyParams {
 public:
-	TBeeHiveParams(const char* path);
+	TBeeHiveParams(const char*);
 
 	/* 0xA8 */ TParamRT<s32> mGiveupTimer;
 	/* 0xBC */ TParamRT<f32> mGiveupRange;
@@ -25,22 +23,19 @@ public:
 	/* 0x148 */ TParamRT<f32> mSearchRange;
 };
 
-// One bee of the swarm. Each one drops a coin when Yoshi eats it.
 class TBee : public TRealoidActor {
 public:
-	TBee(MActor* actor, TBeeHive* hive);
+	TBee(MActor*, TBeeHive*);
 
 	virtual BOOL receiveMessage(THitActor*, u32);
 	virtual void init();
 
 	void behaveToEat();
 
-public:
+private:
 	/* 0xA8 */ TBeeHive* mHive;
 };
 
-// The hanging beehive. Spraying it makes it swing, hitting it knocks it down
-// and the swarm then chases Mario until he escapes or dives into water.
 class TBeeHive : public TRealoid {
 public:
 	TBeeHive(const char* name = "ハチの巣とハチ");
@@ -59,7 +54,7 @@ public:
 	bool isWaiting() const;
 	bool isFalling() const;
 	JGeometry::TVec3<f32> getCenterOfGravity() const;
-	void setShakePower(const JGeometry::TVec3<f32>& dir);
+	void setShakePower(const JGeometry::TVec3<f32>&);
 	bool isMissMario() const;
 	bool doScaling();
 	void prepareReset();
@@ -68,8 +63,8 @@ public:
 	void dropCoin();
 	void appearAllBees();
 	void decrimentBee();
-	void disappearBee(int idx);
-	void appearBee(int idx);
+	void disappearBee(int);
+	void appearBee(int);
 	bool doFall();
 	void prepareFall();
 	bool doWait();
@@ -77,7 +72,7 @@ public:
 	void controlSound();
 	void controlCollision();
 	void loadCoin(JSUMemoryInputStream&);
-	void receiveMessageFromChild(TBee* bee);
+	void receiveMessageFromChild(TBee*);
 	void setBoidParamOnMarioWaterIn();
 	void setBoidParamOnWaiting();
 	void setBoidParamOnAttacking();
@@ -86,31 +81,30 @@ public:
 	void initCollision();
 
 	// fabricated
-	const TBeeHiveParams* getParam() const
+	TBeeHiveParams* getSaveParam2() const
 	{
-		return (const TBeeHiveParams*)getSaveParam();
+		return (TBeeHiveParams*)getSaveParam();
 	}
 
-public:
-	/* 0x158 */ JGeometry::TQuat4<f32> mSwingDirGoal;
-	/* 0x168 */ JGeometry::TQuat4<f32> mSwingDir;
+private:
+	/* 0x158 */ JGeometry::TQuat4<f32> mSwingTargetRot;
+	/* 0x168 */ JGeometry::TQuat4<f32> mSwingRot;
 	/* 0x178 */ JGeometry::TQuat4<f32> mBaseRot;
 	/* 0x188 */ f32 mSwingAngle;
-	/* 0x18C */ f32 mSwingSpeed;
-	/* 0x190 */ f32 mSwingLimit;
-	/* 0x194 */ JGeometry::TVec3<f32> mInitPos;
-	/* 0x1A0 */ JGeometry::TVec3<f32> mSoundPos;
-	/* 0x1AC */ TMapObjBase* mItem;
-	/* 0x1B0 */ int mCollisionBee;
+	/* 0x18C */ f32 mSwingAngVel;
+	/* 0x190 */ f32 mSwingAngleMax;
+	/* 0x194 */ JGeometry::TVec3<f32> mInitialPosition;
+	/* 0x1A0 */ JGeometry::TVec3<f32> mBeeSoundPos;
+	/* 0x1AC */ TMapObjBase* mNestItem;
+	/* 0x1B0 */ int mHitCheckBeeIdx;
 	/* 0x1B4 */ int mActiveBeeNum;
-	/* 0x1B8 */ TMapObjBase** mCoins;
+	/* 0x1B8 */ TMapObjBase** mBeeCoins;
 	/* 0x1BC */ int mEatenBeeNum;
 };
 
 class TBeeHiveManager : public TEnemyManager {
 public:
 	TBeeHiveManager(const char* name = "ハチの巣マネージャー");
-	virtual ~TBeeHiveManager() { }
 
 	virtual void load(JSUMemoryInputStream&);
 	virtual void createModelData();

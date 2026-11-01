@@ -35,7 +35,6 @@
 // rogue includes needed for matching sinit & bss
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
-#include <M3DUtil/InfectiousStrings.hpp>
 
 static const char* telesa_bastable[] = {
 	nullptr,
@@ -523,7 +522,7 @@ void TTelesa::bind()
 
 BOOL TTelesa::isReachedToGoal() const
 {
-	JGeometry::TVec3<f32> local_c = unk104.getPoint();
+	JGeometry::TVec3<f32> local_c = mGoal.getPoint();
 	local_c -= mPosition;
 	local_c.y = 0.0f;
 
@@ -735,7 +734,7 @@ void TTelesa::setAttacker()
 	unk184 = 1;
 	setTypeCanSee();
 	mSpine->initWith(&TNerveTelesaAttackMario::theNerve());
-	setGoalPath(TPathNode(SMS_GetMarioPos()));
+	setGoal(SMS_GetMarioPos());
 	unk1C8 = 0;
 	offHitFilter(HIT_CATEGORY_ENEMY);
 	unk150 &= ~0x40;
@@ -768,7 +767,7 @@ void TTelesa::setAttackPoint()
 	pos.x += dx * r;
 	pos.z += dz * r;
 
-	setGoalPath(TPathNode(pos));
+	setGoal(pos);
 }
 
 void TTelesa::setFirstAttackPoint()
@@ -785,7 +784,7 @@ void TTelesa::setFirstAttackPoint()
 	pos.x += JMASSin(angle) * 1000.0f;
 	pos.z += JMASCos(angle) * 1000.0f;
 
-	setGoalPath(TPathNode(pos));
+	setGoal(pos);
 }
 
 void TTelesa::setTypeNormal()
@@ -1041,8 +1040,8 @@ DEFINE_NERVE(TNerveTelesaImitate, TLiveActor)
 
 	TSharedParts* imitatedItem = self->mImitatedBmd;
 
-	if (SMSGetApplication()->mCurrArea.getStage() != 7
-	    && SMSGetApplication()->mCurrArea.getStage() != 14) {
+	if (SMSGetApplication()->getCurrArea().getStage() != 7
+	    && SMSGetApplication()->getCurrArea().getStage() != 14) {
 		if (spine->getTime() == 0 && imitatedItem != nullptr) {
 			((TMarioModokiTelesa*)self)->imitateAnm();
 			imitatedItem->getMActor()->setBckFromIndex(0);
@@ -1059,7 +1058,7 @@ DEFINE_NERVE(TNerveTelesaImitate, TLiveActor)
 	self->walkBehavior(3, 1.0f);
 
 	if (spine->getTime() == 10) {
-		self->setGoalPath(TPathNode((THitActor*)gpMarioAddress));
+		self->setGoal((THitActor*)gpMarioAddress);
 
 		if (imitatedItem != nullptr) {
 			((TMarioModokiTelesa*)self)->imitateAnm();
@@ -1155,7 +1154,7 @@ DEFINE_NERVE(TNerveTelesaFreeze, TLiveActor)
 
 	if (spine->getTime() == 0) {
 		self->setBckAnm(5);
-		self->setGoalPath(TPathNode((THitActor*)gpMarioAddress));
+		self->setGoal((THitActor*)gpMarioAddress);
 	} else if (self->checkCurAnmEnd(0)) {
 		if (self->isBckAnm(4)) {
 			if (!self->isFlying()) {
@@ -1256,7 +1255,7 @@ DEFINE_NERVE(TNerveKageMarioModokiWait, TLiveActor)
 
 	if (spine->getTime() == 0) {
 		self->getMActor()->setBck("ma_wait");
-		self->setGoalPath(TPathNode(SMS_GetMarioPos()));
+		self->setGoal(SMS_GetMarioPos());
 	}
 
 	if (!self->checkLiveFlag(LIVE_FLAG_DEAD) && self->isFindMario(1.0f)) {

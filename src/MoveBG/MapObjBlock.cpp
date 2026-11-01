@@ -15,7 +15,6 @@
 #include <System/MarDirector.hpp>
 
 // rogue includes needed for matching sinit & bss
-#include <M3DUtil/InfectiousStrings.hpp>
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
 
@@ -335,7 +334,7 @@ void TJuiceBlock::kill()
 	makeObjDead();
 }
 
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 void TJuiceBlock::touchActor(THitActor* actor)
 {
 	if (actor->isHitCategory(HIT_CATEGORY_MAP_OBJECT)

@@ -23,7 +23,7 @@
 #include <MoveBG/MapObjBase.hpp>
 #include <MoveBG/Item.hpp>
 #include <MSound/MSound.hpp>
-#include <MSound/MSoundSe.hpp>
+#include <MSound/MSoundSE.hpp>
 #include <JSystem/J3D/J3DGraphBase/J3DMaterial.hpp>
 #include <JSystem/J3D/J3DGraphLoader/J3DModelLoader.hpp>
 #include <JSystem/JParticle/JPAEmitter.hpp>
@@ -31,7 +31,6 @@
 // rogue includes needed for matching sinit & bss
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
-#include <M3DUtil/InfectiousStrings.hpp>
 
 f32 THamuKuri::mCapGravityY         = 0.15f;
 f32 THamuKuri::mCapSpeed            = 12.0f;
@@ -776,7 +775,7 @@ bool THamuKuri::isFindMario(f32 param_1)
 		return false;
 
 	if (gpMarioOriginal->mUpperState == TMario::UPPER_STATE_PUMPING
-	    && gpMarioOriginal->mWaterGun->mCurrentWater == 0) {
+	    && gpMarioOriginal->getWaterGun()->getCurrentWater() == 0) {
 		unk194 = unk1F4->mSLGiveUpLength.get();
 		unk194 *= 3.0f;
 		return TSmallEnemy::isFindMario(param_1 * 5.0f);
@@ -791,7 +790,7 @@ void THamuKuri::setSearchActor(THitActor* param_1)
 	unk1A0 = 0;
 	mSpine->pushNerve(&TNerveHamuKuriGoForSearchActor::theNerve());
 	unk1F8 = param_1;
-	setGoalPath(TPathNode(param_1->mPosition));
+	setGoal(param_1->mPosition);
 }
 
 bool THamuKuri::isGiveUpSearchActor()
@@ -821,7 +820,7 @@ void THamuKuri::jumpToSearchActor()
 			JGeometry::TVec3<f32> tgt = pTVar5->mPosition;
 			tgt.y                     = pTVar5->getGroundHeight();
 
-			setGoalPath(tgt);
+			setGoal(tgt);
 			return;
 		}
 
@@ -1168,7 +1167,7 @@ MtxPtr THamuKuri::getTakingMtx()
 
 bool THamuKuri::isResignationAttack()
 {
-	if ((unk104.getPoint() - mPosition).length() > unk194) {
+	if (getGoalDistance() > unk194) {
 		unk194 = unk1F4->mSLGiveUpLength.get();
 		return true;
 	}
@@ -1408,7 +1407,7 @@ void THaneHamuKuri::walkBehavior(int param_1, f32 param_2)
 						SMSRumbleMgr->start(0x15, 5, (f32*)nullptr);
 						SMSGetMSound()->startSoundActor(
 						    MSD_SE_MA_HIP_ATTACK, &mPosition, 0, nullptr, 0, 4);
-						setGoalPath((THitActor*)gpMarioAddress);
+						setGoal((THitActor*)gpMarioAddress);
 						mSpine->pushNerve(
 						    &TNerveHaneHamuKuriUpWait::theNerve());
 					}
@@ -1487,7 +1486,7 @@ void THaneHamuKuri::bind()
 
 BOOL THaneHamuKuri::isReachedToGoal() const
 {
-	JGeometry::TVec3<f32> local_c = unk104.getPoint();
+	JGeometry::TVec3<f32> local_c = mGoal.getPoint();
 	local_c -= mPosition;
 	local_c.y = 0.0f;
 	if (MsVECMag2(&local_c) < 100.0f)
@@ -1699,7 +1698,7 @@ void THaneHamuKuri2::walkBehavior(int param_1, f32 param_2)
 
 BOOL THaneHamuKuri2::isReachedToGoal() const
 {
-	JGeometry::TVec3<f32> local_c = unk104.getPoint();
+	JGeometry::TVec3<f32> local_c = mGoal.getPoint();
 	local_c -= mPosition;
 	local_c.y = 0.0f;
 	if (MsVECMag2(&local_c) < 20.0f)
@@ -2445,7 +2444,7 @@ DEFINE_NERVE(TNerveHamuKuriGoForSearchActor, TLiveActor)
 		self->setRunAnm();
 
 	if (!self->isAirborne()) {
-		if ((self->unk104.getPoint() - self->mPosition).length() < 200.0f)
+		if (self->getGoalDistance() < 200.0f)
 			self->jumpToSearchActor();
 	}
 
@@ -2470,7 +2469,7 @@ DEFINE_NERVE(TNerveHamuKuriBoundFreeze, TLiveActor)
 		self->unk1E4.x              = thing.x;
 		self->unk1E4.y              = thing.y;
 		self->unk1E4.z              = thing.z;
-		self->setGoalPath(TPathNode((THitActor*)gpMarioAddress));
+		self->setGoal((THitActor*)gpMarioAddress);
 		self->unk1E0 = 1;
 	}
 
@@ -2603,7 +2602,7 @@ DEFINE_NERVE(TNerveHaneHamuKuriUpWait, TLiveActor)
 	THaneHamuKuri* self = (THaneHamuKuri*)spine->getBody();
 	if (spine->getTime() < 1) {
 		self->setWaitAnm();
-		self->setGoalPath(TPathNode((THitActor*)gpMarioAddress));
+		self->setGoal((THitActor*)gpMarioAddress);
 	}
 
 	self->mScaling.x = self->mScaling.z
@@ -2629,7 +2628,7 @@ DEFINE_NERVE(TNerveHaneHamuKuriMoveOnGraph, TLiveActor)
 		self->setWalkAnm();
 		self->initialGraphNode();
 		if (self->getTracer()->getGraph()->getNodeNum() == 1)
-			self->setGoalPath(TPathNode((THitActor*)gpMarioAddress));
+			self->setGoal((THitActor*)gpMarioAddress);
 	}
 
 	if (self->getTracer()->getGraph()->getNodeNum() == 1) {
@@ -2671,9 +2670,9 @@ DEFINE_NERVE(TNerveDoroHamuKuriRobCap, TLiveActor)
 	if (spine->getTime() == 0 || self->unk1F8 == nullptr) {
 		self->unk1F8 = manager->unk70;
 		self->setRunAnm();
-		self->setGoalPath(manager->unk70);
+		self->setGoal(manager->unk70);
 	} else if (self->unk1F8 != manager->unk70) {
-		self->setGoalPath((THitActor*)gpMarioAddress);
+		self->setGoal((THitActor*)gpMarioAddress);
 		return true;
 	}
 
@@ -2726,7 +2725,7 @@ DEFINE_NERVE(TNerveDoroHaneHitWater, TLiveActor)
 {
 	TDoroHaneKuri* self = (TDoroHaneKuri*)spine->getBody();
 	if (spine->getTime() == 0) {
-		self->setGoalPath((SMS_GetMarioPos()));
+		self->setGoal((SMS_GetMarioPos()));
 		self->getMActor()->setFrameRate(SMSGetAnmFrameRate() * 1.5f,
 		                                ANM_TYPE_BCK);
 	}

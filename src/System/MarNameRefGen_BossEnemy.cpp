@@ -16,17 +16,17 @@
 #include <Enemy/TinKoopa.hpp>
 #include <Enemy/BossTelesa.hpp>
 #include <Enemy/BossHanachan.hpp>
+#include <Enemy/BossWanwan.hpp>
 #include <System/MarNameRefGen.hpp>
+#include <M3DUtil/M3UModelMario.hpp>
+#include <M3DUtil/MActorAnm.hpp>
 
 // rogue includes needed for matching sinit & bss
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
-#include <System/DummyStrings.hpp>
+#include <System/Application.hpp>
 
-static const char cDirtyFileName[] = "/scene/map/pollution/H_ma_rak.bti";
-static const char cDirtyTexName[]  = "H_ma_rak_dummy";
-
-#include <M3DUtil/InfectiousStrings.hpp>
+#include <M3DUtil/MActorAnm.hpp>
 
 JDrama::TNameRef* TMarNameRefGen::getNameRef_BossEnemy(const char* name) const
 {

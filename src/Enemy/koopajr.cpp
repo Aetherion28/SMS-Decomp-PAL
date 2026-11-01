@@ -28,7 +28,7 @@
 // rogue includes needed for matching sinit & bss
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
-#include <M3DUtil/InfectiousStrings.hpp>
+#include <M3DUtil/MActorAnm.hpp>
 #include <Map/MapCollisionManager.hpp>
 
 // TODO: absDirection, sub and calcNearerDirection match apart from a 0x10-0x18

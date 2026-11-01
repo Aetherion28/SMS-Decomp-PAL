@@ -17,7 +17,7 @@
 #include <JSystem/JStage/JSGActor.hpp>
 #include <JSystem/JStage/JSGObject.hpp>
 #include <JSystem/JSupport/JSUList.hpp>
-#include <M3DUtil/InfectiousStrings.hpp>
+#include <M3DUtil/MActorAnm.hpp>
 #include <M3DUtil/MActor.hpp>
 #include <M3DUtil/MActorAnm.hpp>
 #include <MSound/MSound.hpp>
@@ -115,9 +115,9 @@ void TChuuHanaManager::load(JSUMemoryInputStream& param_1)
 	unk38 = new TChuuHanaSaveLoadParams("/enemy/chuuhana.prm");
 }
 
-void TChuuHanaManager::perform(u32 param_1, JDrama::TGraphics* param_2)
+void TChuuHanaManager::perform(u32 cue, JDrama::TGraphics* param_2)
 {
-	TEnemyManager::perform(param_1, param_2);
+	TEnemyManager::perform(cue, param_2);
 }
 
 TSpineEnemy* TChuuHanaManager::createEnemyInstance() { return new TChuuHana; }
@@ -263,19 +263,19 @@ void TChuuHana::setMActorAndKeeper()
 	mMActor       = mMActorKeeper->createMActor("default.bmd", 3);
 }
 
-void TChuuHana::perform(u32 param_1, JDrama::TGraphics* param_2)
+void TChuuHana::perform(u32 cue, JDrama::TGraphics* param_2)
 {
-	TSmallEnemy::perform(param_1, param_2);
+	TSmallEnemy::perform(cue, param_2);
 
 	JGeometry::TVec3<f32> marioPos = SMS_GetMarioPos();
 	if (checkLiveFlag(LIVE_FLAG_CLIPPED_OUT)) {
 		if (gpMirrorModelManager->isInMirror(mPosition)
 		    || gpMirrorModelManager->isInMirror(marioPos)) {
-			if (param_1 & CUE_CALC_ANIM) {
+			if (cue & CUE_CALC_ANIM) {
 				calcRootMatrix();
 				mMActor->calc();
 			}
-			if (param_1 & CUE_CALC_VIEW)
+			if (cue & CUE_CALC_VIEW)
 				mMActor->viewCalc();
 		}
 	}
@@ -687,7 +687,7 @@ void TChuuHana::setGoal()
 	goal.x += 1000.0f * dir.x;
 	goal.z += 1000.0f * dir.z;
 
-	setGoalPath(goal);
+	TSpineEnemy::setGoal(goal);
 	unk1A4 = mCheckOnPanelTime;
 	unk1B2 = 0;
 }
@@ -700,7 +700,7 @@ void TChuuHana::setSafeGoal()
 	TMsRange<s32> nodeRange(0, getTracer()->getGraph()->getNodeNum());
 	getTracer()->getGraph()->getGraphNode(nodeRange.rand()).getPoint(&point);
 	TPathNode pathPoint(point);
-	setGoalPath(pathPoint);
+	TSpineEnemy::setGoal(pathPoint);
 
 	unk1B2 = 1;
 }
@@ -917,7 +917,7 @@ DEFINE_NERVE(TNerveChuuHanaStick, TLiveActor)
 	TChuuHana* self = (TChuuHana*)spine->getBody();
 	if (spine->getTime() == 0 || !self->isBckAnm(4)) {
 		self->setBckAnm(4);
-		self->setGoalPath(SMS_GetMarioPos());
+		self->TSpineEnemy::setGoal(SMS_GetMarioPos());
 		if (TChuuHana::mAttackVersion)
 			*self->unk21C = 1;
 	} else {
@@ -985,7 +985,7 @@ DEFINE_NERVE(TNerveChuuHanaAttack, TLiveActor)
 	if (spine->getTime() == 0) {
 		self->setBckAnm(12);
 		self->getMActor()->setFrameRate(2.0f * SMSGetAnmFrameRate(), 0);
-		self->setGoalPath(TPathNode((THitActor*)gpMarioAddress));
+		self->TSpineEnemy::setGoal(TPathNode((THitActor*)gpMarioAddress));
 	}
 
 	if (SMS_GetMarioGroundPlane()->getActor() != self->unk218)
@@ -1000,7 +1000,7 @@ DEFINE_NERVE(TNerveChuuHanaAttack, TLiveActor)
 	self->checkOnPanel();
 
 	if (self->isReachedToGoalXZ())
-		self->setGoalPath(TPathNode((THitActor*)gpMarioAddress));
+		self->TSpineEnemy::setGoal(TPathNode((THitActor*)gpMarioAddress));
 
 	self->walkBehavior(2, self->unk1B4->mSLDashRate.get());
 	return false;

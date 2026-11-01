@@ -9,13 +9,14 @@
 #include <JSystem/JAudio/JASystem/JASWaveArcLoader.hpp>
 #include <JSystem/JAudio/JAInterface/JAISound.hpp>
 #include <JSystem/JAudio/JAInterface/JAIBasic.hpp>
+#include <JSystem/JAudio/JAInterface/JAIGlobalParameter.hpp>
 #include <MSound/MSSceneWave.hpp>
 #include <MSound/MSoundSE.hpp>
 #include <MSound/SoundEffects.hpp>
 
 class JAIActor;
 class JAICamera;
-class JAIAnimeFrameSoundData;
+struct JAIAnimeFrameSoundData;
 class MSModBgm;
 class MSBgmXFade;
 
@@ -78,7 +79,7 @@ public:
 
 	void initSound();
 	void mainLoop();
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 	f32 getDistPowFromCamera(const Vec& pos);
 #endif
 	void exitStage();
@@ -139,6 +140,12 @@ public:
 			                                             out_handle, fade);
 	}
 
+	// fabricated
+	void setOutputMode(u32 mode)
+	{
+		JAIGlobalParameter::setParamSoundOutputMode(mode);
+	}
+
 	// Fabricated, very likely due to real startSoundSystemSE
 	void startSoundActor(u32 id, const Vec* position, u32 ground_no,
 	                     JAISoundHandle* out_handle, u32 fade, u8 camera_idx)
@@ -197,7 +204,7 @@ public:
 	}
 
 public:
-#ifdef VERSION_GMSP01
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 	/* 0x94 */ s32 unk94;
 	/* 0x98 */ bool mWaterFirEnabled;
 	/* 0x9A */ u16 mTimerSyncValue;

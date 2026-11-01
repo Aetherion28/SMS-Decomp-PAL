@@ -6,6 +6,7 @@
 #include <GC2D/MessageUtil.hpp>
 #include <GC2D/HelpActor.hpp>
 #include <GC2D/ExPane.hpp>
+#include <GC2D/Helpers.hpp>
 #include <Camera/Camera.hpp>
 #include <MSound/MSound.hpp>
 #include <Player/MarioAccess.hpp>
@@ -38,6 +39,7 @@
 #include <dolphin/mtx.h>
 #include <stdio.h>
 #include <string.h>
+#include <version.h>
 
 extern JPAEmitterManager* gpEmitterManager4D2;
 bool SMS_isDivingMap();
@@ -45,7 +47,6 @@ bool SMS_isDivingMap();
 // rogue includes needed for matching sinit & bss
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
-#include <System/DummyStrings.hpp>
 
 JUTPoint TGCConsole2::cDownTopPoint(0, -100);
 JUTPoint TGCConsole2::cDownMidPoint(0, 30);
@@ -57,16 +58,26 @@ JUTPoint TGCConsole2::cCoinTopPoint(0, 0);
 JUTPoint TGCConsole2::cCoinMidPoint(0, 45);
 JUTPoint TGCConsole2::cCoinBotPoint(0, 0);
 
+#if defined(VERSION_GMSP01_NX)
 // fabricated
-static inline void syncPaneBounds(TBoundPane* pane)
+static inline void shiftWidePane(TExPane* pane, int x)
 {
-	pane->unk4 = pane->getPane()->mBounds;
+	pane->getPane()->add(x, 0);
+	pane->mInitialBounds = pane->getPane()->getBounds();
 }
 
 // fabricated
-static inline void detachPaneFromParent(J2DPane* pane)
+static inline void shiftWidePane(TBoundPane* pane, int x)
 {
-	pane->mPaneTree.getParent()->removeChild(&pane->mPaneTree);
+	pane->getPane()->add(x, 0);
+	pane->unk4 = pane->getPane()->getBounds();
+}
+#endif
+
+// fabricated
+static inline void syncPaneBounds(TBoundPane* pane)
+{
+	pane->unk4 = pane->getPane()->getBounds();
 }
 
 // fabricated
@@ -74,42 +85,6 @@ static inline bool isMountedYoshi(TMario* mario)
 {
 	TYoshi* yoshi = mario->mYoshi;
 	return yoshi != nullptr && yoshi->mState == TYoshi::STATE_MOUNTED;
-}
-
-// fabricated
-static inline void updateLifeMeterColors(TGCConsole2* console, bool airMode)
-{
-	if (console->unk1CC >= 4) {
-		if (airMode) {
-			((J2DPicture*)console->mLifeMeterText->getPane())->mWhite
-			    = 0x00FFFFFF;
-			((J2DPicture*)console->mLifeMeterText->getPane())->mBlack
-			    = 0x003CFF00;
-			((J2DPicture*)console->mLifeMeterPetals[0])->mWhite = 0x00FFFFFF;
-			((J2DPicture*)console->mLifeMeterPetals[0])->mBlack = 0x003CFF00;
-		} else {
-			((J2DPicture*)console->mLifeMeterText->getPane())->mWhite
-			    = 0xFFFFFFFF;
-			((J2DPicture*)console->mLifeMeterText->getPane())->mBlack = 0;
-			((J2DPicture*)console->mLifeMeterPetals[0])->mWhite = 0xFFFFFFFF;
-			((J2DPicture*)console->mLifeMeterPetals[0])->mBlack = 0;
-		}
-	} else {
-		if (airMode) {
-			((J2DPicture*)console->mLifeMeterText->getPane())->mWhite
-			    = 0x0010FFFF;
-			((J2DPicture*)console->mLifeMeterText->getPane())->mBlack
-			    = 0x003CFF00;
-			((J2DPicture*)console->mLifeMeterPetals[0])->mWhite = 0x0010FFFF;
-			((J2DPicture*)console->mLifeMeterPetals[0])->mBlack = 0x003CFF00;
-		} else {
-			((J2DPicture*)console->mLifeMeterText->getPane())->mWhite
-			    = 0x7F7F7FFF;
-			((J2DPicture*)console->mLifeMeterText->getPane())->mBlack = 0;
-			((J2DPicture*)console->mLifeMeterPetals[0])->mWhite = 0x7F7F7FFF;
-			((J2DPicture*)console->mLifeMeterPetals[0])->mBlack = 0;
-		}
-	}
 }
 
 // fabricated
@@ -149,8 +124,8 @@ static inline void setLifeMeterWhiteLow(TGCConsole2* console, bool airMode)
 // fabricated
 static inline void playLifeChangeSound(u32 sound)
 {
-	if (SMSGetMarDirector()->mState == TMarDirector::STATE_UNK4
-	    && SMSGetMarDirector()->unk124 == 0) {
+	if (SMSGetMarDirector()->getState() == TMarDirector::STATE_UNK4
+	    && SMSGetMarDirector()->isGameplayModeNow()) {
 		SMSGetMSound()->startSoundSystemSE(sound, 0, nullptr, 0);
 	}
 }
@@ -158,7 +133,7 @@ static inline void playLifeChangeSound(u32 sound)
 // fabricated
 static inline void detachBoundPaneFromParent(TBoundPane* pane)
 {
-	detachPaneFromParent(pane->getPane());
+	pane->getPane()->removeFromParent();
 }
 
 // fabricated
@@ -442,6 +417,7 @@ static u32 scDolpicNewsDolpic5_3[] = { 0x000E0013, 0xFFFFFFFF };
 static u32 scDolpicNewsDolpic5_4[] = { 0x000E0012, 0x000E0013, 0xFFFFFFFF };
 static u32 scDolpicNewsDolpic6[]   = { 0x000E0002, 0x000E0004, 0xFFFFFFFF };
 static u32 scDolpicNewsDolpic7[]   = { 0x000E0005, 0x000E0006, 0xFFFFFFFF };
+#if defined(VERSION_GMSJ01)
 static u32 scDolpicNewsDolpic8_1[] = { 0x000E0003, 0xFFFFFFFF };
 static u32 scDolpicNewsDolpic8_2[] = { 0x000E0007, 0x000E0003, 0xFFFFFFFF };
 static u32 scDolpicNewsDolpic8_3[] = { 0x000E0008, 0x000E0003, 0xFFFFFFFF };
@@ -450,11 +426,87 @@ static u32 scDolpicNewsDolpic8_5[] = { 0x000E000F, 0x000E0003, 0xFFFFFFFF };
 static u32 scDolpicNewsDolpic8_6[]
     = { 0x000E000E, 0x000E000F, 0x000E0003, 0xFFFFFFFF };
 static u32 scDolpicNewsDolpic8_7[] = { 0x000E0010, 0x000E0003, 0xFFFFFFFF };
-static u32 scDolpicNewsDolpic9[]   = { 0x000E000A, 0x000E000B, 0xFFFFFFFF };
-static u32 scDolpicNewsDolpic10[]  = { 0x000E000C, 0x000E000D, 0xFFFFFFFF };
+#else
+static u32 scDolpicNewsDolpic8_Aa1[]
+    = { 0x000E0007, 0x000E000E, 0x000E0003, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Aa2[]
+    = { 0x000E0007, 0x000E000E, 0x000E000F, 0x000E0003, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Aa3[]
+    = { 0x000E0007, 0x000E000F, 0x000E0003, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Aa4[] = { 0x000E0007, 0x000E0003, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Ab1[]
+    = { 0x000E0008, 0x000E000E, 0x000E0003, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Ab2[]
+    = { 0x000E0008, 0x000E000E, 0x000E000F, 0x000E0003, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Ab3[]
+    = { 0x000E0008, 0x000E000F, 0x000E0003, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Ab4[] = { 0x000E0008, 0x000E0003, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Ac1[] = { 0x000E000E, 0x000E0003, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Ac2[]
+    = { 0x000E000E, 0x000E000F, 0x000E0003, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Ac3[] = { 0x000E000F, 0x000E0003, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Ac4[] = { 0x000E0003, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Ba1[]
+    = { 0x000E0007, 0x000E000E, 0x000E0003, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Ba2[] = { 0x000E0007, 0x000E000E, 0x000E000F,
+	                                     0x000E0003, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Ba3[]
+    = { 0x000E0007, 0x000E000F, 0x000E0003, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Ba4[]
+    = { 0x000E0007, 0x000E0003, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Bb1[]
+    = { 0x000E0008, 0x000E000E, 0x000E0003, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Bb2[] = { 0x000E0008, 0x000E000E, 0x000E000F,
+	                                     0x000E0003, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Bb3[]
+    = { 0x000E0008, 0x000E000F, 0x000E0003, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Bb4[]
+    = { 0x000E0008, 0x000E0003, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Bc1[]
+    = { 0x000E000E, 0x000E0003, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Bc2[]
+    = { 0x000E000E, 0x000E000F, 0x000E0003, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Bc3[]
+    = { 0x000E000F, 0x000E0003, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Bc4[] = { 0x000E0003, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Ca1[]
+    = { 0x000E0007, 0x000E000E, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Ca2[]
+    = { 0x000E0007, 0x000E000E, 0x000E000F, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Ca3[]
+    = { 0x000E0007, 0x000E000F, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Ca4[] = { 0x000E0007, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Cb1[]
+    = { 0x000E0008, 0x000E000E, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Cb2[]
+    = { 0x000E0008, 0x000E000E, 0x000E000F, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Cb3[]
+    = { 0x000E0008, 0x000E000F, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Cb4[] = { 0x000E0008, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Cc1[] = { 0x000E000E, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Cc2[]
+    = { 0x000E000E, 0x000E000F, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Cc3[] = { 0x000E000F, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Cc4[] = { 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Da1[] = { 0x000E0007, 0x000E000E, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Da2[]
+    = { 0x000E0007, 0x000E000E, 0x000E000F, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Da3[] = { 0x000E0007, 0x000E000F, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Da4[] = { 0x000E0007, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Db1[] = { 0x000E0008, 0x000E000E, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Db2[]
+    = { 0x000E0008, 0x000E000E, 0x000E000F, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Db3[] = { 0x000E0008, 0x000E000F, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Db4[] = { 0x000E0008, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Dc1[] = { 0x000E000E, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Dc2[] = { 0x000E000E, 0x000E000F, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Dc3[] = { 0x000E000F, 0xFFFFFFFF };
+#endif
+static u32 scDolpicNewsDolpic9[]  = { 0x000E000A, 0x000E000B, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic10[] = { 0x000E000C, 0x000E000D, 0xFFFFFFFF };
 
 // rogue include
-#include <M3DUtil/InfectiousStrings.hpp>
+#include <M3DUtil/MActorAnm.hpp>
 
 TGCConsole2::TGCConsole2(const char* name)
     : JDrama::TViewObj(name)
@@ -540,6 +592,11 @@ TGCConsole2::TGCConsole2(const char* name)
     , mBlueCoinCountIcon(nullptr)
     , mBlueCoinCountX(nullptr)
     , unk160(nullptr)
+#if !defined(VERSION_GMSJ01)
+    , unk164(nullptr)
+    , unk16C(0)
+    , unk170(0)
+#endif
     , mLifeMeterBackground(nullptr)
     , mLifeMeterText(nullptr)
     , mLifeMeterRoot(nullptr)
@@ -565,6 +622,10 @@ TGCConsole2::TGCConsole2(const char* name)
     , mLifeCountText(nullptr)
     , mLifeCountIcon(nullptr)
     , mLifeCountX(nullptr)
+#if !defined(VERSION_GMSJ01)
+    , unk3AE(0)
+    , unk3AD(0)
+#endif
     , unk3CC(0)
     , mBalloonMessageLoader(nullptr)
     , unk3D4(nullptr)
@@ -576,10 +637,26 @@ TGCConsole2::TGCConsole2(const char* name)
     , unk3EC(0.7f)
     , unk3F0(0)
     , unk3F4(0xffffffff)
+#if !defined(VERSION_GMSJ01)
+    , unk3F8(0)
+    , unk3FC(nullptr)
+    , unk400(nullptr)
+    , unk404(nullptr)
+    , unk408(nullptr)
+    , unk40C(nullptr)
+    , unk410(nullptr)
+#endif
     , unk426(0)
     , unk444(0)
     , unk448(0)
+#if !defined(VERSION_GMSJ01)
+    , unk4FC(0)
+#endif
     , unk510(false)
+#if !defined(VERSION_GMSJ01)
+    , unk514(0)
+    , unk518(0)
+#endif
     , unk51C(0)
     , unk530(nullptr)
     , mTelopTextWidth(0)
@@ -602,6 +679,11 @@ TGCConsole2::TGCConsole2(const char* name)
 	for (int i = 0; i < 3; ++i)
 		mShineCountDigits[i] = nullptr;
 
+#if !defined(VERSION_GMSJ01)
+	for (int i = 0; i < 4; ++i)
+		unk414[i] = nullptr;
+#endif
+
 	unk90 = new THelpActor*[32];
 }
 
@@ -617,6 +699,9 @@ void TGCConsole2::load(JSUMemoryInputStream& stream)
 	mCoinCountIcon       = new TBoundPane(mHudScreen, 'c_ic');
 	mCoinCountX          = new TBoundPane(mHudScreen, '\0c_x');
 	mCoinCountRoot       = new TExPane(mHudScreen, '\0c_0');
+#if defined(VERSION_GMSP01_NX)
+	shiftWidePane(mCoinCountRoot, -84);
+#endif
 
 	for (int i = 0; i < 3; ++i)
 		mCoinCountDigits[i] = new TBlendPane(mHudScreen, 'c_n1' + i);
@@ -631,6 +716,9 @@ void TGCConsole2::load(JSUMemoryInputStream& stream)
 	mShineCountIcon       = new TBoundPane(mHudScreen, 's_ic');
 	mShineCountX          = new TBoundPane(mHudScreen, '\0s_x');
 	mShineCountRoot       = new TExPane(mHudScreen, '\0s_0');
+#if defined(VERSION_GMSP01_NX)
+	shiftWidePane(mShineCountRoot, -84);
+#endif
 
 	for (int i = 0; i < 3; ++i)
 		mShineCountDigits[i] = new TBlendPane(mHudScreen, 's_n1' + i);
@@ -642,10 +730,16 @@ void TGCConsole2::load(JSUMemoryInputStream& stream)
 	for (int i = 0; i < 3; ++i)
 		mBlueCoinCountDigits[i] = new TBoundPane(mHudScreen, 'd_n1' + i);
 
-	unk160               = new TExPane(mHudScreen, '\0d_0');
+	unk160 = new TExPane(mHudScreen, '\0d_0');
+#if defined(VERSION_GMSP01_NX)
+	shiftWidePane(unk160, -84);
+#endif
 	mLifeMeterBackground = new TBoundPane(mHudScreen, 'l_ba');
 	mLifeMeterText       = new TBoundPane(mHudScreen, 'l_tx');
 	mLifeMeterRoot       = new TBoundPane(mHudScreen, '\0l_0');
+#if defined(VERSION_GMSP01_NX)
+	shiftWidePane(mLifeMeterRoot, 84);
+#endif
 	for (int i = 0; i < 9; ++i) {
 		mLifeMeterPetals[i * 2]     = mHudScreen->search('lm01' + (i << 8));
 		mLifeMeterPetals[i * 2 + 1] = mHudScreen->search('lm02' + (i << 8));
@@ -670,19 +764,22 @@ void TGCConsole2::load(JSUMemoryInputStream& stream)
 
 	unk29C = new TBoundPane(mHudScreen, 'w_t0');
 	unk2F8 = new TExPane(mHudScreen, '\0w_0');
+#if defined(VERSION_GMSP01_NX)
+	shiftWidePane(unk2F8, 84);
+#endif
 	for (int i = 0; i < 3; ++i) {
 		unk2A0[i] = (J2DPicture*)mHudScreen->search('w_t1' + i);
 
-		unk2A0[i]->setBlendKonstColor(1.0f, 0.0f, 0.0f, 0.0f);
-		unk2A0[i]->setBlendKonstAlpha(0.0f, 0.0f, 0.0f, 0.0f);
+		unk2A0[i]->setBlendColorRatio(1.0f, 0.0f, 0.0f, 0.0f);
+		unk2A0[i]->setBlendAlphaRatio(0.0f, 0.0f, 0.0f, 0.0f);
 
 		unk2A0[i]->hide();
 
 		if (i != 0) {
 			unk2AC[i] = (J2DPicture*)mHudScreen->search('w_m1' + i);
 
-			unk2A0[i]->setBlendKonstColor(0.0f, 0.0f, 0.0f, 0.0f);
-			unk2A0[i]->setBlendKonstAlpha(1.0f, 0.0f, 0.0f, 0.0f);
+			unk2A0[i]->setBlendColorRatio(0.0f, 0.0f, 0.0f, 0.0f);
+			unk2A0[i]->setBlendAlphaRatio(1.0f, 0.0f, 0.0f, 0.0f);
 
 			unk2AC[i]->hide();
 		}
@@ -690,6 +787,9 @@ void TGCConsole2::load(JSUMemoryInputStream& stream)
 
 	for (int i = 0; i < 4; ++i)
 		unk314[i] = mHudScreen->search(i == 0 ? 'j_t0' : 'j_t1');
+#if defined(VERSION_GMSP01_NX)
+	unk314[0]->add(84, 0);
+#endif
 
 	unk324 = mHudScreen->search('j_ic');
 	unk328 = (J2DPicture*)mHudScreen->search('j_rq');
@@ -712,7 +812,13 @@ void TGCConsole2::load(JSUMemoryInputStream& stream)
 		mLifeCountDigits[i] = new TBoundPane(mHudScreen, 'm_n1' + i);
 
 	unk3B0 = (J2DWindow*)mHudScreen->search('he_w');
+#if defined(VERSION_GMSP01_NX)
+	unk3B0->add(84, 0);
+#endif
 	unk3B8 = (J2DTextBox*)mHudScreen->search('he_2');
+#if defined(VERSION_GMSP01_NX)
+	unk3B8->add(84, 0);
+#endif
 	unk3B4 = (J2DTextBox*)mHudScreen->search('he_1');
 
 	SMSMakeTextBuffer(unk3B8, 0x401);
@@ -722,9 +828,14 @@ void TGCConsole2::load(JSUMemoryInputStream& stream)
 	unk3B4->setFont(gpSystemFont);
 
 	unk3B4->show();
-	mBalloonMessageLoader = new TMessageLoader("/common/2d/balloon.bmg");
+	mBalloonMessageLoader = new TMessageLoader(
+	    VERSION_SELECT("/common/2d/balloon.bmg", GMSP01("/cmn2d/balloon.bmg"),
+	                   GMSP01_NX("/cmn2d/balloon.bmg")));
 
 	unk3FC = new TExPane(mHudScreen, '\0b_0');
+#if defined(VERSION_GMSP01_NX)
+	shiftWidePane(unk3FC, -84);
+#endif
 	unk400 = new TBoundPane(mHudScreen, 'b_ba');
 	unk408 = new TBoundPane(mHudScreen, 'b_ic');
 	unk40C = new TBoundPane(mHudScreen, 'moic');
@@ -737,6 +848,9 @@ void TGCConsole2::load(JSUMemoryInputStream& stream)
 	    ->changeTexture(unkE0[8]->getTexInfo(), 0);
 
 	unk428 = new TExPane(mHudScreen, '\0r_0');
+#if defined(VERSION_GMSP01_NX)
+	shiftWidePane(unk428, -84);
+#endif
 	unk42C = new TBoundPane(mHudScreen, 'r_ba');
 	unk430 = new TBoundPane(mHudScreen, 'r_ic');
 	unk434 = new TBoundPane(mHudScreen, '\0r_x');
@@ -746,6 +860,9 @@ void TGCConsole2::load(JSUMemoryInputStream& stream)
 		unk43C[i] = new TBoundPane(mHudScreen, 'r_n1' + i);
 
 	unk44C = new TExPane(mHudScreen, '\0t_0');
+#if defined(VERSION_GMSP01_NX)
+	shiftWidePane(unk44C, -84);
+#endif
 	unk450 = new TBoundPane(mHudScreen, 't_ba');
 	unk454 = new TBoundPane(mHudScreen, 't_tx');
 
@@ -770,7 +887,9 @@ void TGCConsole2::load(JSUMemoryInputStream& stream)
 	unk528 = (J2DTextBox*)mHudScreen->search('tet2');
 	unk52C = (J2DTextBox*)mHudScreen->search('tet1');
 
-	unk530 = new TMessageLoader("/common/2d/infomess.bmg");
+	unk530 = new TMessageLoader(
+	    VERSION_SELECT("/common/2d/infomess.bmg", GMSP01("/cmn2d/infomess.bmg"),
+	                   GMSP01_NX("/cmn2d/infomess.bmg")));
 	unk55C = 0;
 	SMSMakeTextBuffer(unk528, 0x401);
 	SMSMakeTextBuffer(unk52C, 0x401);
@@ -783,7 +902,7 @@ void TGCConsole2::loadAfter()
 	unk94 = static_cast<TConsoleStr*>(
 	    JDrama::TNameRefGen::search("コンソール文字"));
 
-	JUTRect bounds(unk2F8->getPane()->mBounds);
+	JUTRect bounds(unk2F8->getPane()->getBounds());
 
 	unk2A0[0]->add(bounds.x1, bounds.y1);
 	unk270->getPane()->add(bounds.x1, bounds.y1);
@@ -793,12 +912,12 @@ void TGCConsole2::loadAfter()
 	unk328->add(bounds.x1, bounds.y1);
 
 	for (int i = 0; i < 3; ++i) {
-		unk2BC[i] = unk2A0[i]->mBounds;
+		unk2BC[i] = unk2A0[i]->getBounds();
 		unk2BC[i].add(bounds.x1, bounds.y1);
 	}
 
 	unk2A0[0]->show();
-	detachPaneFromParent(unk2A0[0]);
+	unk2A0[0]->removeFromParent();
 	detachBoundPaneFromParent(unk270);
 	for (int i = 0; i < 4; ++i) {
 		unk278[i]->getPane()->add(bounds.x1, bounds.y1);
@@ -806,7 +925,7 @@ void TGCConsole2::loadAfter()
 		detachBoundPaneFromParent(unk278[i]);
 	}
 	detachBoundPaneFromParent(unk26C);
-	detachPaneFromParent(unk328);
+	unk328->removeFromParent();
 	unk288->hide();
 
 	unk2EC[1] = JUtility::TColor(0x64DCFF00);
@@ -826,8 +945,8 @@ void TGCConsole2::loadAfter()
 	unk1CC = health;
 	unk1C  = health;
 
-	unk26A = mShineCountRoot->getPane()->mBounds.y1
-	         - mCoinCountRoot->getPane()->mBounds.y1;
+	unk26A = mShineCountRoot->getPane()->getBounds().y1
+	         - mCoinCountRoot->getPane()->getBounds().y1;
 
 	initHiddenPaneAbove(mShineCountRoot);
 	mShineCountRoot->getPane()->hide();
@@ -874,7 +993,7 @@ void TGCConsole2::loadAfter()
 	int lives = TFlagManager::getInstance()->getFlag(MSF_LIFE_COUNT);
 	if (lives > 99)
 		lives = 99;
-	unk3AC[0] = lives;
+	unk3AC = lives;
 	setTwoDigits(mLifeCountDigits, unkE0, lives);
 
 	unk39 = 1;
@@ -888,43 +1007,52 @@ void TGCConsole2::loadAfter()
 	mTelop->getPane()->show();
 	unk528->hide();
 	unk528->setFont(gpSystemFont);
-	JUTRect textBounds(unk528->mBounds);
+	JUTRect textBounds(unk528->getBounds());
 	unk528->resize(gpSystemFont->getWidth() << 10, textBounds.getHeight());
 
 	unk52C->hide();
 	unk52C->setFont(gpSystemFont);
 	unk52C->resize(gpSystemFont->getWidth() << 10, textBounds.getHeight());
 
-	JUTRect telopBounds(mTelop->getPane()->mBounds);
-	bounds = mTelopRoot->getPane()->mBounds;
+	JUTRect telopBounds(mTelop->getPane()->getBounds());
+	bounds = mTelopRoot->getPane()->getBounds();
 	telopBounds.add(bounds.x1, bounds.y1 - 3);
 	unk544.set(telopBounds.x1 + 8, telopBounds.y1 + 8, telopBounds.x2 - 8,
 	           telopBounds.y2 - 8);
 
 	unk534.add(unk544.x2, unk544.y1 + unk528->getHeight());
 
+#if defined(VERSION_GMSP01_NX)
+	unk544.add(0, -16);
+	unk568    = unk544.x2;
+	unk544.x1 = (unk544.x1 + 110) * 640.0f / 820.0f;
+	unk544.x2 = (unk544.x2 + 110) * 640.0f / 820.0f;
+	unk544.y1 = unk544.y1 * 360.0f / 448.0f;
+	unk544.y2 = unk544.y2 * 360.0f / 448.0f;
+#else
 	unk544.resize(unk544.getWidth() * (16.0f / 15.0f), unk544.getHeight());
 	unk544.add(0, -16);
 	unk568 = unk544.x2;
+#endif
 
-	unk3BC = unk3B0->mBounds;
+	unk3BC = unk3B0->getBounds();
 	unk3CC = 30;
 
 	unk3D8 = new JSUMemoryOutputStream(unk3B4->getStringPtr(), 0x400);
 	unk3DC = new JSUMemoryOutputStream(unk3B8->getStringPtr(), 0x400);
 	unk3D4 = new JSUMemoryInputStream(nullptr, 0x400);
 
-	unk48C = unk450->getPane()->mBounds;
-	unk49C = unk458[0]->getPane()->mBounds;
-	unk4AC = unk480[0]->getPane()->mBounds;
+	unk48C = unk450->getPane()->getBounds();
+	unk49C = unk458[0]->getPane()->getBounds();
+	unk4AC = unk480[0]->getPane()->getBounds();
 
 	for (int i = 0; i < 6; ++i) {
-		JUTRect bounds(unk458[i]->getPane()->mBounds);
+		JUTRect bounds(unk458[i]->getPane()->getBounds());
 		unk4BC[i].set(bounds.x1, bounds.y1);
 	}
 
 	for (int i = 0; i < 2; ++i) {
-		JUTRect bounds(unk480[i]->getPane()->mBounds);
+		JUTRect bounds(unk480[i]->getPane()->getBounds());
 		unk4EC[i].set(bounds.x1, bounds.y1);
 	}
 
@@ -948,6 +1076,15 @@ void TGCConsole2::loadAfter()
 	unk28 = gpMarioOriginal->mWaterGun->getMaxWater();
 
 	unkBC = static_cast<TBathtub*>(JDrama::TNameRefGen::search("バスタブ"));
+#if !defined(VERSION_GMSJ01)
+	if (unkBC != nullptr) {
+		unk310 = TWaterGun::Rocket;
+		unk274 = unk278[2];
+		unk288 = unk28C[2];
+		unk274->getPane()->setBasePosition(J2DBasePosition_5);
+		unk288->show();
+	}
+#endif
 	unkC0 = static_cast<TBossEel*>(JDrama::TNameRefGen::search("めおとウナギ"));
 	unkC4 = JDrama::TNameRefGen::search("ピーチ姫");
 }
@@ -1015,7 +1152,13 @@ void TGCConsole2::startCameraDemo()
 		if (!unkC0->isInBossEelMoguDemo())
 			startDisappearTank();
 	} else {
+#if defined(VERSION_GMSJ01_01)
+		if (SMSGetMarDirector()->getCurrentStage() != 0x3A
+		    || SMSGetMarDirector()->getCurrentScenario() != 1)
+			startDisappearTank();
+#else
 		startDisappearTank();
+#endif
 	}
 
 	startDisappearMario();
@@ -1129,6 +1272,13 @@ void TGCConsole2::startDisappearTank()
 	unk274->setPanePosition(40, start, mid, end);
 	unk270->setPanePosition(40, start, mid, end);
 	unk26C->setPanePosition(40, start, mid, end);
+#if !defined(VERSION_GMSJ01)
+	if (gpMarioOriginal->mYoshi->onYoshi()) {
+		unk324->hide();
+		for (int i = 0; i < 4; ++i)
+			unk314[i]->hide();
+	}
+#endif
 }
 
 void TGCConsole2::startAppearCoin()
@@ -1180,30 +1330,50 @@ void TGCConsole2::startInsertLife(int param_1)
 {
 	if (param_1 == 0) {
 		for (int i = 1; i < 9; ++i) {
-			((J2DPicture*)mLifeMeterPetals[i * 2])->mWhite = 0xFFFFFFFF;
-			((J2DPicture*)mLifeMeterPetals[i * 2])->mBlack = 0;
+			((J2DPicture*)mLifeMeterPetals[i * 2])->setWhite(0xFFFFFFFF);
+			((J2DPicture*)mLifeMeterPetals[i * 2])->setBlack(0);
 			if (gpMarioOriginal->getHealth() + 1 > i)
 				mLifeMeterPetals[i * 2]->show();
 			else
 				mLifeMeterPetals[i * 2]->hide();
 		}
-		((J2DPicture*)mLifeMeterText->getPane())->mWhite       = 0xFFFFFFFF;
-		((J2DPicture*)mLifeMeterText->getPane())->mBlack       = 0;
-		((J2DPicture*)mLifeMeterBackground->getPane())->mWhite = 0xFF4C00C8;
-		((J2DPicture*)mLifeMeterBackground->getPane())->mBlack = 0xFF4C0000;
-		updateLifeMeterColors(this, false);
+		((J2DPicture*)mLifeMeterText->getPane())->setWhite(0xFFFFFFFF);
+		((J2DPicture*)mLifeMeterText->getPane())->setBlack(0);
+		((J2DPicture*)mLifeMeterBackground->getPane())->setWhite(0xFF4C00C8);
+		((J2DPicture*)mLifeMeterBackground->getPane())->setBlack(0xFF4C0000);
+		if (unk1CC >= 4) {
+			((J2DPicture*)mLifeMeterText->getPane())->setWhite(0xFFFFFFFF);
+			((J2DPicture*)mLifeMeterText->getPane())->setBlack(0);
+			((J2DPicture*)mLifeMeterPetals[0])->setWhite(0xFFFFFFFF);
+			((J2DPicture*)mLifeMeterPetals[0])->setBlack(0);
+		} else {
+			((J2DPicture*)mLifeMeterText->getPane())->setWhite(0x7F7F7FFF);
+			((J2DPicture*)mLifeMeterText->getPane())->setBlack(0);
+			((J2DPicture*)mLifeMeterPetals[0])->setWhite(0x7F7F7FFF);
+			((J2DPicture*)mLifeMeterPetals[0])->setBlack(0);
+		}
 	} else if (param_1 == 1) {
 		for (int i = 1; i < 9; ++i) {
-			((J2DPicture*)mLifeMeterPetals[i * 2])->mWhite = 0x00FFFFFF;
-			((J2DPicture*)mLifeMeterPetals[i * 2])->mBlack = 0x003CFF00;
-			if ((s16)gpMarioOriginal->mAir + 1 > i)
+			((J2DPicture*)mLifeMeterPetals[i * 2])->setWhite(0x00FFFFFF);
+			((J2DPicture*)mLifeMeterPetals[i * 2])->setBlack(0x003CFF00);
+			if (gpMarioOriginal->getAir() + 1 > i)
 				mLifeMeterPetals[i * 2]->show();
 			else
 				mLifeMeterPetals[i * 2]->hide();
 		}
-		((J2DPicture*)mLifeMeterBackground->getPane())->mWhite = 0x0000FF78;
-		((J2DPicture*)mLifeMeterBackground->getPane())->mBlack = 0x0000FF00;
-		updateLifeMeterColors(this, true);
+		((J2DPicture*)mLifeMeterBackground->getPane())->setWhite(0x0000FF78);
+		((J2DPicture*)mLifeMeterBackground->getPane())->setBlack(0x0000FF00);
+		if (unk1CC >= 4) {
+			((J2DPicture*)mLifeMeterText->getPane())->setWhite(0x00FFFFFF);
+			((J2DPicture*)mLifeMeterText->getPane())->setBlack(0x003CFF00);
+			((J2DPicture*)mLifeMeterPetals[0])->setWhite(0x00FFFFFF);
+			((J2DPicture*)mLifeMeterPetals[0])->setBlack(0x003CFF00);
+		} else {
+			((J2DPicture*)mLifeMeterText->getPane())->setWhite(0x0010FFFF);
+			((J2DPicture*)mLifeMeterText->getPane())->setBlack(0x003CFF00);
+			((J2DPicture*)mLifeMeterPetals[0])->setWhite(0x0010FFFF);
+			((J2DPicture*)mLifeMeterPetals[0])->setBlack(0x003CFF00);
+		}
 	}
 
 	unk51 = 1;
@@ -1211,6 +1381,9 @@ void TGCConsole2::startInsertLife(int param_1)
 
 	int offset = -(mLifeMeterRoot->unk4.y2 + 1);
 	mLifeMeterRoot->getPane()->show();
+#if !defined(VERSION_GMSJ01)
+	mLifeMeterRoot->getPane()->setAlpha(0xFF);
+#endif
 	mLifeMeterRoot->setPanePosition(unk98, JUTPoint(0, offset),
 	                                JUTPoint(0, offset >> 1), JUTPoint(0, 0));
 	mLifeMeterBackground->setPanePosition(50, cDownTopPoint, cDownMidPoint,
@@ -1228,19 +1401,17 @@ void TGCConsole2::resetLife(int param_1)
 			mLifeMeterPetals[2 * i]->hide();
 		}
 
-		// TODO: This feels like a fakematch, is setBounds correct?
-
 		JUTRect local_38(mLifeMeterPetalsOriginalBounds[i].x1,
 		                 mLifeMeterPetalsOriginalBounds[i].y1,
 		                 mLifeMeterPetalsOriginalBounds[i].x2,
 		                 mLifeMeterPetalsOriginalBounds[i].y2);
-		mLifeMeterPetals[2 * i]->setBounds(local_38);
+		mLifeMeterPetals[2 * i]->place(local_38);
 
 		JUTRect local_48(mLifeMeterPetalsOriginalBounds[i].x1,
 		                 mLifeMeterPetalsOriginalBounds[i].y1,
 		                 mLifeMeterPetalsOriginalBounds[i].x2,
 		                 mLifeMeterPetalsOriginalBounds[i].y2);
-		mLifeMeterPetals[2 * i + 1]->setBounds(local_48);
+		mLifeMeterPetals[2 * i + 1]->place(local_48);
 	}
 }
 
@@ -1251,32 +1422,52 @@ bool TGCConsole2::startAppearLife(int param_1)
 
 	if (param_1 == 0) {
 		for (int i = 0; i < 9; ++i) {
-			((J2DPicture*)mLifeMeterPetals[i * 2])->mWhite = 0xFFFFFFFF;
-			((J2DPicture*)mLifeMeterPetals[i * 2])->mBlack = 0;
+			((J2DPicture*)mLifeMeterPetals[i * 2])->setWhite(0xFFFFFFFF);
+			((J2DPicture*)mLifeMeterPetals[i * 2])->setBlack(0);
 			if (gpMarioOriginal->getHealth() + 1 > i)
 				mLifeMeterPetals[i * 2]->show();
 			else
 				mLifeMeterPetals[i * 2]->hide();
 		}
-		((J2DPicture*)mLifeMeterText->getPane())->mWhite       = 0xFFFFFFFF;
-		((J2DPicture*)mLifeMeterText->getPane())->mBlack       = 0;
-		((J2DPicture*)mLifeMeterBackground->getPane())->mWhite = 0xFF4C00C8;
-		((J2DPicture*)mLifeMeterBackground->getPane())->mBlack = 0xFF4C0000;
-		updateLifeMeterColors(this, false);
+		((J2DPicture*)mLifeMeterText->getPane())->setWhite(0xFFFFFFFF);
+		((J2DPicture*)mLifeMeterText->getPane())->setBlack(0);
+		((J2DPicture*)mLifeMeterBackground->getPane())->setWhite(0xFF4C00C8);
+		((J2DPicture*)mLifeMeterBackground->getPane())->setBlack(0xFF4C0000);
+		if (unk1CC >= 4) {
+			((J2DPicture*)mLifeMeterText->getPane())->setWhite(0xFFFFFFFF);
+			((J2DPicture*)mLifeMeterText->getPane())->setBlack(0);
+			((J2DPicture*)mLifeMeterPetals[0])->setWhite(0xFFFFFFFF);
+			((J2DPicture*)mLifeMeterPetals[0])->setBlack(0);
+		} else {
+			((J2DPicture*)mLifeMeterText->getPane())->setWhite(0x7F7F7FFF);
+			((J2DPicture*)mLifeMeterText->getPane())->setBlack(0);
+			((J2DPicture*)mLifeMeterPetals[0])->setWhite(0x7F7F7FFF);
+			((J2DPicture*)mLifeMeterPetals[0])->setBlack(0);
+		}
 	} else if (param_1 == 1) {
 		for (int i = 0; i < 9; ++i) {
-			((J2DPicture*)mLifeMeterPetals[i * 2])->mWhite = 0x00FFFFFF;
-			((J2DPicture*)mLifeMeterPetals[i * 2])->mBlack = 0x003CFF00;
+			((J2DPicture*)mLifeMeterPetals[i * 2])->setWhite(0x00FFFFFF);
+			((J2DPicture*)mLifeMeterPetals[i * 2])->setBlack(0x003CFF00);
 			if (gpMarioOriginal->getAir() + 1 > i)
 				mLifeMeterPetals[i * 2]->show();
 			else
 				mLifeMeterPetals[i * 2]->hide();
 		}
-		((J2DPicture*)mLifeMeterText->getPane())->mWhite       = 0x00FFFFFF;
-		((J2DPicture*)mLifeMeterText->getPane())->mBlack       = 0x003CFF00;
-		((J2DPicture*)mLifeMeterBackground->getPane())->mWhite = 0x0000FF78;
-		((J2DPicture*)mLifeMeterBackground->getPane())->mBlack = 0x0000FF00;
-		updateLifeMeterColors(this, true);
+		((J2DPicture*)mLifeMeterText->getPane())->setWhite(0x00FFFFFF);
+		((J2DPicture*)mLifeMeterText->getPane())->setBlack(0x003CFF00);
+		((J2DPicture*)mLifeMeterBackground->getPane())->setWhite(0x0000FF78);
+		((J2DPicture*)mLifeMeterBackground->getPane())->setBlack(0x0000FF00);
+		if (unk1CC >= 4) {
+			((J2DPicture*)mLifeMeterText->getPane())->setWhite(0x00FFFFFF);
+			((J2DPicture*)mLifeMeterText->getPane())->setBlack(0x003CFF00);
+			((J2DPicture*)mLifeMeterPetals[0])->setWhite(0x00FFFFFF);
+			((J2DPicture*)mLifeMeterPetals[0])->setBlack(0x003CFF00);
+		} else {
+			((J2DPicture*)mLifeMeterText->getPane())->setWhite(0x0010FFFF);
+			((J2DPicture*)mLifeMeterText->getPane())->setBlack(0x003CFF00);
+			((J2DPicture*)mLifeMeterPetals[0])->setWhite(0x0010FFFF);
+			((J2DPicture*)mLifeMeterPetals[0])->setBlack(0x003CFF00);
+		}
 	}
 
 	unk38 = 1;
@@ -1570,11 +1761,16 @@ bool TGCConsole2::startDisappearBalloon(u32 param_1, bool param_2)
 
 bool TGCConsole2::startAppearBalloon(u32 messageID, bool autoClose)
 {
-	TMessageLoader::EntryInfo* entry
+	JMSMesgEntry* entry
 	    = mBalloonMessageLoader->getMessageEntry(messageID & 0xffff);
 
+#if defined(VERSION_GMSJ01_01)
+	if (entry->unk4 <= unk3F0 || gpMarioOriginal->getHealth() == 0)
+		return false;
+#else
 	if (entry->unk4 <= unk3F0)
 		return false;
+#endif
 
 	if (unk10 != 0) {
 		if (unk3F4 == 0xffffffff) {
@@ -1585,11 +1781,12 @@ bool TGCConsole2::startAppearBalloon(u32 messageID, bool autoClose)
 		return false;
 	}
 
-	if (SMSGetMarDirector()->mState == TMarDirector::STATE_PAUSE_MENU || !unk46)
+	if (SMSGetMarDirector()->getState() == TMarDirector::STATE_PAUSE_MENU
+	    || !unk46)
 		return false;
 
-	unk3F0         = entry->unk4;
-	unk3B0->mAlpha = 0;
+	unk3F0 = entry->unk4;
+	unk3B0->setAlpha(0);
 	unk3B0->show();
 
 	JUTRect contents(unk3B0->getContentsBounds());
@@ -1609,7 +1806,7 @@ bool TGCConsole2::startAppearBalloon(u32 messageID, bool autoClose)
 	unk3F8     = autoClose;
 	unk3E4     = (s32)(len * unk3EC + unk3E8);
 
-	if (unk3E0 == 0x000E002F)
+	if (unk3E0 == VERSION_SELECT(0x000E002C, GMSJ01(0x000E002F)))
 		unk3E4 = 0x96;
 
 	if (unk3E4 <= 0)
@@ -1619,7 +1816,8 @@ bool TGCConsole2::startAppearBalloon(u32 messageID, bool autoClose)
 	unk14 = 0;
 	unk10 = 1;
 
-	s32 soundID = scNozzleSoundList[(u8)entry->unk8[0]];
+	s32 soundID = scNozzleSoundList[(u8)entry->unk8[VERSION_SELECT(2, GMSJ01(0),
+	                                                               GMSE01(0))]];
 	if (soundID != -1)
 		SMSGetMSound()->startSoundSystemSE(soundID, 0, nullptr, 0);
 
@@ -1726,7 +1924,7 @@ void TGCConsole2::drawWaterBack()
 	GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
 
 	TWaterGun* waterGun = gpMarioOriginal->mWaterGun;
-	JUTRect bounds(((J2DPicture*)unk26C->getPane())->mBounds);
+	JUTRect bounds(((J2DPicture*)unk26C->getPane())->getBounds());
 	GXSetTevColor(GX_TEVREG0, JUtility::TColor(0x0000ff78));
 	GXSetTevColor(GX_TEVREG1, JUtility::TColor(0x0000ff00));
 
@@ -1855,11 +2053,11 @@ void TGCConsole2::startAppearMario(bool param_1)
 		    ->changeTexture(unkE0[lives % 10]->getTexInfo(), 0);
 	}
 
-	unk3A     = 1;
-	unk3AC[1] = param_1;
-	unk3B     = 0;
-	unk59     = 1;
-	unk70     = 0;
+	unk3A  = 1;
+	unk3AD = param_1;
+	unk3B  = 0;
+	unk59  = 1;
+	unk70  = 0;
 }
 
 void TGCConsole2::processMoveNozzle()
@@ -1891,10 +2089,295 @@ void TGCConsole2::processMoveNozzle()
 	}
 }
 
+#if !defined(VERSION_GMSJ01)
+u32* TGCConsole2::checkDolpic8()
+{
+	int pinnaNokiNews;
+	if (TFlagManager::getInstance()->getBool(MSF_PINNA_VISITED)) {
+		if (TFlagManager::getInstance()->getBool(MSF_NOKI_AVAILABLE)
+		    && !TFlagManager::getInstance()->getBool(MSF_NOKI_VISITED))
+			pinnaNokiNews = 2;
+		else
+			pinnaNokiNews = 3;
+	} else {
+		if (TFlagManager::getInstance()->getBool(MSF_NOKI_AVAILABLE)
+		    && !TFlagManager::getInstance()->getBool(MSF_NOKI_VISITED))
+			pinnaNokiNews = 1;
+		else
+			pinnaNokiNews = 0;
+	}
+
+	int shadowMarioNews;
+	switch (TFlagManager::getInstance()->getFlag(MSF_SHADOW_MARIO_EVENT)) {
+	case 3:
+		if (TFlagManager::getInstance()->getNozzleRight(1, 0))
+			shadowMarioNews = 2;
+		else
+			shadowMarioNews = 1;
+		break;
+	case 2:
+		if (TFlagManager::getInstance()->getNozzleRight(1, 1))
+			shadowMarioNews = 2;
+		else
+			shadowMarioNews = 1;
+		break;
+	case 1:
+		if (TFlagManager::getInstance()->getFlag(MSF_YOSHI_UNLOCKED) != 0)
+			shadowMarioNews = 2;
+		else
+			shadowMarioNews = 0;
+		break;
+	default:
+		shadowMarioNews = 2;
+		break;
+	}
+
+	int yoshiNozzleNews;
+	if (TFlagManager::getInstance()->getFlag(MSF_SHADOW_MARIO_EVENT) == 0
+	    && TFlagManager::getInstance()->getFlag(MSF_YOSHI_UNLOCKED) != 0) {
+		if (TFlagManager::getInstance()->getFlag(MSF_SHADOW_MARIO_EVENT) == 0
+		    && (TFlagManager::getInstance()->getNozzleRight(1, 0)
+		        || TFlagManager::getInstance()->getNozzleRight(1, 1)))
+			yoshiNozzleNews = 1;
+		else
+			yoshiNozzleNews = 0;
+	} else {
+		if (TFlagManager::getInstance()->getFlag(MSF_SHADOW_MARIO_EVENT) == 0
+		    && (TFlagManager::getInstance()->getNozzleRight(1, 0)
+		        || TFlagManager::getInstance()->getNozzleRight(1, 1)))
+			yoshiNozzleNews = 2;
+		else
+			yoshiNozzleNews = 3;
+	}
+
+	u32* news = unk570;
+	switch (pinnaNokiNews) {
+	case 0:
+		switch (shadowMarioNews) {
+		case 0:
+			switch (yoshiNozzleNews) {
+			case 0:
+				news = scDolpicNewsDolpic8_Aa1;
+				break;
+			case 1:
+				news = scDolpicNewsDolpic8_Aa2;
+				break;
+			case 2:
+				news = scDolpicNewsDolpic8_Aa3;
+				break;
+			case 3:
+				news = scDolpicNewsDolpic8_Aa4;
+				break;
+			}
+#if !defined(VERSION_GMSE01)
+			break;
+#endif
+		case 1:
+			switch (yoshiNozzleNews) {
+			case 0:
+				news = scDolpicNewsDolpic8_Ab1;
+				break;
+			case 1:
+				news = scDolpicNewsDolpic8_Ab2;
+				break;
+			case 2:
+				news = scDolpicNewsDolpic8_Ab3;
+				break;
+			case 3:
+				news = scDolpicNewsDolpic8_Ab4;
+				break;
+			}
+#if !defined(VERSION_GMSE01)
+			break;
+#endif
+		case 2:
+			switch (yoshiNozzleNews) {
+			case 0:
+				news = scDolpicNewsDolpic8_Ac1;
+				break;
+			case 1:
+				news = scDolpicNewsDolpic8_Ac2;
+				break;
+			case 2:
+				news = scDolpicNewsDolpic8_Ac3;
+				break;
+			case 3:
+				news = scDolpicNewsDolpic8_Ac4;
+				break;
+			}
+#if !defined(VERSION_GMSE01)
+			break;
+#endif
+		}
+#if !defined(VERSION_GMSE01)
+		break;
+#endif
+	case 1:
+		switch (shadowMarioNews) {
+		case 0:
+			switch (yoshiNozzleNews) {
+			case 0:
+				news = scDolpicNewsDolpic8_Ba1;
+				break;
+			case 1:
+				news = scDolpicNewsDolpic8_Ba2;
+				break;
+			case 2:
+				news = scDolpicNewsDolpic8_Ba3;
+				break;
+			case 3:
+				news = scDolpicNewsDolpic8_Ba4;
+				break;
+			}
+			break;
+		case 1:
+			switch (yoshiNozzleNews) {
+			case 0:
+				news = scDolpicNewsDolpic8_Bb1;
+				break;
+			case 1:
+				news = scDolpicNewsDolpic8_Bb2;
+				break;
+			case 2:
+				news = scDolpicNewsDolpic8_Bb3;
+				break;
+			case 3:
+				news = scDolpicNewsDolpic8_Bb4;
+				break;
+			}
+			break;
+		case 2:
+			switch (yoshiNozzleNews) {
+			case 0:
+				news = scDolpicNewsDolpic8_Bc1;
+				break;
+			case 1:
+				news = scDolpicNewsDolpic8_Bc2;
+				break;
+			case 2:
+				news = scDolpicNewsDolpic8_Bc3;
+				break;
+			case 3:
+				news = scDolpicNewsDolpic8_Bc4;
+				break;
+			}
+			break;
+		}
+		break;
+	case 2:
+		switch (shadowMarioNews) {
+		case 0:
+			switch (yoshiNozzleNews) {
+			case 0:
+				news = scDolpicNewsDolpic8_Ca1;
+				break;
+			case 1:
+				news = scDolpicNewsDolpic8_Ca2;
+				break;
+			case 2:
+				news = scDolpicNewsDolpic8_Ca3;
+				break;
+			case 3:
+				news = scDolpicNewsDolpic8_Ca4;
+				break;
+			}
+			break;
+		case 1:
+			switch (yoshiNozzleNews) {
+			case 0:
+				news = scDolpicNewsDolpic8_Cb1;
+				break;
+			case 1:
+				news = scDolpicNewsDolpic8_Cb2;
+				break;
+			case 2:
+				news = scDolpicNewsDolpic8_Cb3;
+				break;
+			case 3:
+				news = scDolpicNewsDolpic8_Cb4;
+				break;
+			}
+			break;
+		case 2:
+			switch (yoshiNozzleNews) {
+			case 0:
+				news = scDolpicNewsDolpic8_Cc1;
+				break;
+			case 1:
+				news = scDolpicNewsDolpic8_Cc2;
+				break;
+			case 2:
+				news = scDolpicNewsDolpic8_Cc3;
+				break;
+			case 3:
+				news = scDolpicNewsDolpic8_Cc4;
+				break;
+			}
+			break;
+		}
+		break;
+	case 3:
+		switch (shadowMarioNews) {
+		case 0:
+			switch (yoshiNozzleNews) {
+			case 0:
+				news = scDolpicNewsDolpic8_Da1;
+				break;
+			case 1:
+				news = scDolpicNewsDolpic8_Da2;
+				break;
+			case 2:
+				news = scDolpicNewsDolpic8_Da3;
+				break;
+			case 3:
+				news = scDolpicNewsDolpic8_Da4;
+				break;
+			}
+			break;
+		case 1:
+			switch (yoshiNozzleNews) {
+			case 0:
+				news = scDolpicNewsDolpic8_Db1;
+				break;
+			case 1:
+				news = scDolpicNewsDolpic8_Db2;
+				break;
+			case 2:
+				news = scDolpicNewsDolpic8_Db3;
+				break;
+			case 3:
+				news = scDolpicNewsDolpic8_Db4;
+				break;
+			}
+			break;
+		case 2:
+			switch (yoshiNozzleNews) {
+			case 0:
+				news = scDolpicNewsDolpic8_Dc1;
+				break;
+			case 1:
+				news = scDolpicNewsDolpic8_Dc2;
+				break;
+			case 2:
+				news = scDolpicNewsDolpic8_Dc3;
+				break;
+			case 3:
+				news = nullptr;
+				break;
+			}
+			break;
+		}
+		break;
+	}
+
+	return news;
+}
+#endif
+
 void TGCConsole2::changeNum(TBlendPane* pane, int num, int frames)
 {
 	pane->setPaneBlend(frames, unkE0[num], nullptr);
-	JUTRect bounds(pane->getPane()->mGlobalBounds);
+	JUTRect bounds(pane->getPane()->getGlbBounds());
 	JGeometry::TVec3<f32> pos(bounds.x1 + bounds.getWidth() * 0.5f,
 	                          bounds.y1 + bounds.getHeight() * 0.5f, 0.0f);
 	gpEmitterManager4D2->createEmitter(pos, 0x1FC, nullptr, nullptr);
@@ -1905,12 +2388,7 @@ void TGCConsole2::setTimer(s32 param_1)
 	u32 timerValue;
 
 	if (param_1 == -1) {
-		s64 uVar3 = SMSGetMarDirector()->unkC8;
-		s64 uVar5 = OSCheckStopwatch(&SMSGetMarDirector()->unkE8);
-		s64 uVar9 = OSTicksToMilliseconds(uVar3);
-		s64 uVar8 = OSTicksToMilliseconds(uVar5);
-
-		timerValue = (uVar8 - uVar9) * 0.1f;
+		timerValue = SMSGetMarDirector()->getTimerTime();
 
 		if (!unk510) {
 			if (unk514 < timerValue) {
@@ -1948,11 +2426,11 @@ void TGCConsole2::setTimer(s32 param_1)
 		    ->changeTexture(unkE0[centis % 10]->getTexInfo(), 0);
 	} else {
 		if (timerValue < 1000
-		    && ((J2DPicture*)unk458[9]->getPane())->getWhite() != unk508) {
+		    && ((J2DPicture*)unk458[9]->getPane())->getWhite() != getUnk508()) {
 			for (int i = 6; i <= 9; i++) {
-				((J2DPicture*)unk458[i]->getPane())->mWhite = unk508;
+				((J2DPicture*)unk458[i]->getPane())->setWhite(getUnk508());
 			}
-			((J2DPicture*)unk480[2]->getPane())->mWhite = unk508;
+			((J2DPicture*)unk480[2]->getPane())->setWhite(getUnk508());
 		}
 		((J2DPicture*)unk458[6]->getPane())
 		    ->changeTexture(unkE0[seconds / 10]->getTexInfo(), 0);
@@ -1965,12 +2443,166 @@ void TGCConsole2::setTimer(s32 param_1)
 	}
 
 	if (timerValue != 0 && timerValue < unk518
-	    && SMSGetMarDirector()->mState != TMarDirector::STATE_PAUSE_MENU) {
+	    && SMSGetMarDirector()->getState() != TMarDirector::STATE_PAUSE_MENU) {
 		SMSGetMSound()->playTimer(timerValue * 10);
 	}
 
 	unk4FC = timerValue;
 }
+
+#if !defined(VERSION_GMSJ01)
+void TGCConsole2::countShine()
+{
+	int shines    = TFlagManager::getInstance()->getFlag(MSF_SHINE_COUNT);
+	int blueCoins = TFlagManager::getInstance()->getFlag(MSF_BLUE_COIN_COUNT);
+	if (unk8A == 0 && unk64 != shines)
+		unk8A = 1;
+
+	if (unk8A != 0) {
+		if (unk8A > 0xFB) {
+			int spentBlueCoins = 0;
+			for (int flag = 0x46; flag < 0x56; ++flag)
+				if (TFlagManager::getInstance()->getFlag(MSF_SHINE_BASE + flag)
+				    != 0)
+					++spentBlueCoins;
+			for (int flag = 0x6C; flag <= 0x73; ++flag)
+				if (TFlagManager::getInstance()->getFlag(MSF_SHINE_BASE + flag)
+				    != 0)
+					++spentBlueCoins;
+
+			if (unk170 != blueCoins - spentBlueCoins * 10) {
+				--unk170;
+				if (unk170 < 0) {
+					unk170 = 0;
+				} else if (SMSGetMSound()->gateCheck(0x405C)) {
+					MSoundSESystem::MSoundSE::startSoundSystemSE(0x405C, 0,
+					                                             nullptr, 0);
+				}
+				if (unk170 < 100) {
+					setDigitPane(mBlueCoinCountDigits[0], unkE0,
+					             (int)(unk170 * 0.1f));
+					setDigitPane(mBlueCoinCountDigits[1], unkE0, unk170 % 10);
+					if (mBlueCoinCountDigits[2]->getPane()->isVisible())
+						mBlueCoinCountDigits[2]->getPane()->hide();
+				} else {
+					setDigitPane(mBlueCoinCountDigits[0], unkE0,
+					             (int)(unk170 * 0.01f));
+					int remainder = unk170 - (int)(unk170 * 0.01f) * 100;
+					setDigitPane(mBlueCoinCountDigits[1], unkE0,
+					             (int)(remainder * 0.1f));
+					setDigitPane(mBlueCoinCountDigits[2], unkE0,
+					             remainder % 10);
+					if (!mBlueCoinCountDigits[2]->getPane()->isVisible())
+						mBlueCoinCountDigits[2]->getPane()->show();
+				}
+			}
+		}
+
+		if (unk8A == 0xFC) {
+			int value = unk64;
+			// TODO: never used here. The coin counter in performCalcAnim
+			// declares the same default JUTRect and uses it, so this one is
+			// probably left over from code that was moved into changeNum.
+			JUTRect bounds;
+
+			if (value < 100) {
+				if (mShineCountDigits[2]->getPane()->isVisible())
+					mShineCountDigits[2]->getPane()->hide();
+
+				if (value % 10 == 0)
+					changeNum(mShineCountDigits[0], value / 10, 10);
+
+				changeNum(mShineCountDigits[1], value - value / 10 * 10, 10);
+			} else {
+				if (value % 100 == 0) {
+					changeNum(mShineCountDigits[0], value / 100, 10);
+					if (!mShineCountDigits[0]->getPane()->isVisible())
+						mShineCountDigits[0]->getPane()->show();
+				}
+
+				int remainder = value - (int)(value * 0.01f) * 100;
+				if (remainder % 10 == 0)
+					changeNum(mShineCountDigits[1], remainder / 10, 10);
+
+				if (!mShineCountDigits[2]->getPane()->isVisible())
+					mShineCountDigits[2]->getPane()->show();
+				changeNum(mShineCountDigits[2], remainder % 10, 10);
+			}
+		} else if (unk8A == 0x106) {
+			if (shines > unk64) {
+				++unk64;
+				unk8A = 0xFB;
+			}
+		} else if (!unk34 && !unk35) {
+			mShineCountDigits[0]->update();
+			mShineCountDigits[1]->update();
+			mShineCountDigits[2]->update();
+		}
+
+		++unk8A;
+	}
+}
+
+void TGCConsole2::countBlueCoin()
+{
+	if (unk168 != TFlagManager::getInstance()->getFlag(MSF_BLUE_COIN_COUNT)) {
+		++unk168;
+
+		int spentBlueCoins = 0;
+		for (int flag = 0x46; flag < 0x56; ++flag)
+			if (TFlagManager::getInstance()->getFlag(MSF_SHINE_BASE + flag)
+			    != 0)
+				++spentBlueCoins;
+		for (int flag = 0x6C; flag < 0x74; ++flag)
+			if (TFlagManager::getInstance()->getFlag(MSF_SHINE_BASE + flag)
+			    != 0)
+				++spentBlueCoins;
+
+		int value = unk168 - spentBlueCoins * 10;
+		if (value < 0)
+			value = 0;
+
+		if (value < 100) {
+			setDigitPane(mBlueCoinCountDigits[0], unkE0, (int)(value * 0.1f));
+			setDigitPane(mBlueCoinCountDigits[1], unkE0, value % 10);
+			if (mBlueCoinCountDigits[2]->getPane()->isVisible())
+				mBlueCoinCountDigits[2]->getPane()->hide();
+		} else {
+			setDigitPane(mBlueCoinCountDigits[0], unkE0, (int)(value * 0.01f));
+			int remainder = value - (int)(value * 0.01f) * 100;
+			setDigitPane(mBlueCoinCountDigits[1], unkE0,
+			             (int)(remainder * 0.1f));
+			setDigitPane(mBlueCoinCountDigits[2], unkE0, remainder % 10);
+			if (!mBlueCoinCountDigits[2]->getPane()->isVisible())
+				mBlueCoinCountDigits[2]->getPane()->show();
+		}
+		if (unk160->getPane()->isVisible()) {
+			JUTRect bounds(mBlueCoinCountDigits[1]->getPane()->getGlbBounds());
+			JGeometry::TVec3<f32> pos(bounds.x1 + bounds.getWidth() * 0.5f,
+			                          bounds.y1 + bounds.getHeight() * 0.5f,
+			                          0.0f);
+			gpEmitterManager4D2->createEmitter(pos, 0x1FC, nullptr, nullptr);
+			if (value % 10 == 0) {
+				bounds = mBlueCoinCountDigits[0]->getPane()->getGlbBounds();
+				pos.set(bounds.x1 + bounds.getWidth() * 0.5f,
+				        bounds.y1 + bounds.getHeight() * 0.5f, 0.0f);
+				gpEmitterManager4D2->createEmitter(pos, 0x1FC, nullptr,
+				                                   nullptr);
+			}
+		} else {
+			startAppearStar();
+		}
+		unk170 = value;
+		unk16C = 1;
+	}
+
+	if (unk16C != 0) {
+		++unk16C;
+		if (unk16C > 400)
+			unk16C = 0;
+	}
+}
+#endif
 
 void TGCConsole2::startMoveTimer(int param_1)
 {
@@ -2065,8 +2697,22 @@ bool TGCConsole2::processAppearStar(int param_1)
 	for (int i = 0; i < 3; ++i) {
 		if (param_1 == i * 6 + 28) {
 			if (i == 2) {
+#if defined(VERSION_GMSJ01) || defined(VERSION_GMSE01)
 				if ((!unk50 && shines >= 100) || (shines > 100 && unk50))
 					mShineCountDigits[i]->getPane()->show();
+#else
+				if (!unk50 && shines >= 100) {
+					mShineCountDigits[i]->getPane()->show();
+				} else if (unk50) {
+					if (gpMarDirector->checkDemoFlag(
+					        TMarDirector::DEMO_FLAG_SHINE_ALREADY_COLLECTED)) {
+						if (shines > 99)
+							mShineCountDigits[i]->getPane()->show();
+					} else if (shines > 100) {
+						mShineCountDigits[i]->getPane()->show();
+					}
+				}
+#endif
 			} else {
 				mShineCountDigits[i]->getPane()->show();
 			}
@@ -2116,11 +2762,11 @@ bool TGCConsole2::processAppearStar(int param_1)
 		updateDownPaneState(mBlueCoinCountDigits[i], isFinished);
 	}
 
-	JUTRect bounds = mShineCountIcon->getPane()->mGlobalBounds;
+	JUTRect bounds = mShineCountIcon->getPane()->getGlbBounds();
 	unk144->setGlobalTranslation(bounds.x1 + bounds.getWidth() * 0.5f,
 	                             bounds.y1 + bounds.getHeight() * 0.5f, 0.0f);
 
-	bounds = mBlueCoinCountIcon->getPane()->mGlobalBounds;
+	bounds = mBlueCoinCountIcon->getPane()->getGlbBounds();
 	unk164->setGlobalTranslation(bounds.x1 + bounds.getWidth() * 0.5f,
 	                             bounds.y1 + bounds.getHeight() * 0.5f, 0.0f);
 
@@ -2166,7 +2812,7 @@ bool TGCConsole2::processDownCoin(int param_1)
 
 	isFinished &= mCoinCountRoot->update();
 
-	JUTRect bounds(mCoinCountIcon->getPane()->mGlobalBounds);
+	JUTRect bounds(mCoinCountIcon->getPane()->getGlbBounds());
 	unk124->setGlobalTranslation(bounds.x1 + bounds.getWidth() * 0.5f,
 	                             bounds.y1 + bounds.getHeight() * 0.5f, 0.0f);
 
@@ -2249,7 +2895,7 @@ bool TGCConsole2::processAppearCoin(int param_1)
 			updateDownBlendPaneState(mCoinCountDigits[i], isFinished);
 	}
 
-	JUTRect bounds(mCoinCountIcon->getPane()->mGlobalBounds);
+	JUTRect bounds(mCoinCountIcon->getPane()->getGlbBounds());
 	unk124->setGlobalTranslation(bounds.x1 + bounds.getWidth() * 0.5f,
 	                             bounds.y1 + bounds.getHeight() * 0.5f, 0.0f);
 
@@ -2306,8 +2952,8 @@ bool TGCConsole2::processDrawTelop(u32)
 {
 	bool isFinished = false;
 
-	JUTRect paneBounds(mTelop->getPane()->mGlobalBounds);
-	JUTRect textBounds(unk528->mBounds);
+	JUTRect paneBounds(mTelop->getPane()->getGlbBounds());
+	JUTRect textBounds(unk528->getBounds());
 
 	if (unk534.x1 < paneBounds.x1 - mTelopTextWidth) {
 		isFinished = true;
@@ -2323,8 +2969,8 @@ void TGCConsole2::checkChangeTelopArray()
 {
 	u32* oldArray = unk570;
 
-	if (SMSGetMarDirector()->mMap == 1) {
-		switch (SMSGetMarDirector()->unk7D) {
+	if (SMSGetMarDirector()->getCurrentStage() == 1) {
+		switch (SMSGetMarDirector()->getCurrentScenario()) {
 		case 0:
 			unk570 = scDolpicNewsDolpic0;
 			break;
@@ -2361,6 +3007,7 @@ void TGCConsole2::checkChangeTelopArray()
 					unk570 = scDolpicNewsDolpic5_1;
 			}
 			break;
+#if defined(VERSION_GMSJ01)
 		case 8: {
 			int eventState
 			    = TFlagManager::getInstance()->getFlag(MSF_SHADOW_MARIO_EVENT);
@@ -2400,6 +3047,11 @@ void TGCConsole2::checkChangeTelopArray()
 			}
 			break;
 		}
+#else
+		case 8:
+			unk570 = checkDolpic8();
+			break;
+#endif
 		default:
 			unk570 = nullptr;
 			break;
@@ -2585,7 +3237,7 @@ bool TGCConsole2::processAppearBalloon()
 
 		unk3B0->resize(unk3BC.getWidth(), nextHeight);
 
-		unk3B0->setBounds(
+		unk3B0->place(
 		    JUTRect(unk3BC.x1, unk3BC.y2 - nextHeight, unk3BC.x2, unk3BC.y2));
 	}
 
@@ -2608,7 +3260,7 @@ bool TGCConsole2::processDisappearBalloon()
 
 		unk3B0->resize(unk3BC.getWidth(), nextHeight);
 
-		unk3B0->setBounds(
+		unk3B0->place(
 		    JUTRect(unk3BC.x1, unk3BC.y2 - nextHeight, unk3BC.x2, unk3BC.y2));
 	} else {
 		s16 alpha = unk3B0->getAlpha();
@@ -2661,7 +3313,7 @@ void TGCConsole2::drawJuice(J2DOrthoGraph& graph, u32 color)
 	u8 selected = 0x17;
 	for (u8 i = 0x16; (u8)i != 0; --i) {
 		int threshold = (int)(64.0f * (1.0f - unk2B8));
-		if (unk334[i]->mBounds.y1 >= threshold) {
+		if (unk334[i]->getBounds().y1 >= threshold) {
 			selected = i + 1;
 			break;
 		}
@@ -2669,11 +3321,11 @@ void TGCConsole2::drawJuice(J2DOrthoGraph& graph, u32 color)
 
 	f32 translateY;
 	if (selected < 0x17)
-		translateY = 1.0f - (f32)unk334[selected]->mBounds.y1 * 0.015625f;
+		translateY = 1.0f - (f32)unk334[selected]->getBounds().y1 * 0.015625f;
 	else
 		translateY = 1.0f;
 
-	if (unk334[1]->mBounds.y1 < (int)(64.0f * (1.0f - unk2B8)))
+	if (unk334[1]->getBounds().y1 < (int)(64.0f * (1.0f - unk2B8)))
 		translateY = 0.0f;
 
 	MTXTrans(mtx, 0.0f, translateY, 0.0f);
@@ -2788,7 +3440,7 @@ void TGCConsole2::drawWater(J2DOrthoGraph& graph)
 		                  GX_FALSE, GX_PTIDENTITY);
 		GXSetTevOrder(GX_TEVSTAGE1, GX_TEXCOORD1, GX_TEXMAP1, GX_COLOR_NULL);
 
-		f32 top    = unk29C->getPane()->mGlobalBounds.y1 + topDiff[layer - 1];
+		f32 top    = unk29C->getPane()->getGlbBounds().y1 + topDiff[layer - 1];
 		f32 bottom = top + unk2A0[layer]->getHeight();
 		GXBegin(GX_QUADS, GX_VTXFMT0, 4);
 		GXPosition2f32(unk2BC[layer].x1, top);
@@ -2806,33 +3458,24 @@ void TGCConsole2::drawWater(J2DOrthoGraph& graph)
 
 	JUTRect bounds = unk2A0[0]->getBounds();
 	f32 hidden     = 47.0f * (1.0f - unk2B8) - 0.5f;
-	int top        = unk29C->getPane()->mGlobalBounds.y1 + (int)hidden;
+	int top        = unk29C->getPane()->getGlbBounds().y1 + (int)hidden;
 	int y          = ++top;
 	if (top < 0)
 		y = 0;
 
-	JUTTexture* texture = unk2A0[0]->mTextures[0];
-	unk2A0[0]->draw(bounds.x1, y, texture->getWidth(), texture->getHeight(),
-	                false, false, false);
+	unk2A0[0]->draw(bounds.x1, y, false, false, false);
 
-	bounds  = ((J2DPicture*)unk270->getPane())->getBounds();
-	texture = ((J2DPicture*)unk270->getPane())->mTextures[0];
+	bounds = ((J2DPicture*)unk270->getPane())->getBounds();
 	((J2DPicture*)unk270->getPane())
-	    ->draw(bounds.x1, bounds.y1, texture->getWidth(), texture->getHeight(),
-	           false, false, false);
+	    ->draw(bounds.x1, bounds.y1, false, false, false);
 
-	bounds  = ((J2DPicture*)unk274->getPane())->getBounds();
-	texture = ((J2DPicture*)unk274->getPane())->mTextures[0];
+	bounds = ((J2DPicture*)unk274->getPane())->getBounds();
 	((J2DPicture*)unk274->getPane())
-	    ->draw(bounds.x1, bounds.y1, texture->getWidth(), texture->getHeight(),
-	           false, false, false);
+	    ->draw(bounds.x1, bounds.y1, false, false, false);
 
 	JUTRect maskOffset = unk288->getBounds();
 	bounds.add(maskOffset.x1, maskOffset.y1);
-	texture = ((J2DPicture*)unk288)->mTextures[0];
-	((J2DPicture*)unk288)
-	    ->draw(bounds.x1, bounds.y1, texture->getWidth(), texture->getHeight(),
-	           false, false, false);
+	((J2DPicture*)unk288)->draw(bounds.x1, bounds.y1, false, false, false);
 }
 
 // fabricated
@@ -2844,7 +3487,7 @@ void TGCConsole2::performMovement()
 {
 	if (!unk50) {
 		if (gpCamera->isDemoCamera() || SMS_CheckMarioFlag(0x400)
-		    || (!unk3AC[1]
+		    || (!unk3AD
 		        && TFlagManager::getInstance()->getBool(
 		            MSF_LOST_LIFE_IN_PREV_STAGE)))
 			startCameraDemo();
@@ -2883,6 +3526,26 @@ void TGCConsole2::performMovement()
 		if (unkB4 == 0) {
 			startAppearCoin();
 			startAppearMario(false);
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01)
+			int nozzle = gpMarioOriginal->mWaterGun->mCurrentNozzle;
+			if (nozzle == TWaterGun::Spray) {
+				unk274 = unk278[0];
+				unk288 = unk28C[0];
+			} else if (nozzle == TWaterGun::Rocket) {
+				unk274 = unk278[2];
+				unk288 = unk28C[2];
+			} else if (nozzle == TWaterGun::Hover) {
+				unk274 = unk278[1];
+				unk288 = unk28C[1];
+			} else if (nozzle == TWaterGun::Turbo) {
+				unk274 = unk278[3];
+				unk288 = unk28C[3];
+			} else if (nozzle == TWaterGun::Underwater) {
+				unk274 = unk278[1];
+				unk288 = unk28C[1];
+			}
+			unk310 = nozzle;
+#endif
 			mHudScreen->search('ROOT')->setAlpha(0);
 		} else {
 			mHudScreen->search('ROOT')->setAlpha(0xff);
@@ -2902,6 +3565,10 @@ void TGCConsole2::performMovement()
 	case LIFE_HEALTH_VISIBLE:
 	case LIFE_HEALTH_DISAPPEARING:
 	case LIFE_HEALTH_INSERTING:
+#if !defined(VERSION_GMSJ01)
+	case LIFE_CAMERA_DEMO:
+	default:
+#endif
 		airMode = false;
 		amount  = gpMarioOriginal->getHealth();
 		break;
@@ -2918,20 +3585,20 @@ void TGCConsole2::performMovement()
 		amount = 8;
 
 	if (airMode
-	    && SMSGetMarDirector()->mState == TMarDirector::STATE_PAUSE_MENU) {
-		s16 alpha = mLifeMeterRoot->getPane()->mAlpha;
+	    && SMSGetMarDirector()->getState() == TMarDirector::STATE_PAUSE_MENU) {
+		s16 alpha = mLifeMeterRoot->getPane()->getAlpha();
 		alpha -= 0x10;
 		if (alpha < 0)
 			alpha = 0;
-		mLifeMeterRoot->getPane()->mAlpha = alpha;
+		mLifeMeterRoot->getPane()->setAlpha(alpha);
 	}
 
-	if (mLifeMeterRoot->getPane()->mAlpha != 0xff
-	    && SMSGetMarDirector()->mState != TMarDirector::STATE_PAUSE_MENU) {
-		u16 alpha = mLifeMeterRoot->getPane()->mAlpha + 0x10;
+	if (mLifeMeterRoot->getPane()->getAlpha() != 0xff
+	    && SMSGetMarDirector()->getState() != TMarDirector::STATE_PAUSE_MENU) {
+		u16 alpha = mLifeMeterRoot->getPane()->getAlpha() + 0x10;
 		if (alpha > 0xff)
 			alpha = 0xff;
-		mLifeMeterRoot->getPane()->mAlpha = alpha;
+		mLifeMeterRoot->getPane()->setAlpha(alpha);
 	}
 
 	bool airTimeout = false;
@@ -2960,13 +3627,21 @@ void TGCConsole2::performMovement()
 			startAppearLife(1);
 			amount = gpMarioOriginal->getAir();
 			unk1CC = amount;
-			if (SMSGetMarDirector()->mState == TMarDirector::STATE_PAUSE_MENU)
-				mLifeMeterRoot->getPane()->mAlpha = 0;
+			if (SMSGetMarDirector()->getState()
+			    == TMarDirector::STATE_PAUSE_MENU)
+				mLifeMeterRoot->getPane()->setAlpha(0);
+#if defined(VERSION_GMSJ01)
 			unk18 = LIFE_AIR_APPEARING;
 		}
 
 		if (unk1CC < 8 && !mLifeMeterRoot->getPane()->isVisible()
 		    && amount != 0) {
+#else
+			unk84 = 0;
+			unk18 = LIFE_AIR_APPEARING;
+		} else if (!airMode && unk1CC < 8
+		           && !mLifeMeterRoot->getPane()->isVisible() && amount != 0) {
+#endif
 			startAppearLife(0);
 			unk18 = LIFE_HEALTH_APPEARING;
 		}
@@ -3084,14 +3759,24 @@ void TGCConsole2::performMovement()
 			mLifeMeterPetals[unk1CC * 2]->show();
 			playLifeChangeSound(0x4801);
 		} else if (unk1CC != amount) {
+#if defined(VERSION_GMSJ01)
 			playLifeChangeSound(0x4823);
+#else
+			if (SMSGetMarDirector()->getState() == TMarDirector::STATE_UNK4
+			    && SMSGetMarDirector()->isGameplayModeNow()) {
+				if (airMode)
+					SMSGetMSound()->startSoundSystemSE(0x480C, 0, nullptr, 0);
+				else
+					SMSGetMSound()->startSoundSystemSE(0x4823, 0, nullptr, 0);
+			}
+#endif
 			mLifeMeterPetals[unk1CC * 2]->hide();
-			mLifeMeterPetals[unk1CC * 2]->setBounds(
+			mLifeMeterPetals[unk1CC * 2]->place(
 			    JUTRect(mLifeMeterPetalsOriginalBounds[unk1CC].x1,
 			            mLifeMeterPetalsOriginalBounds[unk1CC].y1,
 			            mLifeMeterPetalsOriginalBounds[unk1CC].x2,
 			            mLifeMeterPetalsOriginalBounds[unk1CC].y2));
-			mLifeMeterPetals[unk1CC * 2 + 1]->setBounds(
+			mLifeMeterPetals[unk1CC * 2 + 1]->place(
 			    JUTRect(mLifeMeterPetalsOriginalBounds[unk1CC].x1,
 			            mLifeMeterPetalsOriginalBounds[unk1CC].y1,
 			            mLifeMeterPetalsOriginalBounds[unk1CC].x2,
@@ -3099,12 +3784,12 @@ void TGCConsole2::performMovement()
 			--unk1CC;
 			if (unk1CC == 0) {
 				mLifeMeterPetals[0]->hide();
-				mLifeMeterPetals[0]->setBounds(
+				mLifeMeterPetals[0]->place(
 				    JUTRect(mLifeMeterPetalsOriginalBounds[0].x1,
 				            mLifeMeterPetalsOriginalBounds[0].y1,
 				            mLifeMeterPetalsOriginalBounds[0].x2,
 				            mLifeMeterPetalsOriginalBounds[0].y2));
-				mLifeMeterPetals[1]->setBounds(
+				mLifeMeterPetals[1]->place(
 				    JUTRect(mLifeMeterPetalsOriginalBounds[0].x1,
 				            mLifeMeterPetalsOriginalBounds[0].y1,
 				            mLifeMeterPetalsOriginalBounds[0].x2,
@@ -3131,7 +3816,7 @@ void TGCConsole2::performMovement()
 	}
 
 	if (gpMarioOriginal->mStatus == 0xC400201
-	    && SMSGetMarDirector()->mState != TMarDirector::STATE_PAUSE_MENU
+	    && SMSGetMarDirector()->getState() != TMarDirector::STATE_PAUSE_MENU
 	    && !unk50) {
 		if (!mShineCountRoot->isInterpolatorAtZero()) {
 			++unk30;
@@ -3146,10 +3831,10 @@ void TGCConsole2::performMovement()
 	} else {
 		unk30 = 0;
 		if (!unk34 && mShineCountRoot->isInterpolatorAtZero() && !unk60
-		    && SMSGetMarDirector()->mState != TMarDirector::STATE_PAUSE_MENU
-		    && SMSGetMarDirector()->mState != TMarDirector::STATE_CARD_SAVE
+		    && SMSGetMarDirector()->getState() != TMarDirector::STATE_PAUSE_MENU
+		    && SMSGetMarDirector()->getState() != TMarDirector::STATE_CARD_SAVE
 		    && !unk50 && unk16C == 0 && unk8A == 0
-		    && SMSGetMarDirector()->unk124 != 2) {
+		    && !SMSGetMarDirector()->isTalkMainModeNow()) {
 			startDisappearStar();
 			startDisappearMario();
 			unk5A = 0;
@@ -3162,15 +3847,15 @@ void TGCConsole2::performMovement()
 		done &= mShineCountRoot->update();
 		done &= unk160->update();
 
-		JUTRect bounds(mCoinCountIcon->getPane()->mGlobalBounds);
+		JUTRect bounds(mCoinCountIcon->getPane()->getGlbBounds());
 		unk124->setGlobalTranslation(bounds.x1 + bounds.getWidth() * 0.5f,
 		                             bounds.y1 + bounds.getHeight() * 0.5f,
 		                             0.0f);
-		bounds = mBlueCoinCountIcon->getPane()->mGlobalBounds;
+		bounds = mBlueCoinCountIcon->getPane()->getGlbBounds();
 		unk164->setGlobalTranslation(bounds.x1 + bounds.getWidth() * 0.5f,
 		                             bounds.y1 + bounds.getHeight() * 0.5f,
 		                             0.0f);
-		bounds = mShineCountIcon->getPane()->mGlobalBounds;
+		bounds = mShineCountIcon->getPane()->getGlbBounds();
 		unk144->setGlobalTranslation(bounds.x1 + bounds.getWidth() * 0.5f,
 		                             bounds.y1 + bounds.getHeight() * 0.5f,
 		                             0.0f);
@@ -3184,6 +3869,7 @@ void TGCConsole2::performMovement()
 		}
 	}
 
+#if defined(VERSION_GMSJ01)
 	int blueCoins = TFlagManager::getInstance()->getFlag(MSF_BLUE_COIN_COUNT);
 	if (unk168 != blueCoins) {
 		++unk168;
@@ -3217,13 +3903,13 @@ void TGCConsole2::performMovement()
 				mBlueCoinCountDigits[2]->getPane()->show();
 		}
 		if (unk160->getPane()->isVisible()) {
-			JUTRect bounds(mBlueCoinCountDigits[1]->getPane()->mGlobalBounds);
+			JUTRect bounds(mBlueCoinCountDigits[1]->getPane()->getGlbBounds());
 			JGeometry::TVec3<f32> pos(bounds.x1 + bounds.getWidth() * 0.5f,
 			                          bounds.y1 + bounds.getHeight() * 0.5f,
 			                          0.0f);
 			gpEmitterManager4D2->createEmitter(pos, 0x1FC, nullptr, nullptr);
 			if (value % 10 == 0) {
-				bounds = mBlueCoinCountDigits[0]->getPane()->mGlobalBounds;
+				bounds = mBlueCoinCountDigits[0]->getPane()->getGlbBounds();
 				pos.set(bounds.x1 + bounds.getWidth() * 0.5f,
 				        bounds.y1 + bounds.getHeight() * 0.5f, 0.0f);
 				gpEmitterManager4D2->createEmitter(pos, 0x1FC, nullptr,
@@ -3330,6 +4016,11 @@ void TGCConsole2::performMovement()
 		++unk8A;
 	}
 
+#else
+	countBlueCoin();
+	countShine();
+#endif
+
 	if (unk34) {
 		bool done = true;
 		done &= processAppearStar(unk5C);
@@ -3343,10 +4034,11 @@ void TGCConsole2::performMovement()
 		++unk5C;
 	}
 
-	TWaterGun* waterGun = gpMarioOriginal->mWaterGun;
+	TWaterGun* waterGun = gpMarioOriginal->getWaterGun();
 	s32 currentWater    = waterGun->getCurrentWater();
 	s32 maxWater        = waterGun->getMaxWater();
-	int currentNozzle   = waterGun->mCurrentNozzle;
+	TWaterGun::TNozzleType currentNozzle
+	    = (TWaterGun::TNozzleType)waterGun->getCurrentNozzleType();
 
 	if (unk2F8->isInterpolatorAtZero() && !unk45 && currentNozzle != unk310) {
 		unk274->getPane()->hide();
@@ -3384,11 +4076,11 @@ void TGCConsole2::performMovement()
 		unk2B8 = (f32)currentWater / (f32)maxWater;
 
 	if (unk2B8 >= 1.0f)
-		unk2A0[0]->mAlpha = 0xff;
+		unk2A0[0]->setAlpha(0xff);
 	else if (unk2B8 == 0.0f)
-		unk2A0[0]->mAlpha = 0;
+		unk2A0[0]->setAlpha(0);
 	else
-		unk2A0[0]->mAlpha = 0x50;
+		unk2A0[0]->setAlpha(0x50);
 
 	unk28 = currentWater;
 	if (!unk46) {
@@ -3406,13 +4098,13 @@ void TGCConsole2::performMovement()
 	}
 
 	if (unk46) {
-		if (SMSGetMarDirector()->mState == TMarDirector::STATE_PAUSE_MENU)
+		if (SMSGetMarDirector()->getState() == TMarDirector::STATE_PAUSE_MENU)
 			unk7C = 0;
 
 		if (unk7C < 0x46)
-			unk288->mAlpha = 0;
+			unk288->setAlpha(0);
 		else if (unk7C < 0x10e)
-			unk288->mAlpha = 0xff;
+			unk288->setAlpha(0xff);
 		else
 			unk7C = 0;
 
@@ -3442,8 +4134,8 @@ void TGCConsole2::performMovement()
 
 		if ((f32)unk86 < rate * 2.0f) {
 			if (unk1CC <= 3 && unk1CC != 0 && unk86 == (int)(1.5f * rate)
-			    && SMSGetMarDirector()->mState == TMarDirector::STATE_UNK4
-			    && SMSGetMarDirector()->unk124 == 0
+			    && SMSGetMarDirector()->getState() == TMarDirector::STATE_UNK4
+			    && SMSGetMarDirector()->isGameplayModeNow()
 			    && SMSGetMSound()->gateCheck(0x4800)) {
 				MSoundSESystem::MSoundSE::startSoundSystemSE(0x4800, 0, nullptr,
 				                                             0);
@@ -3459,12 +4151,12 @@ void TGCConsole2::performMovement()
 			u8 offset = mul * (int)(0.5f + ratio);
 			for (int i = 0; i < 9; ++i) {
 				if (mLifeMeterPetals[i * 2]->isVisible()) {
-					mLifeMeterPetals[i * 2]->setBounds(
+					mLifeMeterPetals[i * 2]->place(
 					    JUTRect(mLifeMeterPetalsOriginalBounds[i].x1 - offset,
 					            mLifeMeterPetalsOriginalBounds[i].y1 - offset,
 					            mLifeMeterPetalsOriginalBounds[i].x2 + offset,
 					            mLifeMeterPetalsOriginalBounds[i].y2 + offset));
-					mLifeMeterPetals[i * 2 + 1]->setBounds(
+					mLifeMeterPetals[i * 2 + 1]->place(
 					    JUTRect(mLifeMeterPetalsOriginalBounds[i].x1 - offset,
 					            mLifeMeterPetalsOriginalBounds[i].y1 - offset,
 					            mLifeMeterPetalsOriginalBounds[i].x2 + offset,
@@ -3495,7 +4187,7 @@ void TGCConsole2::performMovement()
 
 	if (unk3A) {
 		if (processAppearMario(unk70++)) {
-			if (unk3AC[1]) {
+			if (unk3AD) {
 				if (unk70 == 200) {
 					int lives
 					    = TFlagManager::getInstance()->getFlag(MSF_LIFE_COUNT);
@@ -3512,25 +4204,35 @@ void TGCConsole2::performMovement()
 					unk3A = 0;
 				}
 			} else {
-				unk3AC[1] = 0;
-				unk70     = 0;
+				unk3AD = 0;
+				unk70  = 0;
 			}
 		}
 	}
 
+#if defined(VERSION_GMSJ01)
 	if (!unk3A && !unk3B && mLifeCountRoot->getPane()->isVisible()
 	    && gpMarioOriginal->mStatus != 0xC400201
-	    && SMSGetMarDirector()->mState != TMarDirector::STATE_PAUSE_MENU) {
+	    && SMSGetMarDirector()->getState() != TMarDirector::STATE_PAUSE_MENU) {
 		++unk70;
 		if (unk70 > 400)
 			startDisappearMario();
 	}
+#else
+	if (mLifeCountRoot->getPane()->isVisible()
+	    && gpMarioOriginal->mStatus != 0xC400201
+	    && SMSGetMarDirector()->getState() != TMarDirector::STATE_PAUSE_MENU) {
+		++unk3AE;
+		if (unk3AE > 400)
+			startDisappearMario();
+	}
+#endif
 
 	int lives = TFlagManager::getInstance()->getFlag(MSF_LIFE_COUNT);
-	if (lives > unk3AC[0]) {
+	if (lives > unk3AC) {
 		if (lives > 99)
 			lives = 99;
-		unk3AC[0] = lives;
+		unk3AC = lives;
 		((J2DPicture*)mLifeCountDigits[0]->getPane())
 		    ->changeTexture(unkE0[(int)(lives * 0.1f)]->getTexInfo(), 0);
 		((J2DPicture*)mLifeCountDigits[1]->getPane())
@@ -3556,7 +4258,7 @@ void TGCConsole2::performMovement()
 
 	if (unk44 && mTelopRoot->getPane()->isVisible()) {
 		if (processDrawTelop(unk80++)) {
-			JUTRect bounds(mTelop->getPane()->mGlobalBounds);
+			JUTRect bounds(mTelop->getPane()->getGlbBounds());
 			unk568 = unk544.x2;
 			unk534.add(mTelopTextWidth + bounds.x2, 0);
 
@@ -3585,8 +4287,8 @@ void TGCConsole2::performMovement()
 		startAppearTelop(true);
 	}
 
-	if (SMSGetMarDirector()->mState != TMarDirector::STATE_PAUSE_MENU
-	    && SMSGetMarDirector()->unk124 == 0) {
+	if (SMSGetMarDirector()->getState() != TMarDirector::STATE_PAUSE_MENU
+	    && SMSGetMarDirector()->isGameplayModeNow()) {
 		if (unk55C < 0xffffffff)
 			++unk55C;
 	}
@@ -3608,7 +4310,7 @@ void TGCConsole2::performMovement()
 		if (!unk428->getPane()->isVisible())
 			startAppearRedCoin();
 
-		JUTRect bounds(unk43C[0]->getPane()->mGlobalBounds);
+		JUTRect bounds(unk43C[0]->getPane()->getGlbBounds());
 		JGeometry::TVec3<f32> pos(bounds.x1 + bounds.getWidth() * 0.5f,
 		                          bounds.y1 + bounds.getHeight() * 0.5f, 0.0f);
 		gpEmitterManager4D2->createEmitter(pos, 0x1FC, nullptr, nullptr);
@@ -3636,18 +4338,26 @@ void TGCConsole2::performMovement()
 	}
 
 	if (unk59) {
-		if (SMSGetMarDirector()->unk124 == 0
+		if (SMSGetMarDirector()->isGameplayModeNow()
 		    && gpMarioOriginal->getHealth() != 0
 		    && gpMarioOriginal->getAir() != 0
+#if !defined(VERSION_GMSJ01)
+		    && (SMSGetMarDirector()->getCurrentStage() != 9
+		        || SMSGetMarDirector()->getCurrentScenario() != 2)
+#endif
 		    && SMSGetMSound()->gateCheck(0x4819))
 			MSoundSESystem::MSoundSE::startSoundSystemSE(0x4819, 0, nullptr, 0);
 		unk59 = 0;
 	}
 
 	if (unk5A) {
-		if (SMSGetMarDirector()->unk124 == 0
+		if (SMSGetMarDirector()->isGameplayModeNow()
 		    && gpMarioOriginal->getHealth() != 0
 		    && gpMarioOriginal->getAir() != 0
+#if !defined(VERSION_GMSJ01)
+		    && (SMSGetMarDirector()->getCurrentStage() != 9
+		        || SMSGetMarDirector()->getCurrentScenario() != 2)
+#endif
 		    && SMSGetMSound()->gateCheck(0x481A))
 			MSoundSESystem::MSoundSE::startSoundSystemSE(0x481A, 0, nullptr, 0);
 		unk5A = 0;
@@ -3691,7 +4401,15 @@ void TGCConsole2::performCalcAnim()
 					*unk3DC << c;
 					break;
 				default:
+#if defined(VERSION_GMSP01_NX)
+					if (TFlagManager::getInstance()->getFlag(MSF_LANGUAGE)
+					        == MSLANG_NX_JAPANESE
+					    && c >= 0x80) {
+#elif defined(VERSION_GMSJ01) || defined(VERSION_GMSJ01_01)
 					if (c >= 0x80) {
+#endif
+#if defined(VERSION_GMSJ01) || defined(VERSION_GMSJ01_01)                      \
+    || defined(VERSION_GMSP01_NX)
 						u8 trail = unk3D4->read8b();
 						u16 code = (c << 8) + trail;
 
@@ -3723,10 +4441,16 @@ void TGCConsole2::performCalcAnim()
 						}
 
 						if (colored) {
+							// clang-format off
 							snprintf(buffer, 255,
-							         "\033GM[0]\033CC[%02x%02x%02x]\033FX[28]"
-							         "\033FY[28]\033SH[3]\033CD[4]",
-							         color.r, color.g, color.b);
+								J2DPRINT_GRADIENT_MODE(0)
+								J2DPRINT_CHAR_COLOR("%02x%02x%02x")
+							  J2DPRINT_FONT_WIDTH(28)
+							  J2DPRINT_FONT_HEIGHT(28)
+							  J2DPRINT_CHAR_SPACING(3)
+							  J2DPRINT_CURSOR_DOWN(4),
+							  color.r, color.g, color.b);
+							// clang-format on
 							unk3D8->write(buffer, 0x2B);
 							unk3DC->write(buffer, 0x2B);
 						}
@@ -3735,17 +4459,136 @@ void TGCConsole2::performCalcAnim()
 						*unk3DC << code;
 
 						if (colored) {
-							snprintf(
-							    buffer, 255,
-							    "\033GM[0]\033CC\033FX\033FY\033SH\033CU[4]");
+							// clang-format off
+							snprintf(buffer, 255,
+								J2DPRINT_GRADIENT_MODE(0)
+							  J2DPRINT_CHAR_COLOR_RESET
+							  J2DPRINT_FONT_WIDTH_RESET
+							  J2DPRINT_FONT_HEIGHT_RESET
+							  J2DPRINT_CHAR_SPACING_RESET
+							  J2DPRINT_CURSOR_UP(4));
+							// clang-format on
 							unk3D8->write(buffer, 0x18);
 							unk3DC->write(buffer, 0x18);
 						}
+#if defined(VERSION_GMSP01_NX)
+					} else if (TFlagManager::getInstance()->getFlag(
+					               MSF_LANGUAGE)
+					           == 5) {
+						*unk3D8 << c;
+						*unk3DC << c;
+					} else {
+						char buffer[256];
+						JUtility::TColor color;
+						bool special = Helpers::IsSpecialChar(c);
+						if (special) {
+							color.set(255, 255, 255, 255);
+							// clang-format off
+							snprintf(buffer, 255,
+								J2DPRINT_GRADIENT_MODE(0)
+								J2DPRINT_CHAR_COLOR("%02x%02x%02x")
+							  J2DPRINT_FONT_WIDTH(22)
+							  J2DPRINT_FONT_HEIGHT(24)
+							  J2DPRINT_CHAR_SPACING(0)
+							  J2DPRINT_CURSOR_DOWN(3),
+							  color.r, color.g, color.b);
+							// clang-format on
+							unk3D8->write(buffer, 0x2B);
+							unk3DC->write(buffer, 0x2B);
+						}
+
+						*unk3D8 << c;
+						*unk3DC << c;
+
+						if (special) {
+							// clang-format off
+							snprintf(buffer, 255,
+								J2DPRINT_GRADIENT_MODE(0)
+							  J2DPRINT_CHAR_COLOR_RESET
+							  J2DPRINT_FONT_WIDTH_RESET
+							  J2DPRINT_FONT_HEIGHT_RESET
+							  J2DPRINT_CHAR_SPACING_RESET
+							  J2DPRINT_CURSOR_UP(3));
+							// clang-format on
+							unk3D8->write(buffer, 0x18);
+							unk3DC->write(buffer, 0x18);
+						}
+					}
+#else
 					} else {
 						*unk3D8 << c;
 						*unk3DC << c;
 					}
+#endif
 					break;
+#else
+						{
+							char buffer[256];
+							JUtility::TColor color;
+							bool colored = true;
+							switch (c) {
+							case '@':
+								color.set(100, 255, 100, 255);
+								break;
+							case '#':
+								color.set(255, 160, 100, 255);
+								break;
+							case '%':
+								color.set(255, 255, 0, 255);
+								break;
+							case '+':
+							case '<':
+							case '>':
+							case 0xA5:
+								color.set(220, 220, 220, 255);
+								break;
+							case '$':
+								color.set(110, 230, 255, 255);
+								break;
+#if defined(VERSION_GMSP01)
+							case '*':
+								color.set(220, 220, 220, 255);
+								break;
+#endif
+							default:
+								colored = false;
+								break;
+							}
+
+							if (colored) {
+								// clang-format off
+								snprintf(buffer, 255,
+								  J2DPRINT_GRADIENT_MODE(0)
+								  J2DPRINT_CHAR_COLOR("%02x%02x%02x")
+								  J2DPRINT_FONT_WIDTH(30)
+								  J2DPRINT_FONT_HEIGHT(26)
+								  J2DPRINT_CHAR_SPACING(3)
+								  J2DPRINT_CURSOR_DOWN(4),
+								  color.r, color.g, color.b);
+								// clang-format on
+								unk3D8->write(buffer, 0x2B);
+								unk3DC->write(buffer, 0x2B);
+							}
+
+							*unk3D8 << c;
+							*unk3DC << c;
+
+							if (colored) {
+								// clang-format off
+								snprintf(buffer, 255,
+								  J2DPRINT_GRADIENT_MODE(0)
+									J2DPRINT_CHAR_COLOR_RESET
+								  J2DPRINT_FONT_WIDTH_RESET
+								  J2DPRINT_FONT_HEIGHT_RESET
+								  J2DPRINT_CHAR_SPACING_RESET
+								  J2DPRINT_CURSOR_UP(4));
+								// clang-format on
+								unk3D8->write(buffer, 0x18);
+								unk3DC->write(buffer, 0x18);
+							}
+							break;
+						}
+#endif
 				}
 			}
 		} else {
@@ -3861,7 +4704,7 @@ void TGCConsole2::performCalcAnim()
 				if (unk6C >= 100) {
 					if (unk6C % 100 == 0) {
 						setDigitPane(mCoinCountDigits[0], unkE0, unk6C / 100);
-						bounds = mCoinCountDigits[0]->getPane()->mGlobalBounds;
+						bounds = mCoinCountDigits[0]->getPane()->getGlbBounds();
 						pos.set(bounds.x1 + bounds.getWidth() * 0.5f,
 						        bounds.y1 + bounds.getHeight() * 0.5f, 0.0f);
 						gpEmitterManager4D2->createEmitter(pos, 0x1FC, nullptr,
@@ -3873,7 +4716,7 @@ void TGCConsole2::performCalcAnim()
 					if (remainder % 10 == 0) {
 						setDigitPane(mCoinCountDigits[1], unkE0,
 						             remainder / 10);
-						bounds = mCoinCountDigits[1]->getPane()->mGlobalBounds;
+						bounds = mCoinCountDigits[1]->getPane()->getGlbBounds();
 						pos.set(bounds.x1 + bounds.getWidth() * 0.5f,
 						        bounds.y1 + bounds.getHeight() * 0.5f, 0.0f);
 						gpEmitterManager4D2->createEmitter(pos, 0x1FC, nullptr,
@@ -3883,7 +4726,7 @@ void TGCConsole2::performCalcAnim()
 					if (!mCoinCountDigits[2]->getPane()->isVisible())
 						mCoinCountDigits[2]->getPane()->show();
 					setDigitPane(mCoinCountDigits[2], unkE0, remainder % 10);
-					bounds = mCoinCountDigits[2]->getPane()->mGlobalBounds;
+					bounds = mCoinCountDigits[2]->getPane()->getGlbBounds();
 					pos.set(bounds.x1 + bounds.getWidth() * 0.5f,
 					        bounds.y1 + bounds.getHeight() * 0.5f, 0.0f);
 					gpEmitterManager4D2->createEmitter(pos, 0x1FC, nullptr,
@@ -3891,7 +4734,7 @@ void TGCConsole2::performCalcAnim()
 				} else {
 					if (unk6C % 10 == 0) {
 						setDigitPane(mCoinCountDigits[0], unkE0, unk6C / 10);
-						bounds = mCoinCountDigits[0]->getPane()->mGlobalBounds;
+						bounds = mCoinCountDigits[0]->getPane()->getGlbBounds();
 						pos.set(bounds.x1 + bounds.getWidth() * 0.5f,
 						        bounds.y1 + bounds.getHeight() * 0.5f, 0.0f);
 						gpEmitterManager4D2->createEmitter(pos, 0x1FC, nullptr,
@@ -3899,7 +4742,7 @@ void TGCConsole2::performCalcAnim()
 					}
 
 					setDigitPane(mCoinCountDigits[1], unkE0, unk6C % 10);
-					bounds = mCoinCountDigits[1]->getPane()->mGlobalBounds;
+					bounds = mCoinCountDigits[1]->getPane()->getGlbBounds();
 					pos.set(bounds.x1 + bounds.getWidth() * 0.5f,
 					        bounds.y1 + bounds.getHeight() * 0.5f, 0.0f);
 					gpEmitterManager4D2->createEmitter(pos, 0x1FC, nullptr,
@@ -3974,15 +4817,15 @@ void TGCConsole2::performCalcAnim()
 	}
 }
 
-void TGCConsole2::perform(u32 flags, JDrama::TGraphics* graphics)
+void TGCConsole2::perform(u32 cue, JDrama::TGraphics* graphics)
 {
-	if (flags & 1)
+	if (cue & CUE_MOVE)
 		performMovement();
 
-	if (flags & 2)
+	if (cue & CUE_CALC_ANIM)
 		performCalcAnim();
 
-	if (flags & 8) {
+	if (cue & CUE_DRAW) {
 		J2DOrthoGraph graph(graphics->getViewport());
 		graph.setup2D();
 

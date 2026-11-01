@@ -29,6 +29,7 @@
 #include <Enemy/Igaiga.hpp>
 #include <Enemy/TabePuku.hpp>
 #include <Enemy/TobiPuku.hpp>
+#include <Enemy/FruitsBoat.hpp>
 #include <Animal/AnimalBase.hpp>
 #include <Animal/AnimalManager.hpp>
 #include <Animal/BeeHive.hpp>
@@ -47,10 +48,11 @@
 #include <Enemy/AmiNoko.hpp>
 #include <Enemy/Seal.hpp>
 #include <Enemy/Kazekun.hpp>
+#include <M3DUtil/MActorAnm.hpp>
+#include <Enemy/WireTrap.hpp>
 
 JDrama::TNameRef* TMarNameRefGen::getNameRef_Enemy(const char* name) const
 {
-
 	if (strcmp(name, "TypicalEnemy") == 0)
 		return new TTypicalEnemy;
 

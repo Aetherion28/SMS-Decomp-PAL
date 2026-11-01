@@ -42,7 +42,6 @@
 #include <string.h>
 
 // rogue includes needed for matching sinit & bss
-#include <M3DUtil/InfectiousStrings.hpp>
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
 
@@ -158,6 +157,12 @@ void TCogwheel::initDraw() const
 	GXSetAlphaCompare(GX_ALWAYS, 0, GX_AOP_OR, GX_ALWAYS, 0);
 	GXSetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
 	GXSetCullMode(GX_CULL_BACK);
+}
+
+// fabricated
+static inline f32 getBottomY(const TMapObjBase* obj)
+{
+	return obj->mPosition.y - obj->getObjCollisionHeightOffset();
 }
 
 void TCogwheel::draw() const
@@ -672,7 +677,7 @@ void TMapObjPuncher::load(JSUMemoryInputStream& param_1)
 
 void TMuddyBoat::moveByWater()
 {
-	if (SMS_GetMarioWaterGun()->mEmittedWaterCount != 0) {
+	if (SMS_GetMarioWaterGun()->getEmittedWaterCount() != 0) {
 		MtxPtr emitMtx = SMS_GetMarioWaterGun()->getEmitMtx(0);
 		JGeometry::TVec3<f32> dir(-emitMtx[0][0], 0.0f, -emitMtx[2][0]);
 		MsVECNormalize(&dir, &dir);
@@ -729,11 +734,11 @@ void TMuddyBoat::kill()
 void TMuddyBoat::touchWall(JGeometry::TVec3<f32>* param_1,
                            const TBGWallCheckRecord& param_2)
 {
-	const TBGCheckData* wall = param_2.mResultWalls[0];
-	unk170                   = JGeometry::TVec3<f32>(
-        param_2.mCenter.x - wall->getNormal().x * (50.0f + param_2.mRadius),
-        100.0f + (mPosition.y - getObjCollisionHeightOffset()),
-        param_2.mCenter.z - wall->getNormal().z * (50.0f + param_2.mRadius));
+	const TBGCheckData* wall            = param_2.mResultWalls[0];
+	const JGeometry::TVec3<f32>& normal = wall->getNormal();
+	unk170.set(param_2.mCenter.x - normal.x * (50.0f + param_2.mRadius),
+	           100.0f + getBottomY(this),
+	           param_2.mCenter.z - normal.z * (50.0f + param_2.mRadius));
 	*param_1 = mPosition;
 	kill();
 	mPositionDelta.zero();
@@ -773,7 +778,7 @@ void TMuddyBoat::bind()
 	}
 	const TBGCheckData* ground;
 	f32 height = gpMap->checkGroundIgnoreWaterSurface(pos, &ground);
-	f32 bottom = mPosition.y - getObjCollisionHeightOffset();
+	f32 bottom = getBottomY(this);
 	if (height > bottom - 100.0f || ground->isIllegalData()) {
 		pos = mPosition;
 		kill();
@@ -784,12 +789,11 @@ void TMuddyBoat::bind()
 	center.set(pos.x + mtx[0][2] * unk160, bottom, pos.z + mtx[2][2] * unk160);
 	if (bindToWall(center, unk158, &pos))
 		return;
-	center.set(pos.x - mtx[0][2] * unk164,
-	           mPosition.y - getObjCollisionHeightOffset(),
+	center.set(pos.x - mtx[0][2] * unk164, getBottomY(this),
 	           pos.z - mtx[2][2] * unk164);
 	if (bindToWall(center, unk15C, &pos))
 		return;
-	center.set(pos.x, mPosition.y - getObjCollisionHeightOffset(), pos.z);
+	center.set(pos.x, getBottomY(this), pos.z);
 	if (bindToWall(center, unk154, &pos))
 		return;
 	mPositionDelta = pos - mPosition;
@@ -879,7 +883,7 @@ void TMuddyBoat::initMapObj()
 	unk13C = 0.01f;
 	unk168 = 600;
 
-	if (SMSGetMarDirector()->getCurrentMap() == 0x34) {
+	if (SMSGetMarDirector()->getCurrentStage() == 0x34) {
 		unk158 = 126.0f;
 		unk154 = 185.0f;
 		unk15C = 150.0f;

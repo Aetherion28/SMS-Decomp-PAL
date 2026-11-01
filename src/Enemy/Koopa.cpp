@@ -31,7 +31,7 @@
 // rogue includes needed for matching sinit & bss
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
-#include <M3DUtil/InfectiousStrings.hpp>
+#include <M3DUtil/MActorAnm.hpp>
 
 // Bowser's nerves keep their theNerve() inline in the class, which leaves weak
 // nerve$localstatic0$theNerve__... objects in the map. They live in this file
@@ -198,6 +198,15 @@ static inline int checkTurnDir(TKoopa* koopa, bool* grip)
 	return 0;
 }
 
+// fabricated
+static inline bool isMarioOnLeft(TKoopa* koopa)
+{
+	return MsWrapFmodf(koopa->getTargetDir(SMS_GetMarioPos())
+	                       - koopa->mTargetDir,
+	                   -180.0f, 180.0f)
+	       < 0.0f;
+}
+
 // TODO: getTargetDir and some nerve constructors stay out of line in the
 // target here; the original runs out of inlining budget earlier than this
 // version does.
@@ -241,10 +250,7 @@ DEFINE_NERVE_EXECUTE(TNerveKoopaWait, TLiveActor)
 		break;
 	default:
 	case 0:
-		koopa->mFlameFlipped = MsWrapFmodf(koopa->getTargetDir(SMS_GetMarioPos())
-		                                       - koopa->mTargetDir,
-		                                   -180.0f, 180.0f)
-		                       < 0.0f;
+		koopa->mFlameFlipped = isMarioOnLeft(koopa);
 		spine->setNext(&TNerveKoopaFlame::theNerve());
 		break;
 	}
@@ -319,10 +325,7 @@ DEFINE_NERVE_EXECUTE(TNerveKoopaFlame, TLiveActor)
 					break;
 				case 0:
 					koopa->mFlameFlipped
-					    = MsWrapFmodf(koopa->getTargetDir(SMS_GetMarioPos())
-					                      - koopa->mTargetDir,
-					                  -180.0f, 180.0f)
-					      < 0.0f;
+					    = isMarioOnLeft(koopa);
 					koopa->changeAnm(KOOPA_ANM_FIRE_START, 0,
 					                 koopa->getParam()->fireSpeed.get());
 					spine->setNext(&TNerveKoopaFlame::theNerve());
@@ -513,12 +516,12 @@ void TKoopaFlame::control()
 
 	mLength += mSpeed;
 	f32 height = mHeight;
-	JGeometry::TVec3<f32> pos(mDir.x * mLength + mOrigin.x,
-	                          mDir.y * mLength + mOrigin.y,
-	                          mDir.z * mLength + mOrigin.z);
+	f32 radius = mRadius;
+	JGeometry::TVec3<f32> pos;
+	pos.scaleAdd(mLength, mDir, mOrigin);
 	if (height <= 0.0f)
-		height = 2.0f * mRadius;
-	set(pos, mRadius, height);
+		height = 2.0f * radius;
+	set(pos, radius, height);
 }
 
 BOOL TKoopaFlame::receiveMessage(THitActor* sender, u32 message)
@@ -665,7 +668,7 @@ BOOL KoopaNeckCallBack(J3DNode* node, int calc)
 
 	// Mario's direction, flattened onto the neck's turning plane
 	JGeometry::TVec3<f32> flat;
-	flat.scaleAdd(-yAxis.dot(toMario), toMario, yAxis);
+	flat.scaleAdd(-yAxis.dot(toMario), yAxis, toMario);
 	flat.normalize();
 	toMario.normalize();
 

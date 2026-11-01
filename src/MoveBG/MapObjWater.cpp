@@ -16,7 +16,6 @@
 // rogue includes needed for matching sinit & bss
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
-#include <M3DUtil/InfectiousStrings.hpp>
 
 static void dummy(Vec* v)
 {
@@ -46,22 +45,25 @@ TMapObjSeaIndirect::TMapObjSeaIndirect(const char* name)
 {
 }
 
+// fabricated
+static inline bool isAboveWave(const JGeometry::TVec3<f32>& pos)
+{
+	return pos.y >= gpMapObjWave->getHeight(pos.x, pos.y, pos.z);
+}
+
 void TMapObjWaterFilter::perform(u32 cue, JDrama::TGraphics* graphics)
 {
-	// TODO: mother of all intern codes...
-
-	if (!unk44 || gpMarDirector->unk124 != 0)
-		return;
-
-	if (gpCamera->isDemoCamera())
-		return;
-
-	const JGeometry::TVec3<f32>& camPos = gpCamera->unk124;
-	if (camPos.y > 0.0f
-	    && camPos.y >= gpMapObjWave->getHeight(camPos.x, camPos.y, camPos.z))
+	if (!unk44 || !SMSGetMarDirector()->isGameplayModeNow()
+	    || gpCamera->isDemoCamera()
+	    || (gpCamera->getUnk124().y > 0.0f
+	        && isAboveWave(gpCamera->getUnk124())))
 		return;
 
 	if (cue & CUE_CALC_ANIM) {
+		MtxPtr viewMtx = graphics->getViewMtx();
+		Mtx afStack_48;
+		Mtx afStack_78;
+		Mtx afStack_a8;
 		J3DTransformInfo info;
 		info.mScale.x     = 1.0f;
 		info.mScale.y     = 1.0f;
@@ -72,12 +74,9 @@ void TMapObjWaterFilter::perform(u32 cue, JDrama::TGraphics* graphics)
 		info.mTranslate.x = mPosition.x;
 		info.mTranslate.y = mPosition.y;
 		info.mTranslate.z = mPosition.z;
-		Mtx afStack_78;
 		J3DGetTranslateRotateMtx(info, afStack_78);
-		Mtx afStack_a8;
 		PSMTXScale(afStack_a8, mScaling.x, mScaling.y, mScaling.z);
-		Mtx afStack_48;
-		MTXInverse(graphics->mViewMtx, afStack_48);
+		MTXInverse(viewMtx, afStack_48);
 		MTXConcat(afStack_48, afStack_78, afStack_48);
 		MTXConcat(afStack_48, afStack_a8, afStack_48);
 		unk44->getModel()->setBaseTRMtx(afStack_48);

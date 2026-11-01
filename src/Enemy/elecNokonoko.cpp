@@ -24,7 +24,6 @@
 #include <Map/MapData.hpp>
 #include <MarioUtil/DrawUtil.hpp>
 #include <M3DUtil/MActor.hpp>
-#include <M3DUtil/InfectiousStrings.hpp>
 #include <MSound/MSound.hpp>
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
@@ -154,11 +153,11 @@ void TElecNokonokoManager::clipEnemies(JDrama::TGraphics* param_1)
 	}
 }
 
-void TElecNokonokoManager::perform(u32 param_1, JDrama::TGraphics* param_2)
+void TElecNokonokoManager::perform(u32 cue, JDrama::TGraphics* param_2)
 {
-	TEnemyManager::perform(param_1, param_2);
+	TEnemyManager::perform(cue, param_2);
 	for (int i = 0; i < getActiveObjNum(); ++i) {
-		((TElecNokonoko*)getObj(i))->unk194->perform(param_1, param_2);
+		((TElecNokonoko*)getObj(i))->unk194->perform(cue, param_2);
 	}
 }
 
@@ -345,7 +344,7 @@ bool TElecNokonoko::isResignationAttack()
 {
 	f32 shootRange = unk1A0->mSLCarapaceShootRange.get();
 	if (!checkLiveFlag(LIVE_FLAG_CLIPPED_OUT)
-	    && (unk104.getPoint() - mPosition).length() < shootRange) {
+	    && getGoalDistance() < shootRange) {
 		mSpine->pushAfterCurrent(&TNerveElecNokonokoShoot::theNerve());
 		return true;
 	}
@@ -357,7 +356,7 @@ void TElecNokonoko::behaveToFindMario()
 	mSpine->pushAfterCurrent(&TNerveWalkerGraphWander::theNerve());
 	mSpine->pushAfterCurrent(&TNerveWalkerAttack::theNerve());
 	mSpine->pushAfterCurrent(&TNerveElecNokonokoTurn::theNerve());
-	setGoalPath((THitActor*)gpMarioAddress);
+	setGoal((THitActor*)gpMarioAddress);
 }
 
 void TElecNokonoko::behaveToWater(THitActor* param_1)
@@ -508,11 +507,11 @@ void TElecCarapace::loadInit(TSpineEnemy* param_1, const char* param_2)
 	mHeadHeight = 80.0f;
 }
 
-void TElecCarapace::perform(u32 param_1, JDrama::TGraphics* param_2)
+void TElecCarapace::perform(u32 cue, JDrama::TGraphics* param_2)
 {
-	TEnemyAttachment::perform(param_1, param_2);
+	TEnemyAttachment::perform(cue, param_2);
 
-	if (param_1 & 1) {
+	if (cue & CUE_MOVE) {
 		if (unk180 != 0) {
 			unk180++;
 			if (unk180 > 5)
@@ -520,7 +519,7 @@ void TElecCarapace::perform(u32 param_1, JDrama::TGraphics* param_2)
 		}
 	}
 
-	if (param_1 & 0x200) {
+	if (cue & CUE_ENTRY) {
 		if (isState(0) || unk16C->checkLiveFlag(LIVE_FLAG_DEAD)
 		    || checkLiveFlag(LIVE_FLAG_DEAD | LIVE_FLAG_HIDDEN))
 			return;
@@ -579,7 +578,7 @@ void TElecCarapace::behaveToHitWall(const TBGCheckData* param_1)
 			mVelocity.y = 3.0f;
 			mVelocity.z = -1.5f * speed * param_1->getNormal().z;
 			mPosition.y = mGroundHeight + 2.0f;
-			setGoalPath(unk16C->mPosition);
+			setGoal(unk16C->mPosition);
 		}
 	}
 }
@@ -625,14 +624,14 @@ void TElecCarapace::shoot()
 	unk175 = 0;
 	offHitFilter(HIT_FILTER_NO_COLLISION);
 	mSpine->initWith(&TNerveElecCarapaceMove::theNerve());
-	setGoalPath(goal);
+	setGoal(goal);
 	setZigParameter();
 }
 
 void TElecCarapace::setZigParameter()
 {
 	f32 factor = TMsRange<f32>(3.0f, 5.0f).rand();
-	unk178     = factor * (unk104.getPoint() - mPosition).length();
+	unk178     = factor * getGoalDistance();
 	unk17C     = TMsRange<f32>(20.0f, 30.0f).rand();
 }
 
@@ -742,7 +741,7 @@ void TElecCarapace::reflect(THitActor* param_1)
 	if ((mVelocity.x > 0.0f && mVelocity.z > 0.0f)
 	    || (mVelocity.x < 0.0f && mVelocity.z < 0.0f))
 		unk174 = 1;
-	setGoalPath(unk16C->mPosition);
+	setGoal(unk16C->mPosition);
 }
 
 void TElecCarapace::move()
@@ -798,7 +797,7 @@ DEFINE_NERVE(TNerveElecNokonokoCollect, TLiveActor)
 	if (spine->getTime() == 0) {
 		if (!self->isBckAnm(0))
 			self->setBckAnm(8);
-		self->setGoalPath(self->unk194);
+		self->setGoal(self->unk194);
 	}
 	if (self->unk194->isMove())
 		self->getMActor()->setFrameRate(SMSGetAnmFrameRate(), 0);
@@ -828,7 +827,7 @@ DEFINE_NERVE(TNerveElecNokonokoTurn, TLiveActor)
 	TElecNokonoko* self = (TElecNokonoko*)spine->getBody();
 	if (spine->getTime() == 0) {
 		self->setBckAnm(16);
-		self->setGoalPath((THitActor*)gpMarioAddress);
+		self->setGoal((THitActor*)gpMarioAddress);
 	}
 	if (self->isBckAnm(15)
 	    && MsIsInSight(self->mPosition, self->mRotation.y, SMS_GetMarioPos(),
@@ -929,7 +928,7 @@ DEFINE_NERVE(TNerveElecCarapaceMove, TLiveActor)
 	self->move();
 	if (self->unk184 != 0) {
 		f32 range = 64.0f * self->unk16C->unk1A0->mSLCarapaceSpeed.get();
-		if ((self->unk104.getPoint() - self->mPosition).length() < range) {
+		if (self->getGoalDistance() < range) {
 			if (!self->unk16C->isCatchReady()) {
 				self->unk16C->forceCatchReady();
 			}
@@ -937,7 +936,7 @@ DEFINE_NERVE(TNerveElecCarapaceMove, TLiveActor)
 			return true;
 		}
 	}
-	JGeometry::TVec3<f32> diff = self->unk104.getPoint();
+	JGeometry::TVec3<f32> diff = self->getGoal().getPoint();
 	diff -= self->mPosition;
 	diff.y = 0.0f;
 	if (self->unk176 == 0 && MsVECMag2(&diff) < 100.0f) {
@@ -946,7 +945,7 @@ DEFINE_NERVE(TNerveElecCarapaceMove, TLiveActor)
 			return true;
 		}
 		self->unk184 = 1;
-		self->setGoalPath(self->unk16C->mPosition);
+		self->setGoal(self->unk16C->mPosition);
 	}
 	return false;
 }

@@ -1,11 +1,8 @@
 #include <Animal/BeeHive.hpp>
 #include <Animal/boid.hpp>
-#include <Enemy/PathNode.hpp>
 #include <JSystem/J3D/J3DGraphAnimator/J3DModel.hpp>
 #include <JSystem/J3D/J3DGraphLoader/J3DModelLoaderFlags.hpp>
 #include <JSystem/JDrama/JDRNameRefGen.hpp>
-#include <JSystem/JGeometry.hpp>
-#include <JSystem/JMath.hpp>
 #include <M3DUtil/MActor.hpp>
 #include <MSound/MSound.hpp>
 #include <MSound/MSoundSE.hpp>
@@ -21,19 +18,16 @@
 #include <Strategic/ObjModel.hpp>
 #include <Strategic/Spine.hpp>
 #include <Strategic/Strategy.hpp>
-#include <System/EmitterViewObj.hpp>
+#include <System/Application.hpp>
 #include <System/Particles.hpp>
-#include <stdlib.h>
 
 // rogue includes needed for matching sinit & bss
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
-#include <M3DUtil/InfectiousStrings.hpp>
 
 namespace {
 
-// The hive falls once it swings further than this.
-f32 cAngleLimit = JGeometry::TUtil<f32>::PI() * 0.375f;
+const f32 cAngleLimit = 0.375f * JGeometry::TUtil<f32>::PI();
 
 bool SMS_IsMarioInWater()
 {
@@ -78,11 +72,12 @@ TBee::TBee(MActor* actor, TBeeHive* hive)
 
 void TBee::init()
 {
-	initHitActor(ACTOR_TYPE_BEE, 1, 0x80000000, 20.0f, 20.0f, 50.0f, 50.0f);
+	initHitActor(ACTOR_TYPE_BEE, 1, HIT_CATEGORY_PLAYER, 20.0f, 20.0f,
+	             50.0f, 50.0f);
 
-	TIdxGroupObj* group
+	TIdxGroupObj* enemyGroup
 	    = static_cast<TIdxGroupObj*>(JDrama::TNameRefGen::search("敵グループ"));
-	group->getChildren().push_back(this);
+	enemyGroup->getChildren().push_back(this);
 
 	onHitFilter(HIT_FILTER_NO_COLLISION);
 }
@@ -117,7 +112,7 @@ void TBee::behaveToEat() { mHive->receiveMessageFromChild(this); }
 TBeeHive::TBeeHive(const char* name)
     : TRealoid(name)
 {
-	mItem = nullptr;
+	mNestItem = nullptr;
 }
 
 void TBeeHive::init(TLiveManager* manager)
@@ -126,26 +121,27 @@ void TBeeHive::init(TLiveManager* manager)
 	mManager->manageActor(this);
 	onLiveFlag(LIVE_FLAG_UNK8 | LIVE_FLAG_UNK10);
 	mSpine->initWith(&TNerveBeeHiveWait::theNerve());
-	mInitPos      = mPosition;
-	mActiveBeeNum = 0;
-	mEatenBeeNum  = 0;
+	mInitialPosition = mPosition;
+	mActiveBeeNum    = 0;
+	mEatenBeeNum     = 0;
 	initCollision();
 }
 
 void TBeeHive::reset()
 {
-	mPosition = mInitPos;
+	mPosition = mInitialPosition;
 
 	TPosition3f mtx;
 	MsMtxSetRotRPH(mtx, mRotation.x, 0.0f, mRotation.z);
 	mtx.getQuat(mBaseRot);
 
-	mSwingDir.setEulerY(mRotation.y);
-	mSwingDirGoal = mSwingDir;
-	mSwingAngle   = 0.0f;
-	mSwingSpeed   = 0.0f;
-	mSwingLimit   = 0.015707964f;
-	mCollisionBee = 0;
+	mSwingRot.setEulerY(mRotation.y);
+	mSwingTargetRot = mSwingRot;
+
+	mSwingAngle     = 0.0f;
+	mSwingAngVel    = 0.0f;
+	mSwingAngleMax  = 0.015707964f;
+	mHitCheckBeeIdx = 0;
 	onLiveFlag(LIVE_FLAG_UNK10 | LIVE_FLAG_AIRBORNE);
 	mMActor = mMActorKeeper->getMActor("bee_nest.bmd");
 	offHitFilter(HIT_FILTER_NO_COLLISION);
@@ -153,8 +149,8 @@ void TBeeHive::reset()
 
 void TBeeHive::initCollision()
 {
-	initHitActor(ACTOR_TYPE_BEE_HIVE, 0, 0x80000000, 50.0f, 50.0f, 100.0f,
-	             100.0f);
+	initHitActor(ACTOR_TYPE_BEE_HIVE, 0, HIT_CATEGORY_PLAYER, 50.0f, 50.0f,
+	             100.0f, 100.0f);
 	onHitFilter(HIT_FILTER_NO_ATTACK);
 }
 
@@ -180,7 +176,7 @@ void TBeeHive::setBoidBaseParams()
 void TBeeHive::setBoidParamOnAttacking()
 {
 	setBoidBaseParams();
-	unk150->setGoal(TPathNode((THitActor*)gpMarioAddress));
+	unk150->setGoal((THitActor*)gpMarioAddress);
 	unk150->mGoalOffset = JGeometry::TVec3<f32>(0.0f, 200.0f, 0.0f);
 }
 
@@ -194,7 +190,7 @@ void TBeeHive::setBoidParamOnWaiting()
 void TBeeHive::setBoidParamOnMarioWaterIn()
 {
 	setBoidBaseParams();
-	unk150->setGoal(TPathNode((THitActor*)gpMarioAddress));
+	unk150->setGoal((THitActor*)gpMarioAddress);
 	unk150->mGoalOffset = JGeometry::TVec3<f32>(0.0f, 500.0f, 0.0f);
 }
 
@@ -206,14 +202,14 @@ void TBeeHive::receiveMessageFromChild(TBee* bee)
 	bee->onFlag(TRealoidActor::FLAG_UNK4);
 	bee->onHitFilter(HIT_FILTER_NO_COLLISION);
 
-	TMapObjBase* coin = mCoins[mEatenBeeNum];
+	TMapObjBase* obj = mBeeCoins[mEatenBeeNum];
 	if (mEatenBeeNum != unk150->getBoidNum() - 1)
-		coin = gpItemManager->makeObjAppear(ACTOR_TYPE_COIN);
+		obj = gpItemManager->makeObjAppear(ACTOR_TYPE_COIN);
 
-	if (coin != nullptr) {
-		coin->appear();
-		coin->mPosition = bee->mPosition;
-		coin->setVelocityAndFlag10(0.0f, 15.0f, 0.0f);
+	if (obj != nullptr) {
+		obj->appear();
+		obj->mPosition = bee->mPosition;
+		obj->setVelocityAndFlag10(0.0f, 15.0f, 0.0f);
 	}
 
 	++mEatenBeeNum;
@@ -232,21 +228,22 @@ void TBeeHive::load(JSUMemoryInputStream& stream)
 void TBeeHive::loadCoin(JSUMemoryInputStream& stream)
 {
 	u32 itemEventId;
-	u32 lastCoinEventId;
+	u32 coinEventId;
 	stream >> itemEventId;
-	stream >> lastCoinEventId;
+	stream >> coinEventId;
 
-	mItem  = TMapObjBaseManager::newAndRegisterObjByEventID(itemEventId, "");
-	mCoins = new TMapObjBase*[unk150->getBoidNum()];
+	mNestItem = TMapObjBaseManager::newAndRegisterObjByEventID(itemEventId, "");
 
-	TMapObjBase** coin = mCoins;
-	TMapObjBase** end  = &mCoins[unk150->getBoidNum()];
-	for (; coin != end - 1; ++coin)
-		*coin = TMapObjBaseManager::newAndRegisterObj("coin");
+	mBeeCoins             = new TMapObjBase*[unk150->mNumBoids];
+	TMapObjBase** it      = mBeeCoins;
+	TMapObjBase** lastOne = mBeeCoins + unk150->mNumBoids;
+	lastOne--;
+	for (; it != lastOne; ++it)
+		*it = TMapObjBaseManager::newAndRegisterObj("coin");
 
-	*coin = TMapObjBaseManager::newAndRegisterObjByEventID(lastCoinEventId, "");
-	if (*coin == nullptr)
-		*coin = TMapObjBaseManager::newAndRegisterObj("coin");
+	*it = TMapObjBaseManager::newAndRegisterObjByEventID(coinEventId, "");
+	if (*it == nullptr)
+		*it = TMapObjBaseManager::newAndRegisterObj("coin");
 }
 
 TRealoidActor* TBeeHive::createRealoidActor(MActor* actor)
@@ -259,12 +256,11 @@ BOOL TBeeHive::receiveMessage(THitActor* sender, u32 message)
 	switch (message) {
 	case HIT_MESSAGE_SPRAYED_BY_WATER: {
 		JGeometry::TVec3<f32> dir = mPosition;
-		dir -= *gpMarioPos;
+		dir -= SMS_GetMarioPos();
 		setShakePower(dir);
 		SMS_EmitWaterHitParticleAndSound(&sender->mPosition);
 		return TRUE;
 	}
-
 	case HIT_MESSAGE_TRAMPLE:
 	case HIT_MESSAGE_HIP_DROP:
 	case HIT_MESSAGE_PUNCH:
@@ -296,59 +292,56 @@ void TBeeHive::bind()
 	if (checkLiveFlag(LIVE_FLAG_UNK10))
 		return;
 
-	JGeometry::TVec3<f32> next = mPosition;
-	next += mPositionDelta;
-	next += mVelocity;
+	JGeometry::TVec3<f32> pos = mPosition;
+	pos += mPositionDelta;
+	pos += mVelocity;
 
 	mVelocity.y -= getGravityY();
 	if (mVelocity.y < mVelocityMinY)
 		mVelocity.y = mVelocityMinY;
 
-	// the hive hangs from its top, so its bottom rises as it tilts
-	f32 lift      = -60.0f * (-1.0f + MsCos(57.295776f * mSwingAngle));
-	mGroundHeight = gpMap->checkGround(next.x, lift + (next.y + mHeadHeight),
-	                                   next.z, &mGroundPlane);
-	mGroundHeight += 1.0f;
+	f32 offset = -60.0f * (-1.0f + MsCos(57.295776f * mSwingAngle));
 
-	if (next.y + lift <= 0.05f + mGroundHeight) {
-		if (mGroundPlane->isIllegalData())
+	mGroundHeight = gpMap->checkGround(pos.x, offset + (pos.y + mHeadHeight),
+	                                   pos.z, &mGroundPlane);
+	mGroundHeight += 1.0f;
+	if (pos.y + offset <= 0.05f + mGroundHeight) {
+		if (mGroundPlane->checkFlag(0x10))
 			kill();
 		offLiveFlag(LIVE_FLAG_AIRBORNE);
 		mVelocity.set(0.0f, 0.0f, 0.0f);
-		next.y = mGroundHeight - lift;
+		pos.y = mGroundHeight - offset;
 	} else {
 		onLiveFlag(LIVE_FLAG_AIRBORNE);
 	}
 
-	gpMap->isTouchedOneWallAndMoveXZ(&next.x, next.y + mHeadHeight, &next.z,
+	gpMap->isTouchedOneWallAndMoveXZ(&pos.x, pos.y + mHeadHeight, &pos.z,
 	                                 mBodyRadius);
-	mPositionDelta = next - mPosition;
+
+	mPositionDelta = pos - mPosition;
 }
 
-// Only one bee per frame takes part in collision.
-// TODO: 91%. The target has a dead `num <= idx + 1` compare before it
-// reloads mCollisionBee and increments it in place; the idx local and the
-// if/else here are a guess that at least keeps control() from inlining it.
 void TBeeHive::controlCollision()
 {
-	int num = mActiveBeeNum;
+	int num   = mActiveBeeNum;
+	int index = mHitCheckBeeIdx;
 
-	int idx            = mCollisionBee;
-	TRealoidActor* bee = getRealoid(idx);
+	TRealoidActor* bee = getRealoid(index);
 	bee->checkHitActors();
 	bee->onHitFilter(HIT_FILTER_NO_ATTACK);
 
-	if (num <= idx + 1)
-		mCollisionBee = 0;
-	else
-		mCollisionBee = idx + 1;
+	if (num <= index + 1)
+		(void)num; // TODO: wtf?
 
-	int next = mCollisionBee;
+	if (num <= ++mHitCheckBeeIdx)
+		mHitCheckBeeIdx = 0;
+
+	int next = mHitCheckBeeIdx;
 	if (num <= next)
 		next = 0;
 
 	TRealoidActor* nextBee = getRealoid(next);
-	if (!nextBee->checkFlag(TRealoidActor::FLAG_UNK2_OR_UNK4))
+	if (!(nextBee->checkFlag(TRealoidActor::FLAG_UNK2_OR_UNK4)))
 		nextBee->offHitFilter(HIT_FILTER_NO_ATTACK);
 }
 
@@ -357,38 +350,33 @@ void TBeeHive::controlSound()
 	if (mActiveBeeNum == 0)
 		return;
 
-	int num = 0;
 	JGeometry::TVec3<f32> sum(0.0f, 0.0f, 0.0f);
+	int count = 0;
 	for (int i = 0; i < mActiveBeeNum; ++i) {
 		TRealoidActor* bee = getRealoid(i);
-		if (!bee->checkFlag(TRealoidActor::FLAG_UNK2_OR_UNK4)) {
-			++num;
-			sum.x += bee->mPosition.x;
-			sum.y += bee->mPosition.y;
-			sum.z += bee->mPosition.z;
+		if (!(bee->checkFlag(TRealoidActor::FLAG_UNK2_OR_UNK4))) {
+			++count;
+			sum += bee->mPosition;
 		}
 	}
 
-	if (num != 0) {
-		sum.scale(1.0f / num);
-		mSoundPos.set(sum.x, sum.y, sum.z);
-		gpMSound->startBeeSe(&mSoundPos, num);
+	if (count != 0) {
+		sum.scale(1.0f / count);
+		mBeeSoundPos.set(sum);
+		SMSGetMSound()->startBeeSe(&mBeeSoundPos, count);
 	}
 }
 
-// TODO: 81%. The quaternion products are right but scheduled and allocated
-// differently, and the target frame is 0x20 bytes smaller.
 void TBeeHive::calcRootMatrix()
 {
-	JGeometry::TQuat4<f32> rot = mBaseRot;
-	JGeometry::TQuat4<f32> swing;
-	swing.setEulerX(mSwingAngle);
-	rot.mul(rot, mSwingDir);
-	rot.mul(rot, swing);
+	JGeometry::TQuat4<f32> shake;
+	JGeometry::TQuat4<f32> quat = mBaseRot;
+	shake.setEulerX(mSwingAngle);
+	quat.mul(quat, mSwingRot);
+	quat.mul(quat, shake);
 
 	TPosition3f mtx;
-	mtx.setSQ(mScaling, rot);
-	mtx.setTrans(mPosition);
+	mtx.setSQT(mScaling, quat, mPosition);
 	mtx.ref(1, 3) += 120.0f;
 	getModel()->setBaseTRMtx(mtx);
 }
@@ -403,50 +391,46 @@ void TBeeHive::prepareWait()
 	}
 }
 
-// Swing like a pendulum. Returns true once the hive swings so far it falls.
-// TODO: 95%. Inside the inlined TQuat4::slerp the target folds both 1 - 0.01
-// and 0.01 into constants in the sin() branch, ours keeps t in a register;
-// the target frame is also 0x88 bytes bigger.
 bool TBeeHive::doWait()
 {
-	f32 prevSpeed = mSwingSpeed;
-	f32 accel     = mSwingAngle * -getParam()->mRebound.get();
-	mSwingSpeed += accel;
-	mSwingSpeed *= getParam()->mDecay.get();
-	mSwingAngle += mSwingSpeed;
+	f32 prevVel = mSwingAngVel;
+	f32 force   = mSwingAngle * -getSaveParam2()->mRebound.get();
+	mSwingAngVel += force;
+	mSwingAngVel *= getSaveParam2()->mDecay.get();
+	mSwingAngle += mSwingAngVel;
 
-	if (mSwingAngle < -mSwingLimit || mSwingLimit < mSwingAngle) {
-		mSwingLimit += getParam()->mAngleMaxAdd.get();
-		mSwingLimit = JGeometry::TUtil<f32>::clamp(
-		    mSwingLimit, 0.0f, JGeometry::TUtil<f32>::halfPI());
-		mSwingAngle = JGeometry::TUtil<f32>::clamp(mSwingAngle, -mSwingLimit,
-		                                           mSwingLimit);
-		mSwingSpeed = 0.0f;
+	if (mSwingAngle < -mSwingAngleMax || mSwingAngleMax < mSwingAngle) {
+		mSwingAngleMax += getSaveParam2()->mAngleMaxAdd.get();
+		mSwingAngleMax = JGeometry::TUtil<f32>::clamp(
+		    mSwingAngleMax, 0.0f, JGeometry::TUtil<f32>::halfPI());
+		mSwingAngle = JGeometry::TUtil<f32>::clamp(mSwingAngle, -mSwingAngleMax,
+		                                           mSwingAngleMax);
+		mSwingAngVel = 0.0f;
 		SMSGetMSound()->startSoundActorWithInfo(
-		    MSD_SE_EN_BEENEST_SWING, &mPosition, nullptr, abs(mSwingAngle), 0,
+		    MSD_SE_EN_BEENEST_SWING, &mPosition, nullptr, fabsf(mSwingAngle), 0,
 		    0, nullptr, 0, 4);
 	}
 
-	if (!JGeometry::TUtil<f32>::epsilonEquals(0.0f, mSwingSpeed,
+	if (!JGeometry::TUtil<f32>::epsilonEquals(0.0f, mSwingAngVel,
 	                                          JGeometry::TUtil<f32>::epsilon())
-	    && prevSpeed * mSwingSpeed <= 0.0f) {
+	    && prevVel * mSwingAngVel <= 0.0f) {
 		SMSGetMSound()->startSoundActorWithInfo(
-		    MSD_SE_EN_BEENEST_SWING, &mPosition, nullptr, abs(mSwingAngle), 0,
+		    MSD_SE_EN_BEENEST_SWING, &mPosition, nullptr, fabsf(mSwingAngle), 0,
 		    0, nullptr, 0, 4);
 	}
 
-	mSwingDir.slerp(mSwingDirGoal, 0.01f);
-	mSwingDir.normalize();
+	mSwingRot.slerp(mSwingTargetRot, 0.01f);
+	mSwingRot.normalize();
 
-	JGeometry::TVec3<f32> toMario = *gpMarioPos;
-	toMario -= mPosition;
-	f32 range = getParam()->mSearchRange.get();
-	if (toMario.squared() <= range * range)
+	JGeometry::TVec3<f32> diff = SMS_GetMarioPos();
+	diff -= mPosition;
+	f32 range = getSaveParam2()->mSearchRange.get();
+	if (diff.squared() <= range * range)
 		setBoidParamOnAttacking();
 	else
 		setBoidParamOnWaiting();
 
-	return cAngleLimit <= fabs(mSwingAngle);
+	return cAngleLimit <= fabsf(mSwingAngle);
 }
 
 void TBeeHive::prepareFall()
@@ -455,22 +439,23 @@ void TBeeHive::prepareFall()
 	onLiveFlag(LIVE_FLAG_AIRBORNE);
 	SMSGetMSound()->startSoundActor(MSD_SE_EN_BEENEST_OFF, &mPosition, 0,
 	                                nullptr, 0, 4);
+
 	JGeometry::TVec3<f32> dir;
-	mSwingDir.getZDir(dir);
+	mSwingRot.getZDir(dir);
 	dir.scale(1.0f);
-	mSwingSpeed = getParam()->mFallAngularVel.get();
-	mVelocity   = dir;
+	mSwingAngVel = getSaveParam2()->mFallAngularVel.get();
+	mVelocity    = dir;
 }
 
 bool TBeeHive::doFall()
 {
-	mSwingAngle += mSwingSpeed;
+	mSwingAngle += mSwingAngVel;
 	return !checkLiveFlag(LIVE_FLAG_AIRBORNE);
 }
 
-void TBeeHive::appearBee(int idx)
+void TBeeHive::appearBee(int index)
 {
-	TRealoidActor* bee = getRealoid(idx);
+	TRealoidActor* bee = getRealoid(index);
 	if (bee->checkFlag(TRealoidActor::FLAG_UNK4))
 		return;
 	if (!bee->checkFlag(TRealoidActor::FLAG_UNK2))
@@ -478,17 +463,17 @@ void TBeeHive::appearBee(int idx)
 
 	bee->offFlag(TRealoidActor::FLAG_UNK2);
 	bee->offHitFilter(HIT_FILTER_NO_COLLISION);
-	unk150->getBoid(idx)->mPosition = mPosition;
+	TBoid* boid     = unk150->getBoid(index);
+	boid->mPosition = mPosition;
 }
 
-void TBeeHive::disappearBee(int idx)
+void TBeeHive::disappearBee(int index)
 {
-	TRealoidActor* bee = getRealoid(idx);
-	if (bee->checkFlag(TRealoidActor::FLAG_UNK2))
-		return;
-
-	bee->onFlag(TRealoidActor::FLAG_UNK2);
-	bee->onHitFilter(HIT_FILTER_NO_COLLISION);
+	TRealoidActor* bee = getRealoid(index);
+	if (!bee->checkFlag(TRealoidActor::FLAG_UNK2)) {
+		bee->onFlag(TRealoidActor::FLAG_UNK2);
+		bee->onHitFilter(HIT_FILTER_NO_COLLISION);
+	}
 }
 
 void TBeeHive::decrimentBee()
@@ -501,26 +486,26 @@ void TBeeHive::decrimentBee()
 
 void TBeeHive::appearAllBees()
 {
-	for (int i = 0; i < unk150->getBoidNum(); ++i)
+	for (int i = 0; i < unk150->mNumBoids; ++i)
 		appearBee(i);
-	mActiveBeeNum = unk150->getBoidNum();
+	mActiveBeeNum = unk150->mNumBoids;
 }
 
 void TBeeHive::dropCoin()
 {
-	TMapObjBase* item = mItem;
-	if (item == nullptr)
+	TMapObjBase* obj = mNestItem;
+	if (obj == nullptr)
 		return;
 
-	if (item->isActorType(ACTOR_TYPE_COIN))
-		item = gpItemManager->makeObjAppear(ACTOR_TYPE_COIN);
+	if (obj->isActorType(ACTOR_TYPE_COIN))
+		obj = gpItemManager->makeObjAppear(ACTOR_TYPE_COIN);
 
-	if (item != nullptr) {
-		item->appear();
-		item->JSGSetTranslation(mPosition);
-		item->setVelocityAndFlag10(0.0f, 0.0f, 0.0f);
-		item->onLiveFlag(LIVE_FLAG_AIRBORNE);
-		mItem = nullptr;
+	if (obj != nullptr) {
+		obj->appear();
+		obj->JSGSetTranslation(mPosition);
+		obj->setVelocityAndFlag10(0.0f, 0.0f, 0.0f);
+		obj->onLiveFlag(LIVE_FLAG_AIRBORNE);
+		mNestItem = nullptr;
 	}
 }
 
@@ -546,40 +531,34 @@ void TBeeHive::prepareReset()
 	mScaling.set(0.0f, 0.0f, 0.0f);
 }
 
-// Grow back in. Returns true once full size.
 bool TBeeHive::doScaling()
 {
-	bool done = false;
+	bool result = false;
 	mScaling.x += 0.01f;
 	if (1.0f <= mScaling.x) {
 		mScaling.x = 1.0f;
-		done       = true;
+		result     = true;
 		mScaling.y = 1.0f;
 		mScaling.z = 1.0f;
 	} else {
 		mScaling.y += 0.01f;
 		mScaling.z += 0.01f;
 	}
-	return done;
+	return result;
 }
 
-// The swarm gives up once Mario gets far enough from it.
+// fabricated
+inline int signOf(const f32& v) { return v > 0.0f ? 1 : v < 0.0f ? -1 : 0; }
+
 bool TBeeHive::isMissMario() const
 {
 	if (mActiveBeeNum == 0)
 		return false;
 
-	JGeometry::TVec3<f32> diff = *gpMarioPos;
+	JGeometry::TVec3<f32> diff = SMS_GetMarioPos();
 	diff -= getCenterOfGravity();
-	f32 range = getParam()->mGiveupRange.get();
+	f32 range = getSaveParam2()->mGiveupRange.get();
 	return range * range <= diff.squared();
-}
-
-// fabricated: the target reloads mSwingSpeed for the sign, as if it went
-// through an inline taking a reference.
-static inline int getSign(const f32& x)
-{
-	return x > 0.0f ? 1 : x < 0.0f ? -1 : 0;
 }
 
 void TBeeHive::setShakePower(const JGeometry::TVec3<f32>& dir)
@@ -587,29 +566,27 @@ void TBeeHive::setShakePower(const JGeometry::TVec3<f32>& dir)
 	if (isFalling())
 		return;
 
-	JGeometry::TVec3<f32> flat = dir;
-	flat.y                     = 0.0f;
-	flat.normalize();
+	JGeometry::TVec3<f32> horizontal = dir;
+	horizontal.y                     = 0.0f;
+	horizontal.normalize();
 
-	f32 sign = abs(mSwingSpeed) < 0.0001f ? 1.0f : getSign(mSwingSpeed);
+	f32 sign = fabsf(mSwingAngVel) < 0.0001f ? 1.0f : signOf(mSwingAngVel);
 
-	mSwingDirGoal.setRotate(JGeometry::TVec3<f32>(0.0f, 0.0f, 1.0f), flat,
-	                        1.0f);
-	mSwingSpeed += sign * getParam()->mShakePower.get();
+	mSwingTargetRot.setRotate(JGeometry::TVec3<f32>(0.0f, 0.0f, 1.0f),
+	                          horizontal, 1.0f);
+	mSwingAngVel += sign * getSaveParam2()->mShakePower.get();
 }
 
-// TODO: 87%. The target reloads unk150->mBoids for every boid of the
-// unrolled loop, ours loads it once.
 JGeometry::TVec3<f32> TBeeHive::getCenterOfGravity() const
 {
 	if (mActiveBeeNum == 0)
 		return JGeometry::TVec3<f32>(0.0f, 0.0f, 0.0f);
 
-	JGeometry::TVec3<f32> sum(0.0f, 0.0f, 0.0f);
+	JGeometry::TVec3<f32> center(0.0f, 0.0f, 0.0f);
 	for (int i = 0; i < mActiveBeeNum; ++i)
-		sum += unk150->getBoid(i)->mPosition;
-	sum.scale(1.0f / mActiveBeeNum);
-	return sum;
+		center += getBoidLeader()->getBoid(i)->mPosition;
+	center /= mActiveBeeNum;
+	return center;
 }
 
 bool TBeeHive::isFalling() const
@@ -622,8 +599,7 @@ bool TBeeHive::isWaiting() const
 	return mSpine->getLatestNerve() == &TNerveBeeHiveWait::theNerve();
 }
 
-// TODO: UNUSED, 0x14 bytes, and nothing linked shows its body.
-bool TBeeHive::isNotBreakOnceYet() const { return false; }
+bool TBeeHive::isNotBreakOnceYet() const { }
 
 TBeeHiveManager::TBeeHiveManager(const char* name)
     : TEnemyManager(name)
@@ -658,20 +634,19 @@ void TBeeHiveManager::createModelData()
 
 DEFINE_NERVE(TNerveBeeHiveWait, TLiveActor)
 {
-	TBeeHive* hive = (TBeeHive*)spine->getBody();
+	TBeeHive* self = (TBeeHive*)spine->getBody();
 	if (spine->getTime() == 0) {
-		hive->prepareWait();
-		hive->setBoidParamOnWaiting();
+		self->prepareWait();
+		self->setBoidParamOnWaiting();
 	}
 
-	if (hive->doWait()) {
+	if (self->doWait()) {
 		spine->pushAfterCurrent(&TNerveBeeHiveFall::theNerve());
 		return true;
 	}
 
-	// let one bee go home every now and then
-	if (hive->getParam()->mDecrimentTimer.get() < spine->getTime()) {
-		hive->decrimentBee();
+	if (self->getSaveParam2()->mDecrimentTimer.get() < spine->getTime()) {
+		self->decrimentBee();
 		spine->pushAfterCurrent(this);
 		return true;
 	}
@@ -681,13 +656,13 @@ DEFINE_NERVE(TNerveBeeHiveWait, TLiveActor)
 
 DEFINE_NERVE(TNerveBeeHiveFall, TLiveActor)
 {
-	TBeeHive* hive = (TBeeHive*)spine->getBody();
+	TBeeHive* self = (TBeeHive*)spine->getBody();
 	if (spine->getTime() == 0) {
-		hive->prepareFall();
-		hive->dropCoin();
+		self->prepareFall();
+		self->dropCoin();
 	}
 
-	if (hive->doFall()) {
+	if (self->doFall()) {
 		spine->pushAfterCurrent(&TNerveBeeHiveBreak::theNerve());
 		return true;
 	}
@@ -697,16 +672,16 @@ DEFINE_NERVE(TNerveBeeHiveFall, TLiveActor)
 
 DEFINE_NERVE(TNerveBeeHiveBreak, TLiveActor)
 {
-	TBeeHive* hive = (TBeeHive*)spine->getBody();
+	TBeeHive* self = (TBeeHive*)spine->getBody();
 	if (spine->getTime() == 0) {
-		hive->prepareBreak();
-		hive->appearAllBees();
-		hive->setBoidParamOnAttacking();
+		self->prepareBreak();
+		self->appearAllBees();
+		self->setBoidParamOnAttacking();
 	}
 
-	if (hive->checkCurAnmEnd(0)) {
+	if (self->checkCurAnmEnd(0)) {
 		spine->pushAfterCurrent(&TNerveBeeHiveAttack::theNerve());
-		hive->prepareVanish();
+		self->prepareVanish();
 		return true;
 	}
 
@@ -715,16 +690,16 @@ DEFINE_NERVE(TNerveBeeHiveBreak, TLiveActor)
 
 DEFINE_NERVE(TNerveBeeHiveAttack, TLiveActor)
 {
-	TBeeHive* hive = (TBeeHive*)spine->getBody();
+	TBeeHive* self = (TBeeHive*)spine->getBody();
 	if (spine->getTime() == 0)
-		hive->setBoidParamOnAttacking();
+		self->setBoidParamOnAttacking();
 
 	if (SMS_IsMarioInWater()) {
 		spine->pushAfterCurrent(&TNerveBeeHiveMarioWaterIn::theNerve());
 		return true;
 	}
 
-	if (hive->isMissMario()) {
+	if (self->isMissMario()) {
 		spine->pushAfterCurrent(&TNerveBeeHiveReset::theNerve());
 		return true;
 	}
@@ -734,11 +709,11 @@ DEFINE_NERVE(TNerveBeeHiveAttack, TLiveActor)
 
 DEFINE_NERVE(TNerveBeeHiveMarioWaterIn, TLiveActor)
 {
-	TBeeHive* hive = (TBeeHive*)spine->getBody();
+	TBeeHive* self = (TBeeHive*)spine->getBody();
 	if (spine->getTime() == 0)
-		hive->setBoidParamOnMarioWaterIn();
+		self->setBoidParamOnMarioWaterIn();
 
-	if (hive->getParam()->mGiveupTimer.get() < spine->getTime()) {
+	if (self->getSaveParam2()->mGiveupTimer.get() < spine->getTime()) {
 		spine->pushAfterCurrent(&TNerveBeeHiveReset::theNerve());
 		return true;
 	}
@@ -753,11 +728,11 @@ DEFINE_NERVE(TNerveBeeHiveMarioWaterIn, TLiveActor)
 
 DEFINE_NERVE(TNerveBeeHiveReset, TLiveActor)
 {
-	TBeeHive* hive = (TBeeHive*)spine->getBody();
+	TBeeHive* self = (TBeeHive*)spine->getBody();
 	if (spine->getTime() == 0)
-		hive->prepareReset();
+		self->prepareReset();
 
-	if (hive->doScaling()) {
+	if (self->doScaling()) {
 		spine->pushAfterCurrent(&TNerveBeeHiveWait::theNerve());
 		return true;
 	}

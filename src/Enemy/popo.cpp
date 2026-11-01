@@ -15,7 +15,7 @@
 #include <JSystem/JStage/JSGActor.hpp>
 #include <JSystem/JStage/JSGObject.hpp>
 #include <JSystem/JSupport/JSUList.hpp>
-#include <M3DUtil/InfectiousStrings.hpp>
+#include <M3DUtil/MActorAnm.hpp>
 #include <M3DUtil/MActor.hpp>
 #include <MSound/MSound.hpp>
 #include <MSound/MSoundSE.hpp>
@@ -135,9 +135,9 @@ void TPopoManager::createModelData()
 	createModelDataArray(entry);
 }
 
-void TPopoManager::perform(u32 param_1, JDrama::TGraphics* param_2)
+void TPopoManager::perform(u32 cue, JDrama::TGraphics* param_2)
 {
-	if (param_1 & 1) {
+	if (cue & CUE_MOVE) {
 		for (int i = 0; i < getActiveObjNum(); i++) {
 			TPopo* popo = (TPopo*)getObj(i);
 			if (popo->unk1A4 && popo->checkLiveFlag(LIVE_FLAG_DEAD))
@@ -145,7 +145,7 @@ void TPopoManager::perform(u32 param_1, JDrama::TGraphics* param_2)
 		}
 	}
 
-	TEnemyManager::perform(param_1, param_2);
+	TEnemyManager::perform(cue, param_2);
 }
 
 BOOL TPopoCollision::receiveMessage(THitActor* param_1, u32 param_2)
@@ -323,10 +323,10 @@ void TPopo::init(TLiveManager* param_1)
 	unk23C->unk68 = this;
 }
 
-void TPopo::perform(u32 param_1, JDrama::TGraphics* param_2)
+void TPopo::perform(u32 cue, JDrama::TGraphics* param_2)
 {
-	TSmallEnemy::perform(param_1, param_2);
-	unk23C->THitActor::perform(param_1, param_2);
+	TSmallEnemy::perform(cue, param_2);
+	unk23C->THitActor::perform(cue, param_2);
 }
 
 void TPopo::setMActorAndKeeper()
@@ -365,7 +365,7 @@ bool TPopo::checkTrigger()
 {
 	unk1BC = 0;
 	if (gpMarioOriginal->onYoshi()
-	    || (int)SMS_GetMarioWaterGun()->mCurrentNozzle != 0) {
+	    || (int)SMS_GetMarioWaterGun()->getCurrentNozzleType() != 0) {
 		kill();
 		return false;
 	}
@@ -466,9 +466,9 @@ void TPopo::behaveToFindMario()
 {
 	TPopoManager* manager = (TPopoManager*)mManager;
 	if (SMS_CheckMarioFlag(MARIO_FLAG_HAS_FLUDD) && manager->unk60
-	    && (int)SMS_GetMarioWaterGun()->mCurrentNozzle == 0
+	    && (int)SMS_GetMarioWaterGun()->getCurrentNozzleType() == 0
 	    && !gpMarioOriginal->onYoshi()) {
-		setGoalPath(TPathNode((THitActor*)gpMarioAddress));
+		setGoal((THitActor*)gpMarioAddress);
 		mSpine->pushAfterCurrent(&TNerveWalkerGraphWander::theNerve());
 		mSpine->pushAfterCurrent(&TNervePopoAttack::theNerve());
 	} else {
@@ -479,9 +479,9 @@ void TPopo::behaveToFindMario()
 void TPopo::walkBehavior(int param_1, f32 param_2)
 {
 	if (!isAirborne()) {
-		JGeometry::TVec3<f32> goal = unk104.getPoint();
-		goal.set(unk104.getPoint().x - mPosition.x, 0.0f,
-		         unk104.getPoint().z - mPosition.z);
+		JGeometry::TVec3<f32> goal = mGoal.getPoint();
+		goal.set(mGoal.getPoint().x - mPosition.x, 0.0f,
+		         mGoal.getPoint().z - mPosition.z);
 		if (goal.x == 0.0f && goal.y == 0.0f && goal.z == 0.0f)
 			goal.x += 1.0f;
 		MsVECNormalize(&goal, &goal);
@@ -512,7 +512,7 @@ void TPopo::walkBehavior(int param_1, f32 param_2)
 		mPosition.y += 2.0f;
 		onLiveFlag(LIVE_FLAG_AIRBORNE);
 		if (mSpine->getCurrentNerve() == &TNerveWalkerGraphWander::theNerve()) {
-			setGoalPath(TPathNode(goal));
+			setGoal(goal);
 			setBckAnm(5);
 		}
 	} else {
@@ -877,7 +877,7 @@ DEFINE_NERVE(TNervePopoAttack, TLiveActor)
 {
 	TPopo* self = (TPopo*)spine->getBody();
 	if (spine->getTime() == 0)
-		self->setGoalPath(TPathNode((THitActor*)gpMarioAddress));
+		self->setGoal((THitActor*)gpMarioAddress);
 	if (!self->isAirborne()) {
 		if (((TPopoManager*)self->mManager)->unk60 == 0)
 			return true;
@@ -959,7 +959,7 @@ DEFINE_NERVE(TNervePopoWait, TLiveActor)
 	if (spine->getTime() == 0) {
 		self->onLiveFlag(LIVE_FLAG_UNK10);
 		self->setBckAnm(6);
-		self->setGoalPath(TPathNode((THitActor*)gpMarioAddress));
+		self->setGoal((THitActor*)gpMarioAddress);
 	}
 
 	self->walkToCurPathNode(0.0f, self->getTurnSpeed(), 0.0f);

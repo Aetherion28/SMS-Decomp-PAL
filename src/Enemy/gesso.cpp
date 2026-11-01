@@ -28,7 +28,6 @@
 // rogue includes needed for matching sinit & bss
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
-#include <M3DUtil/InfectiousStrings.hpp>
 
 TGesso* gpCurGesso;
 
@@ -626,7 +625,7 @@ void TGesso::bind()
 		JGeometry::TVec3<f32> local_48;
 		local_48.cross(var1, var2);
 		f32 cos   = var1.dot(var2);
-		f32 angle = MsAtan2(cos, MsVECMag2(&local_48));
+		f32 angle = abs(MsAtan2(cos, MsVECMag2(&local_48)));
 		if (mBodyTrackingAngle != angle) {
 			if (mBodyTrackingAngle < angle) {
 				mBodyTrackingAngle += mBodyRotSpeed;
@@ -695,7 +694,7 @@ void TGesso::behaveToFindMario()
 		mSpine->pushAfterCurrent(&TNerveWalkerEscape::theNerve());
 		mSpine->pushAfterCurrent(&TNerveSmallEnemyJump::theNerve());
 	} else {
-		setGoalPath(TPathNode((THitActor*)gpMarioAddress));
+		setGoal((THitActor*)gpMarioAddress);
 		mSpine->pushAfterCurrent(&TNerveWalkerGraphWander::theNerve());
 		mSpine->pushAfterCurrent(&TNerveWalkerAttack::theNerve());
 		if (unk1B4 == 0) {
@@ -769,10 +768,11 @@ void TGesso::turnIn()
 
 bool TGesso::turning()
 {
-	if (mTurnAngle + 7.2f <= 180.0f) {
+	f32 step = 7.2f;
+	if (mTurnAngle + step <= 180.0f) {
 		mBodyTrackingAngle = 90.0f;
-		mRotation.y += 7.2f;
-		mTurnAngle += 7.2f;
+		mRotation.y += step;
+		mTurnAngle += step;
 		return false;
 	}
 
@@ -865,11 +865,11 @@ void TGessoPolluteObj::loadInit(TSpineEnemy* param_1, const char* param_2)
 
 f32 TGessoPolluteObj::getNowGravity()
 {
-	f32 gravity = unk16C->getSaveParams()->mSLPolluteObjGravity.get();
+	f32 gravity = unk16C->unk1E8->mSLPolluteObjGravity.get();
 	if (unk16C->unk1D8 == 0)
 		return gravity;
 
-	return unk16C->getSaveParams()->mSLPolluteObjLinerG.get();
+	return unk16C->unk1E8->mSLPolluteObjLinerG.get();
 }
 
 void TGessoPolluteObj::pollute()
@@ -900,8 +900,8 @@ void TGessoPolluteObj::rebirth()
 
 	if (unk158 == 10) {
 		mVelocity.y = -15.0f;
-		gpPollution->stamp(1, mPosition.x, mPosition.y, mPosition.z,
-		                   TGesso::mPollRange * 32.0f * 0.5f);
+		gpPollution->pollute(mPosition.x, mPosition.y, mPosition.z,
+		                     TGesso::mPollRange * 32.0f * 0.5f);
 
 		((TGesso*)unk160)
 		    ->getManager()
@@ -1027,7 +1027,7 @@ DEFINE_NERVE(TNerveGessoFreeze, TLiveActor)
 			self->onLiveFlag(LIVE_FLAG_AIRBORNE);
 			self->setVelocity(self->unk1DC);
 		}
-	} else if (self->unkF4.unk0 == (THitActor*)gpMarioAddress) {
+	} else if (self->mCurrentTarget.unk0 == (THitActor*)gpMarioAddress) {
 		self->walkToCurPathNode(0.0f, self->getTurnSpeed(), 0.0f);
 	}
 
@@ -1083,7 +1083,7 @@ DEFINE_NERVE(TNerveGessoFall, TLiveActor)
 	TGesso* self = (TGesso*)spine->getBody();
 
 	if (spine->getTime() == 0) {
-		self->setGoalPath(TPathNode(SMS_GetMarioPos()));
+		self->setGoal(SMS_GetMarioPos());
 
 		if (self->isWandering()) {
 			JGeometry::TVec3<f32> local_80

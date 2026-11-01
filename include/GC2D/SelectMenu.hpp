@@ -24,7 +24,7 @@ public:
 
 	void setStageColor(u8 param1);
 
-	void perform(u32 flags, JDrama::TGraphics* gfx);
+	void perform(u32 cue, JDrama::TGraphics* gfx);
 
 	/* 0x10 */ s32 mRgbAnimCycle[3];
 	/* 0x1C */ JUtility::TColor mTopLeftCol;
@@ -37,7 +37,7 @@ public:
 	void initData(u8 stage, JKRArchive* pArch, TSelectShineManager* pShineMgr,
 	              TSelectDir* pSelectDir);
 	void startMove();
-	void perform(u32 flags, JDrama::TGraphics* gfx);
+	void perform(u32 cue, JDrama::TGraphics* gfx);
 
 	s8 getNextIndex();
 	s8 getPrevIndex();
@@ -171,11 +171,6 @@ public:
 	/* 0x14B */ u8 unk14B;
 	/* 0x14C */ f32 mRcpAnmFrameRate;
 
-	// Tracks which shines are unlocked:
-	// 0 - locked
-	// 1 - unused?
-	// 2 - unlocked
-	// 3 - got
 	/* 0x150 */ u8 mShineUnlockStates[8];
 
 	/* 0x158 */ void* mStageNameBmg;
