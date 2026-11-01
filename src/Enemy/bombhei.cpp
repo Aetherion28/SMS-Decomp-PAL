@@ -386,7 +386,11 @@ DEFINE_NERVE(TNerveBombHeiGenerate, TLiveActor)
 			spine->pushAfterCurrent(&TNerveBombHeiAttack::theNerve());
 			return true;
 		}
+#ifdef VERSION_GMSP01
+	} else if (self->getVelocity().y > 0.0f && !self->isBckAnm(2)) {
+#else
 	} else if (!self->isBckAnm(2)) {
+#endif
 		self->mMActor
 		    = self->getActorKeeper()->getMActor("nejibomb_model1.bmd");
 		self->setBckAnm(2);

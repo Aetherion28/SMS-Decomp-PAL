@@ -255,11 +255,19 @@ void TYoshi::initInLoadAfter()
 	mTongue->initInLoadAfter();
 
 	TMirrorActor* mirrorMain = new TMirrorActor("ヨッシーin鏡");
+#ifdef VERSION_GMSP01
+	mirrorMain->init(mActor->getModel(), TMirrorActor::MIRROR_ACTOR_FLAG_UNK20);
+#else
 	mirrorMain->init(mActor->getModel(), TMirrorActor::MIRROR_ACTOR_FLAG_MARIO);
+#endif
 
 	for (int i = 0; i < 2; ++i) {
 		TMirrorActor* mirror = new TMirrorActor("ヨッシー手in鏡");
+#ifdef VERSION_GMSP01
+		mirror->init(mMirrorModels[i], TMirrorActor::MIRROR_ACTOR_FLAG_UNK20);
+#else
 		mirror->init(mMirrorModels[i], TMirrorActor::MIRROR_ACTOR_FLAG_MARIO);
+#endif
 	}
 
 	mActor->getModel()->getModelData()->getJointNodePointer(21)->setCallBack(

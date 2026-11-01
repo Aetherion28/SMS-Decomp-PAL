@@ -2139,8 +2139,13 @@ DEFINE_NERVE_EXECUTE(TNerveBossEelAppear, TLiveActor)
 {
 	TBossEel* eel = static_cast<TBossEel*>(spine->getBody());
 	if (spine->getTime() == 0) {
+#ifdef VERSION_GMSP01
+		SMSGetMSound()->startSoundActor(0x8922, &eel->mPosition, 0, nullptr, 0,
+		                                4);
+#else
 		SMSGetMSound()->startSoundActor(MSD_SE_BS_UNG_UP, &eel->mPosition, 0,
 		                                nullptr, 0, 4);
+#endif
 		eel->mBarrierCollision->offHitFilter(HIT_FILTER_NO_COLLISION);
 		eel->setBckAnm(15);
 		eel->mInDemo = true;

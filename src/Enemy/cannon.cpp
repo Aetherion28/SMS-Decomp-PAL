@@ -581,8 +581,17 @@ void TCannon::calcRootMatrix()
 
 MtxPtr TCannon::getTakingMtx()
 {
+#ifdef VERSION_GMSP01
+	if (checkLiveFlag(LIVE_FLAG_CLIPPED_OUT)) {
+		unk1E4.translation(JGeometry::TVec3<f32>(
+		    unk1A8->mPosition.x, 800.0f + unk1A8->mPosition.y,
+		    unk1A8->mPosition.z));
+		return unk1E4;
+	}
+#else
 	if (checkLiveFlag(LIVE_FLAG_CLIPPED_OUT))
 		return unk1A8->unk6C->getMActor()->getModel()->getBaseTRMtx();
+#endif
 
 	unk1E4.translation(
 	    JGeometry::TVec3<f32>(unk1A8->mPosition.x,

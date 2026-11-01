@@ -127,6 +127,9 @@ BOOL TMario::doRunningAnimation()
 	if (sp < 4.0f)
 		sp = 4.0f;
 
+#ifdef VERSION_GMSP01
+	int guard = 0;
+#endif
 	while (loop) {
 		switch (mAnimationId) {
 		default:
@@ -188,6 +191,10 @@ BOOL TMario::doRunningAnimation()
 			}
 			break;
 		}
+#ifdef VERSION_GMSP01
+		if (++guard > 4)
+			break;
+#endif
 	}
 	return 1;
 }

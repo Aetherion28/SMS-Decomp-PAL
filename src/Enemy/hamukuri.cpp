@@ -1007,11 +1007,20 @@ void THamuKuri::genRandomItem() { TSmallEnemy::genRandomItem(); }
 void THamuKuri::setAfterDeadEffect()
 {
 	if (unk198) {
+#ifdef VERSION_GMSP01
+		TMapObjBase* obj = gpItemManager->makeObjAppear(
+		    mPosition.x, 200.0f + mPosition.y, mPosition.z,
+		    ACTOR_TYPE_MARIO_CAP, true);
+
+		if (obj) {
+			unk200.set(obj->mPosition.x, obj->mPosition.y, obj->mPosition.z);
+#else
 		TMapObjBase* obj = gpItemManager->makeObjAppear(
 		    mPosition.x, mPosition.y, mPosition.z, ACTOR_TYPE_MARIO_CAP, true);
 
 		if (obj) {
 			unk200.set(mPosition.x, mGroundHeight, mPosition.z);
+#endif
 			gpMarioParticleManager->emitAndBindToPosPtr(0xE4, &unk200, 0,
 			                                            nullptr);
 		}

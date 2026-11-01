@@ -305,6 +305,9 @@ BOOL TElecNokonoko::receiveMessage(THitActor* param_1, u32 param_2)
 	if (param_2 == HIT_MESSAGE_UNKD || param_2 == HIT_MESSAGE_UNKB) {
 		onLiveFlag(LIVE_FLAG_DEAD);
 		kill();
+#ifdef VERSION_GMSP01
+		unk194->kill();
+#endif
 	}
 
 	if (param_2 == HIT_MESSAGE_TAKE && mHolder == nullptr) {

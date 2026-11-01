@@ -184,6 +184,9 @@ void MSMainProc::setMSoundEnterStage(u8 param_1, u8 param_2)
 	MSStageInfo::bossNotDamaged            = 1;
 	MSStageInfo::volOffCategory            = 0x1c7;
 	MSStageInfo::distFadeStageToKage       = 1;
+#ifdef VERSION_GMSP01
+	MSStageCubeFadeDouble::smInstance = nullptr;
+#endif
 
 	bool bVar2 = false;
 
@@ -233,6 +236,9 @@ void MSMainProc::setMSoundEnterStage(u8 param_1, u8 param_2)
 		}
 		break;
 	case 2:
+#ifdef VERSION_GMSP01
+		MSoundSESystem::MSRandPlay::createRandPlayVec(MSD_SE_OBJ_BIRD_BIA_1, 8);
+#endif
 		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_MAMMA);
 		MSStageInfo::stageBgm = MSD_BGM_MAMMA;
 		switch (param_2) {

@@ -263,6 +263,9 @@ BOOL TBGTakeHit::receiveMessage(THitActor* sender, u32 message)
 			if (mOwner->canTake()) {
 				mHolder = casted;
 				mOwner->changeStateAndFixNodes(TBGTentacle::TSTATE_HELD);
+#ifdef VERSION_GMSP01
+				mOwner->mOwner->unk1A0 = 1;
+#endif
 				return true;
 			}
 		}

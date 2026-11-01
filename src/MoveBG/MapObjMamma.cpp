@@ -808,8 +808,20 @@ TLeanMirror::TLeanMirror(const char* name)
 
 void TShiningStone::endDemo()
 {
+#ifdef VERSION_GMSP01
+	if (unk74 < 3) {
+		MSBgm::setTrackVolume(0, 1.0f, 10, 0);
+		if (unk74 == 1)
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(
+			    BALLOON_MSG(0xE0032), true);
+		else
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(
+			    BALLOON_MSG(0xE0033), true);
+	}
+#else
 	if (unk74 < 3)
 		MSBgm::setTrackVolume(0, 1.0f, 10, 0);
+#endif
 	if (unk7C > 0.0f)
 		unk78->setRate(unk7C);
 }

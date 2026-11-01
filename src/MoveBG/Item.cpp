@@ -129,6 +129,9 @@ void TItem::calc()
 	}
 }
 #else
+	if (isState(STATE_HOLDING) && checkMapObjFlag(MAP_OBJ_FLAG_NO_ANIMATIONS))
+		TMapObjGeneral::calcRootMatrix();
+}
 #endif
 
 void TItem::appearing()
@@ -519,6 +522,12 @@ void TShine::movingCircle()
 void TShine::movingUp()
 {
 	mPosition.y += mUpSpeed;
+#ifdef VERSION_GMSP01
+	if (mAppearType == APPEAR_TYPE_SIMPLE) {
+		mRotation.y += 7.0f;
+		MsWrap(mRotation.y, 0.0f, 360.0f);
+	}
+#endif
 	if (isStateTimerEngaged())
 		return;
 
@@ -535,6 +544,10 @@ void TShine::movingUp()
 void TShine::movingDown()
 {
 	mPosition.y -= mUpSpeed;
+#ifdef VERSION_GMSP01
+	mRotation.y += 7.0f;
+	MsWrap(mRotation.y, 0.0f, 360.0f);
+#endif
 	if (isStateTimerEngaged())
 		return;
 	mRotateSpeed = 7.0f;

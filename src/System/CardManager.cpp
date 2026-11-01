@@ -497,11 +497,15 @@ s32 TCardManager::setCardStat_(CARDFileInfo* file)
 
 void TCardManager::buildHeader_(HeaderData* header)
 {
+#ifdef VERSION_GMSP01
+	u32 iVar8 = TFlagManager::getInstance()->getFlag(MSF_LANGUAGE);
+#else
 	int iVar8 = 0;
 	if (TFlagManager::getInstance()->getFlag(MSF_LANGUAGE) != 0x100) {
 		iVar8 = TFlagManager::getInstance()->getFlag(MSF_LANGUAGE);
 		++iVar8;
 	}
+#endif
 
 	snprintf(header->mTitle, 0x20, titles[iVar8]);
 	OSCalendarTime auStack_54;

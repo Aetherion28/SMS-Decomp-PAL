@@ -724,6 +724,10 @@ void TMarDirector::nextStateInitialize(u8 next_state)
 		}
 		if (mStage != 0xf)
 			getConsole()->unkC.off(CUE_MOVE | CUE_CALC_ANIM | CUE_DRAW);
+#ifdef VERSION_GMSP01
+		if (currSeq.getStage() == 1)
+			THPPlayerPlay();
+#endif
 		break;
 
 	case STATE_UNK4:
@@ -795,6 +799,11 @@ void TMarDirector::nextStateInitialize(u8 next_state)
 		unkAC->mCardSave->init(unk261);
 		for (int i = 0; i < 4; ++i)
 			JUTGamePad::CRumble::stopMotor(mGamePads[i]->mPortNum);
+#ifdef VERSION_GMSP01
+		if (unk261 >= 3 && unk261 < 5)
+			SMSGetMSound()->startSoundSystemSE(MSD_SE_SY_COLLECT_DELIGHT, 0,
+			                                   nullptr, 0);
+#endif
 		mGamePads[0]->onFlag(TMarioGamePad::PAD_FLAG_MENU_INPUT);
 		break;
 

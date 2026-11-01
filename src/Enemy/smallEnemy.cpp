@@ -1084,6 +1084,9 @@ DEFINE_NERVE(TNerveSmallEnemyChange, TLiveActor)
 		gpMarioParticleManager->emitAndBindToPosPtr(0xCD, &self->getPosition(),
 		                                            0, nullptr);
 	}
+#ifdef VERSION_GMSP01
+	self->getMActor()->setFrameRate(0.0f, ANM_TYPE_BCK);
+#endif
 	self->scalingChangeActor();
 	if (self->changeMove() || spine->getTime() > changeTime) {
 		self->changeOut();

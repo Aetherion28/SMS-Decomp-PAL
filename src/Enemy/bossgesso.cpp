@@ -28,6 +28,9 @@
 #include <System/MarDirector.hpp>
 #include <System/Particles.hpp>
 #include <System/MSoundMainSide.hpp>
+#ifdef VERSION_GMSP01
+#include <Camera/CubeManagerBase.hpp>
+#endif
 #include <Strategic/Spine.hpp>
 #include <Strategic/ObjModel.hpp>
 #include <Strategic/Strategy.hpp>
@@ -1672,6 +1675,16 @@ DEFINE_NERVE(TNerveBGEyeDamage, TLiveActor)
 	return false;
 }
 
+#ifdef VERSION_GMSP01
+// fabricated
+inline Vec getCubeCheckPos(const Vec& pos)
+{
+	Vec result = pos;
+	result.y += 75.0f;
+	return result;
+}
+#endif
+
 DEFINE_NERVE(TNerveBGBeakDamage, TLiveActor)
 {
 	TBossGesso* self = (TBossGesso*)spine->getBody();
@@ -1760,8 +1773,19 @@ DEFINE_NERVE(TNerveBGBeakDamage, TLiveActor)
 
 		spine->pushAfterCurrent(&TNerveBGPollute::theNerve());
 		if (SMSGetMarDirector()->getCurrentStage() == 3
-		    || SMSGetMarDirector()->getCurrentStage() == 59)
+		    || SMSGetMarDirector()->getCurrentStage() == 59) {
 			MSBgm::startBGM(MSD_BGM_CHUBOSS_MANTA);
+#ifdef VERSION_GMSP01
+			if (gpCubeSoundChange != nullptr
+			    && gpCubeSoundChange->getInCubeNo(
+			           getCubeCheckPos(SMS_GetMarioPos()))
+			           == -1)
+				MSBgm::setTrackVolume(1, 0.0f, 0, 0);
+			else if (SMSGetMarDirector()->getCurrentStage() == 59
+			         && MSStageCubeFade::smInstance != nullptr)
+				MSStageCubeFade::smInstance->setBgmVolumeForce();
+#endif
+		}
 
 		return true;
 	}

@@ -1,4 +1,5 @@
 #include <System/BalloonMsg.hpp>
+#include <System/MSoundMainSide.hpp>
 #include <Enemy/GateKeeper.hpp>
 #include <JSystem/JMath.hpp>
 #include <JSystem/JDrama/JDRNameRefGen.hpp>
@@ -531,9 +532,23 @@ void TBiancoGateKeeper::startBGM()
 {
 	MSBgm::setTrackVolume(0, 0.0f, 0xA, 0);
 	MSBgm::startBGM(0x8001000B);
+#ifdef VERSION_GMSP01
+	MSMainProc::setGateKeeperBGMPlayFlag(mVariant, true);
+#endif
 }
 
+#ifdef VERSION_GMSP01
+void TBiancoGateKeeper::stopBGM()
+{
+	MSMainProc::setGateKeeperBGMPlayFlag(mVariant, false);
+	if (MSMainProc::getGateKeeperBGMStopFlag())
+		MSBgm::stopTrackBGM(1, 0xA);
+	else
+		MSBgm::setTrackVolume(1, 0.0f, 1, 0);
+}
+#else
 void TBiancoGateKeeper::stopBGM() { MSBgm::stopTrackBGM(1, 0xA); }
+#endif
 
 void TBiancoGateKeeper::startAppearDemo()
 {

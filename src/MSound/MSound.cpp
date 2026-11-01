@@ -250,10 +250,12 @@ u16 MSSeCallBack::setParameterSeqSync(JASystem::TTrack* param_1, u16 param_2)
 		return uVar3;
 	}
 
+#ifndef VERSION_GMSP01
 	case 40:
 		MSGMSound->unkD1 = 1;
 		return 0;
 
+#endif
 	case 110: {
 		u8 a = MSGMSound->unkCD;
 		u8 b = MSGMSound->unkCE;

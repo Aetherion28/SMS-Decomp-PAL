@@ -159,6 +159,10 @@ bool TDolpicEventRiccoMammaGate::watch()
 		}
 
 		SMS_MarioWarpRequest(unk54, unk60);
+#ifdef VERSION_GMSP01
+		SMSGetMSound()->startSoundSystemSE(MSD_SE_SY_CLEAR_SIGN_BIG, 0, nullptr,
+		                                   0);
+#endif
 		return true;
 	}
 

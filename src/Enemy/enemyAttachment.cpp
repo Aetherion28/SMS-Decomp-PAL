@@ -124,6 +124,9 @@ void TEnemyAttachment::moveObject()
 {
 	if (unk150 == 1) {
 		set();
+#ifdef VERSION_GMSP01
+		setBehavior();
+#endif
 	} else {
 		calcRideMomentum();
 		sendMessage();

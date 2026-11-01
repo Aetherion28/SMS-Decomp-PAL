@@ -640,6 +640,9 @@ void TPopo::kill()
 {
 	releaseNozzle();
 	TSmallEnemy::kill();
+#ifdef VERSION_GMSP01
+	unk23C->onHitFilter(HIT_FILTER_NO_COLLISION);
+#endif
 }
 
 void TPopo::forceKill()

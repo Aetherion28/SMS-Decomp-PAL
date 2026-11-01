@@ -274,7 +274,11 @@ void TSlotDrum::moveObject()
 	for (int i = 0; i < unk148; ++i) {
 		if (unk138[i] != 0.0f) {
 			unk188[i] += fabsf(unk138[i]);
+#ifdef VERSION_GMSP01
+			if (unk188[i] >= 360.0f / (f32)unk168) {
+#else
 			if (unk188[i] > 360.0f / (f32)unk168) {
+#endif
 				unk188[i] = 0.0f;
 				switch (i) {
 				case 0:
@@ -309,6 +313,28 @@ void TSlotDrum::moveObject()
 					unk13C[i] += 360.0f;
 				if ((int)fabsf(unk13C[i]) % unk168 == 0) {
 					unk138[i] = 0.0f;
+#ifdef VERSION_GMSP01
+					if (unk188[i] != 0.0f) {
+						switch (i) {
+						case 0:
+							SMSGetMSound()->startSoundActor(
+							    MSD_SE_OBJ_SLOT_INC_L, &mPosition, 0, nullptr,
+							    0, 4);
+							break;
+						case 1:
+							SMSGetMSound()->startSoundActor(
+							    MSD_SE_OBJ_SLOT_INC_C, &mPosition, 0, nullptr,
+							    0, 4);
+							break;
+						case 2:
+							SMSGetMSound()->startSoundActor(
+							    MSD_SE_OBJ_SLOT_INC_R, &mPosition, 0, nullptr,
+							    0, 4);
+							break;
+						}
+						unk188[i] = 0.0f;
+					}
+#endif
 					if (unk13C[i] < (f32)unk168) {
 						unk170[i].r = 255;
 						unk170[i].g = 255;
