@@ -238,7 +238,7 @@ void TYumbo::updateCollision()
 
 void TYumbo::updateEffect()
 {
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	if (mSpine->getLatestNerve() == &TNerveSmallEnemyChange::theNerve())
 		return;
 #endif

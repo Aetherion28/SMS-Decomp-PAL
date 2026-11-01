@@ -532,12 +532,12 @@ void TBiancoGateKeeper::startBGM()
 {
 	MSBgm::setTrackVolume(0, 0.0f, 0xA, 0);
 	MSBgm::startBGM(0x8001000B);
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	MSMainProc::setGateKeeperBGMPlayFlag(mVariant, true);
 #endif
 }
 
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 void TBiancoGateKeeper::stopBGM()
 {
 	MSMainProc::setGateKeeperBGMPlayFlag(mVariant, false);

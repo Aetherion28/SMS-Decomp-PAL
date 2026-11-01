@@ -270,7 +270,7 @@ void TBiancoMiniWindmill::calc()
 	for (int i = 0; i < 3; ++i)
 		mtx.ref(i, 3) = srcMtx[i][3];
 	MTXCopy(mtxP, getModel()->getAnmMtx(1));
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	if (SMSGetMSound()->getDistPowFromCamera(unk15C->mPosition) < 36000000.0f)
 		SMSGetMSound()->startSoundActorWithInfo(
 		    MSD_SE_OBJ_BI_COINMILL, &unk15C->mPosition, nullptr,

@@ -119,7 +119,7 @@ void TItem::calc()
 		mtx[2][3] = mPosition.z;
 	}
 
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	if (isState(STATE_HOLDING) && checkMapObjFlag(MAP_OBJ_FLAG_NO_ANIMATIONS)) {
 		if (isActorType(ACTOR_TYPE_ROCKET_NOZZLE_ITEM)
 		    || isActorType(ACTOR_TYPE_BACK_NOZZLE_ITEM))
@@ -522,7 +522,7 @@ void TShine::movingCircle()
 void TShine::movingUp()
 {
 	mPosition.y += mUpSpeed;
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	if (mAppearType == APPEAR_TYPE_SIMPLE) {
 		mRotation.y += 7.0f;
 		MsWrap(mRotation.y, 0.0f, 360.0f);
@@ -544,7 +544,7 @@ void TShine::movingUp()
 void TShine::movingDown()
 {
 	mPosition.y -= mUpSpeed;
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	mRotation.y += 7.0f;
 	MsWrap(mRotation.y, 0.0f, 360.0f);
 #endif

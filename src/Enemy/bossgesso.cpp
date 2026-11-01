@@ -28,7 +28,7 @@
 #include <System/MarDirector.hpp>
 #include <System/Particles.hpp>
 #include <System/MSoundMainSide.hpp>
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 #include <Camera/CubeManagerBase.hpp>
 #endif
 #include <Strategic/Spine.hpp>
@@ -196,7 +196,7 @@ BOOL TBGBeakHit::receiveMessage(THitActor* sender, u32 message)
 
 			if (mOwner->unk190.color.a != 0)
 				mOwner->showMessage(BALLOON_MSG(0xE0028));
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 			mOwner->unk1A0 = 1;
 #endif
 
@@ -727,7 +727,7 @@ void TBossGesso::showMessage(u32 message)
 // Mario has stayed near Gooper Blooper for 20 seconds.
 void TBossGesso::checkTakeMsg()
 {
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	if (!unk1A0 && !is2ndFightNow()) {
 #else
 	if (!unk1A0 && !is2ndFightNow() && mAttackMode == 6) {
@@ -881,7 +881,7 @@ void TBossGesso::gotBeakDamage()
 		mSpine->setNext(&TNerveBGBeakDamage::theNerve());
 		mSpine->pushAfterCurrent(&TNerveBGWait::theNerve());
 	}
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	unk1A0 = 1;
 #endif
 }
@@ -1685,7 +1685,7 @@ DEFINE_NERVE(TNerveBGEyeDamage, TLiveActor)
 	return false;
 }
 
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 // fabricated
 inline Vec getCubeCheckPos(const Vec& pos)
 {
@@ -1785,7 +1785,7 @@ DEFINE_NERVE(TNerveBGBeakDamage, TLiveActor)
 		if (SMSGetMarDirector()->getCurrentStage() == 3
 		    || SMSGetMarDirector()->getCurrentStage() == 59) {
 			MSBgm::startBGM(MSD_BGM_CHUBOSS_MANTA);
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 			if (gpCubeSoundChange != nullptr
 			    && gpCubeSoundChange->getInCubeNo(
 			           getCubeCheckPos(SMS_GetMarioPos()))

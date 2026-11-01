@@ -63,7 +63,7 @@ JDrama::TNameRef* TMarNameRefGen::getNameRef_BossEnemy(const char* name) const
 	if (strcmp(name, "KoopaManager") == 0)
 		return new TKoopaManager("クッパマネージャー");
 
-#ifndef VERSION_GMSP01
+#if !(!defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01))
 	if (strcmp(name, "HinoKuri2") == 0)
 		return new THinokuri2;
 

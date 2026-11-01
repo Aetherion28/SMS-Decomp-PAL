@@ -1548,7 +1548,7 @@ void TEnemyMario::checkReturn()
 	if (!mGroundPlane->isIllegalData())
 		return;
 
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	int nodeIndex
 	    = mEMario->getTracer()->getGraph()->findNearestNodeIndex(mPosition, -1);
 	int nodeNum = mEMario->getTracer()->getGraph()->getNodeNum();
@@ -1748,7 +1748,7 @@ void TEnemyMario::perform(u32 cue, JDrama::TGraphics* graphics)
 	if (cue & CUE_MOVE) {
 		if (mStatus != MARIO_STATUS_RUN || mFreezeTimer == 0) {
 			calcAnim(CUE_CALC_ANIM, graphics);
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 			animSound();
 #endif
 		}
@@ -1762,7 +1762,7 @@ void TEnemyMario::perform(u32 cue, JDrama::TGraphics* graphics)
 			mSpecialModel->calcWeightEnvelopeMtx();
 		} else {
 			emarioActor->calcAnm();
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 			animSound();
 #endif
 			for (u16 i = 0;

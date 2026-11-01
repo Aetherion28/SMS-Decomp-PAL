@@ -104,7 +104,7 @@ void TRiccoHook::perform(u32 cue, JDrama::TGraphics* graphics)
 {
 	TSpineEnemy::perform(cue, graphics);
 	mHookTake->perform(cue, graphics);
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	if (cue & CUE_MOVE) {
 		if (mTimer > 0) {
 			mTimer--;

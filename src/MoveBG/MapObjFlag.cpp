@@ -82,7 +82,7 @@ void TMapObjFlag::update()
 	unk88 += mFlutterSpeed;
 	if (unk88 > 360.0f)
 		unk88 -= 360.0f;
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	if (mScaling.y > 3.0f && mScaling.z > 3.0f
 	    && SMSGetMarDirector()->getCurrentStage() != 3)
 #else

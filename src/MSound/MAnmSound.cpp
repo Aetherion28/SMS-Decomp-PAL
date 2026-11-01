@@ -39,7 +39,7 @@ static u32 get_thing(u32 param_1)
 	return 0xffffffff;
 }
 
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 void MAnmSound::startAnimSound(void* interface, u32 id,
                                JAISoundHandle* out_handle, JAIActor* actor,
                                u8 camera_idx)
@@ -84,7 +84,7 @@ void MAnmSound::setSpeedModifySound(JAISound* sound,
 		JAIAnimeSound::setSpeedModifySound(sound, frame_data, speed);
 }
 
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 void MAnmSoundMario::startAnimSound(void* interface, u32 id,
                                     JAISoundHandle* out_handle, JAIActor* actor,
                                     u8 camera_idx)

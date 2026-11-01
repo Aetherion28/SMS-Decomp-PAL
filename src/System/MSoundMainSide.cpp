@@ -17,7 +17,7 @@
 #endif
 
 MSStage* MSStage::smMSStage;
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if !defined(VERSION_GMSJ01)
 MSStageCubeFade* MSStageCubeFade::smInstance             = nullptr;
 MSStageCubeFadeDouble* MSStageCubeFadeDouble::smInstance = nullptr;
 #endif
@@ -47,7 +47,7 @@ namespace MSStageInfo {
 
 } // namespace MSMainProc
 
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if !defined(VERSION_GMSJ01)
 void MSMainProc::setGateKeeperBGMPlayFlag(u32 param_1, bool param_2)
 {
 	MSStageCubeFadeDouble* stage = MSStageCubeFadeDouble::smInstance;
@@ -184,7 +184,7 @@ void MSMainProc::setMSoundEnterStage(u8 param_1, u8 param_2)
 	MSStageInfo::bossNotDamaged            = 1;
 	MSStageInfo::volOffCategory            = 0x1c7;
 	MSStageInfo::distFadeStageToKage       = 1;
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	MSStageCubeFadeDouble::smInstance = nullptr;
 #endif
 
@@ -236,7 +236,7 @@ void MSMainProc::setMSoundEnterStage(u8 param_1, u8 param_2)
 		}
 		break;
 	case 2:
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 		MSoundSESystem::MSRandPlay::createRandPlayVec(MSD_SE_OBJ_BIRD_BIA_1, 8);
 #endif
 		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_MAMMA);
@@ -637,7 +637,7 @@ void MSMainProc::startStageBGM(u8, u8)
 MSStage* MSStage::init(u8 param_1, u8 param_2)
 {
 	smMSStage = nullptr;
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if !defined(VERSION_GMSJ01)
 	MSStageCubeFade::smInstance       = nullptr;
 	MSStageCubeFadeDouble::smInstance = nullptr;
 #endif
@@ -675,7 +675,7 @@ MSStage* MSStage::init(u8 param_1, u8 param_2)
 		if (gpCubeSoundChange->unk10 != 0) {
 			if (param_1 == 8)
 				smMSStage = new MSStageCubeFadeMonte;
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if !defined(VERSION_GMSJ01)
 			else if (param_1 == 1 && param_2 == 5)
 				smMSStage = new MSStageCubeFadeDouble;
 #endif
@@ -838,7 +838,7 @@ MSStageCubeFade::MSStageCubeFade()
     , unk8(-1)
     , unkC(MSMainProc::MSStageInfo::cubeFadeRatio)
 {
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if !defined(VERSION_GMSJ01)
 	smInstance = this;
 #endif
 }
@@ -872,7 +872,7 @@ void MSStageCubeFade::proc()
 	unk8 = unk4;
 }
 
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if !defined(VERSION_GMSJ01)
 void MSStageCubeFade::setBgmVolumeForce()
 {
 	s32 cubeNo

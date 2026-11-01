@@ -154,7 +154,7 @@ void TMapObjBall::touchGround(JGeometry::TVec3<f32>* ground)
 			mVelocity.x *= mMapObjData->mPhysical->mData->unk10;
 			mVelocity.z *= mMapObjData->mPhysical->mData->unk10;
 
-#ifndef VERSION_GMSP01
+#if !(!defined(VERSION_GMSJ01))
 			if (isActorType(ACTOR_TYPE_WATERMELON)
 			    && (abs(mVelocity.x) > mMapObjData->mPhysical->mData->unkC
 			        || abs(mVelocity.z)
@@ -722,7 +722,7 @@ void TResetFruit::thrown()
 
 void TResetFruit::hold(TTakeActor* actor)
 {
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	if (getVelocity().length() > 10.0f)
 		return;
 #endif

@@ -127,7 +127,7 @@ BOOL TMario::doRunningAnimation()
 	if (sp < 4.0f)
 		sp = 4.0f;
 
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	int guard = 0;
 #endif
 	while (loop) {
@@ -191,7 +191,7 @@ BOOL TMario::doRunningAnimation()
 			}
 			break;
 		}
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 		if (++guard > 4)
 			break;
 #endif

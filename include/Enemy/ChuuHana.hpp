@@ -173,7 +173,7 @@ public:
 	virtual void initSetEnemies();
 
 public:
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	/* 0x60 */ s32 unk60;
 	/* 0x64 */ u8 unk64;
 	/* 0x65 */ u8 unk65;

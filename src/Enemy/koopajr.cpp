@@ -431,7 +431,7 @@ void TKoopaJr::checkNerveKillerLaunchNormal()
 			const TNerveBase<TLiveActor>* submarineNerve
 			    = &TNerveKoopaJrSubmarineCannonOpenClose::theNerve();
 			mSubmarine->mSpine->pushNerve(submarineNerve);
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 			mSubmarine->setAnimationIndex(0);
 #endif
 		}
@@ -450,7 +450,7 @@ void TKoopaJr::checkNerveKillerLaunchFast()
 			const TNerveBase<TLiveActor>* submarineNerve
 			    = &TNerveKoopaJrSubmarineCannonOpenClose::theNerve();
 			mSubmarine->mSpine->pushNerve(submarineNerve);
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 			mSubmarine->setAnimationIndex(0);
 #endif
 		}
@@ -1096,7 +1096,7 @@ DEFINE_NERVE(TNerveKoopaJrSubmarineCannonOpenClose, TLiveActor)
 {
 	TKoopaJrSubmarine* self = (TKoopaJrSubmarine*)spine->getBody();
 	if (spine->getTime() == 0) {
-#ifndef VERSION_GMSP01
+#if !(!defined(VERSION_GMSJ01))
 		self->setAnimationIndex(0);
 #endif
 		J3DFrameCtrl* ctrl = self->getMActor()->getFrameCtrl(0);

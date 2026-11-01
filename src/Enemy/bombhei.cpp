@@ -386,7 +386,7 @@ DEFINE_NERVE(TNerveBombHeiGenerate, TLiveActor)
 			spine->pushAfterCurrent(&TNerveBombHeiAttack::theNerve());
 			return true;
 		}
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	} else if (self->getVelocity().y > 0.0f && !self->isBckAnm(2)) {
 #else
 	} else if (!self->isBckAnm(2)) {

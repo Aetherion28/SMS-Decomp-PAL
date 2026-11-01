@@ -197,7 +197,7 @@ void TMapStaticObj::calcUnique(JPABaseEmitter* emitter)
 void TMapStaticObj::perform(u32 cue, JDrama::TGraphics* graphics)
 {
 	if (cue & CUE_CALC_ANIM) {
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 		if (mSoundId != -1) {
 			u32 randPlayId = mSoundRandPlayId;
 			if (randPlayId == -1)
@@ -300,7 +300,7 @@ void TMapStaticObj::initUnique()
 		getModel()->viewCalc();
 		getModel()->entry();
 	}
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	else if (strcmp(mActorName, "SoundObjRiver") == 0) {
 		if (gpMarDirector->getCurrentStage() == 13)
 			mSoundId = MSD_SE_OBJ_FOUNTAIN;
@@ -452,7 +452,7 @@ TMapStaticObj::TMapStaticObj(const char* name)
     , mMActor(nullptr)
     , mCollisionManager(nullptr)
     , mSoundId(-1)
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
     , mSoundRandPlayId(0)
 #endif
 {

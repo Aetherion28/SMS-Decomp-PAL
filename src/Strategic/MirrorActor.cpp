@@ -25,7 +25,7 @@ void TMirrorActor::checkIsInMirror()
 	}
 
 	if (mFlags & MIRROR_ACTOR_FLAG_ALWAYS) {
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 		if (!gpMirrorModelManager->isMirrorActive()
 		    && !(mFlags & MIRROR_ACTOR_FLAG_MARIO)
 		    && !(mFlags & MIRROR_ACTOR_FLAG_UNK20)) {
@@ -57,7 +57,7 @@ void TMirrorActor::checkIsInMirror()
 	    = gpCubeMirror->getDataNo(gpCubeMirror->getInCubeNo(position));
 	if (mirrorIdx != gpMirrorModelManager->getActiveMirrorIdx()) {
 		mIsInMirror = false;
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	} else if (!gpMirrorModelManager->isMirrorActive()
 	           && !(mFlags & MIRROR_ACTOR_FLAG_MARIO)
 	           && !(mFlags & MIRROR_ACTOR_FLAG_UNK20)) {

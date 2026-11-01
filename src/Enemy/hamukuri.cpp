@@ -1007,7 +1007,7 @@ void THamuKuri::genRandomItem() { TSmallEnemy::genRandomItem(); }
 void THamuKuri::setAfterDeadEffect()
 {
 	if (unk198) {
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 		TMapObjBase* obj = gpItemManager->makeObjAppear(
 		    mPosition.x, 200.0f + mPosition.y, mPosition.z,
 		    ACTOR_TYPE_MARIO_CAP, true);
@@ -1199,7 +1199,7 @@ bool THamuKuri::isHitValid(u32 param_1)
 	if (checkLiveFlag(LIVE_FLAG_HIDDEN))
 		return false;
 
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	if (param_1 == HIT_MESSAGE_UNKB)
 		onLiveFlag(LIVE_FLAG_HIDDEN);
 #endif
@@ -1545,7 +1545,7 @@ bool THaneHamuKuri::isCollidMove(THitActor* param_1)
 	return TSmallEnemy::isCollidMove(param_1);
 }
 
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 bool THaneHamuKuri::isHitValid(u32 message)
 {
 	if (checkLiveFlag(LIVE_FLAG_HIDDEN))

@@ -1440,7 +1440,7 @@ void TMario::checkController(JDrama::TGraphics*)
 					               ->getSprayState()
 					           == TNozzleTrigger::SPRAY_STATE_ACTIVE) {
 						onFlag(MARIO_FLAG_FLUDD_EMITTING);
-#ifndef VERSION_GMSP01
+#if !(!defined(VERSION_GMSJ01))
 						startSoundActor(MSD_SE_PO_SNIPER_TRIGGER);
 #endif
 						if (checkStatusType(MARIO_STATUS_FLAG_SWIMMING))

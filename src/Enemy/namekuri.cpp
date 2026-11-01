@@ -628,7 +628,7 @@ bool TNameKuri::isHitValid(u32 param_1)
 
 	if (checkLiveFlag(2))
 		return false;
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	if (param_1 == HIT_MESSAGE_UNKB)
 		onLiveFlag(LIVE_FLAG_HIDDEN);
 #endif

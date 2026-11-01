@@ -124,7 +124,7 @@ void TEnemyAttachment::moveObject()
 {
 	if (unk150 == 1) {
 		set();
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 		setBehavior();
 #endif
 	} else {

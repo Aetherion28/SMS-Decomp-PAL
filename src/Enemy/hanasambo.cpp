@@ -676,7 +676,7 @@ void THanaSambo::moveObject()
 
 	unk194->checkHit();
 
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	if (!checkLiveFlag(LIVE_FLAG_HIDDEN)
 	    || mSpine->getCurrentNerve() == &TNerveHanaSamboHide::theNerve()) {
 		mPosition.x = unk19C.x;

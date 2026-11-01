@@ -497,7 +497,7 @@ s32 TCardManager::setCardStat_(CARDFileInfo* file)
 
 void TCardManager::buildHeader_(HeaderData* header)
 {
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	u32 iVar8 = TFlagManager::getInstance()->getFlag(MSF_LANGUAGE);
 #else
 	int iVar8 = 0;

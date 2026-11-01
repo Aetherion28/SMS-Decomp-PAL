@@ -274,7 +274,7 @@ void TSlotDrum::moveObject()
 	for (int i = 0; i < unk148; ++i) {
 		if (unk138[i] != 0.0f) {
 			unk188[i] += fabsf(unk138[i]);
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 			if (unk188[i] >= 360.0f / (f32)unk168) {
 #else
 			if (unk188[i] > 360.0f / (f32)unk168) {
@@ -313,7 +313,7 @@ void TSlotDrum::moveObject()
 					unk13C[i] += 360.0f;
 				if ((int)fabsf(unk13C[i]) % unk168 == 0) {
 					unk138[i] = 0.0f;
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 					if (unk188[i] != 0.0f) {
 						switch (i) {
 						case 0:
@@ -871,7 +871,7 @@ void TDonchou::calcRootMatrix()
 	if (unk144 != nullptr && unk144->unk194 && unk148->unk194)
 		unk13C = 1;
 	if (unk13C != 0) {
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 		if (!SMSGetMarDirector()->isTalkModeNow())
 #endif
 			unk14C++;
@@ -888,7 +888,7 @@ void TDonchou::calcRootMatrix()
 				    nullptr, JDrama::TFlagT<u16>(0));
 				J3DFrameCtrl* fc = mMActor->getFrameCtrl(ANM_TYPE_BCK);
 				fc->setRate(0.5f * fc->getRate());
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 				if (!SMSGetMarDirector()->isTalkModeNow()) {
 					gpMarioOriginal->mGamePad->onNeutralMarioKey();
 					gpMarioOriginal->mGamePad->mDisabledFrames = 5;

@@ -291,7 +291,7 @@ public:
 	virtual void control();
 };
 
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 class TWatermelonStatic : public TMapObjBase {
 public:
 	TWatermelonStatic(const char* name = "固定スイカ")

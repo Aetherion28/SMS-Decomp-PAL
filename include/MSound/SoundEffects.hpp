@@ -2,7 +2,7 @@
 #define MSOUND_SOUND_EFFECTS_HPP
 
 // Exact order and names were pulled from mSound.asn
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 #define SE_UNG(id) ((id) - 0x5FA1)
 #else
 #define SE_UNG(id) (id)

@@ -622,7 +622,7 @@ void TLeanMirror::release()
 	MSBgm::stopTrackBGM(1, 10);
 }
 
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 static s32 startCameraShakeSE(uintptr_t, u32) { return 0; }
 #else
 static s32 startCameraShakeSE(uintptr_t param_1, u32 param_2)
@@ -808,7 +808,7 @@ TLeanMirror::TLeanMirror(const char* name)
 
 void TShiningStone::endDemo()
 {
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSJ01_01)
 	if (unk74 < 3) {
 		MSBgm::setTrackVolume(0, 1.0f, 10, 0);
 		if (unk74 == 1)
@@ -1126,7 +1126,7 @@ TSandBird::TSandBird(const char* name)
 
 void TWatermelon::control() { }
 
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 u32 TWatermelonStatic::touchWater(THitActor*) { return 1; }
 #endif
 

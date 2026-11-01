@@ -145,7 +145,7 @@ public:
 	virtual void forceKill();
 	virtual void setMActorAndKeeper();
 	virtual void initAttacker(THitActor*) { unk184 = 1; }
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	virtual bool isHitValid(u32 message)
 	{
 		if (checkLiveFlag(LIVE_FLAG_HIDDEN))

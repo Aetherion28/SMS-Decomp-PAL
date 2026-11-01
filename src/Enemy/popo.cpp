@@ -640,7 +640,7 @@ void TPopo::kill()
 {
 	releaseNozzle();
 	TSmallEnemy::kill();
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	unk23C->onHitFilter(HIT_FILTER_NO_COLLISION);
 #endif
 }
@@ -939,7 +939,7 @@ DEFINE_NERVE(TNervePopoExplosion, TLiveActor)
 		self->onHitFilter(HIT_FILTER_NO_COLLISION);
 		self->onLiveFlag(LIVE_FLAG_UNK8);
 		self->explosionEffect();
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01)
 		SMSGetMSound()->startSoundActor(0x297F, &self->mPosition, 0, nullptr,
 		                                0, 4);
 #endif

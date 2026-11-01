@@ -102,7 +102,7 @@ void TRealoidActor::checkHitActors()
 	for (; it != end; ++it) {
 		switch ((*it)->getActorType()) {
 		case ACTOR_TYPE_MARIO:
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01)
 			if (!SMSGetMarDirector()->isTalkOrDemoModeNow())
 #endif
 				SMS_SendMessageToMario(this, HIT_MESSAGE_ATTACK);

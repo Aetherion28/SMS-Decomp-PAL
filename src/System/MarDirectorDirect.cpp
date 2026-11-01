@@ -724,7 +724,7 @@ void TMarDirector::nextStateInitialize(u8 next_state)
 		}
 		if (mStage != 0xf)
 			getConsole()->unkC.off(CUE_MOVE | CUE_CALC_ANIM | CUE_DRAW);
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01)
 		if (currSeq.getStage() == 1)
 			THPPlayerPlay();
 #endif
@@ -799,7 +799,7 @@ void TMarDirector::nextStateInitialize(u8 next_state)
 		unkAC->mCardSave->init(unk261);
 		for (int i = 0; i < 4; ++i)
 			JUTGamePad::CRumble::stopMotor(mGamePads[i]->mPortNum);
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01)
 		switch (unk261) {
 		case 3:
 		case 4:

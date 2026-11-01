@@ -135,7 +135,7 @@ public:
 	virtual bool isHitValid(u32 message)
 	{
 		if (message == 0xB) {
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 			onLiveFlag(LIVE_FLAG_HIDDEN);
 #endif
 			return true;

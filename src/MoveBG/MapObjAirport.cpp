@@ -75,7 +75,7 @@ bool TAirportEventSink::watch()
 		                              0.0f, true, nullptr, 0, nullptr,
 		                              JDrama::TFlagT<u16>(0));
 		getPollution()->getLayer(0)->startDecay();
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 		SMSGetMSound()->startSoundSystemSE(MSD_SE_SY_CLEAR_SIGN_BIG, 0, nullptr,
 		                                   0);
 #endif

@@ -1117,7 +1117,7 @@ const char** TBossPakkun::getBasNameTable() const
 void TBossPakkun::setGroundCollision()
 {
 	const TNerveBase<TLiveActor>* dieNerve = &TNerveBPDie::theNerve();
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	if (!mSpine->isNerve(dieNerve)
 	    && !mSpine->isNerve(&TNerveBPTumbleOut::theNerve())
 	    && mMapCollisionManager != nullptr) {

@@ -354,7 +354,7 @@ void TJumpBase::control()
 			makeObjDead();
 			makeObjDefault();
 			makeObjAppeared();
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 			unk13C = 0;
 			unk138 = 2;
 #endif

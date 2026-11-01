@@ -14,7 +14,7 @@
 #include <Camera/CameraMarioData.hpp>
 
 // rogue includes needed for matching sinit & bss
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 #include <MSound/MSound.hpp>
 #include <MSound/MSoundSE.hpp>
 #endif
@@ -584,7 +584,7 @@ void CPolarSubCamera::execCameraModeChangeProc_(int param_1)
 	}
 
 	if (isFixOrDefiniteCameraSpecifyMode(param_1)) {
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 		if (unk120->checkFrameMeaning(TMarioGamePad::MEANING_Y))
 			SMSGetMSound()->startSoundSystemSE(MSD_SE_SY_NOT_COLLECT, 0, nullptr,
 			                                   0);
@@ -606,7 +606,7 @@ void CPolarSubCamera::execCameraModeChangeProc_(int param_1)
 			doLButtonCameraOff_(true);
 		if (unk120->checkFrameMeaning(TMarioGamePad::MEANING_CAM_L))
 			execFrontRotate_();
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 		if (unk120->checkFrameMeaning(TMarioGamePad::MEANING_Y))
 			SMSGetMSound()->startSoundSystemSE(MSD_SE_SY_NOT_COLLECT, 0, nullptr,
 			                                   0);
@@ -658,7 +658,7 @@ void CPolarSubCamera::execCameraModeChangeProc_(int param_1)
 	int currentMap = SMSGetMarDirector()->getCurrentStage();
 
 	int newMode;
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	if (param_1 == CAMERA_MODE_FOLLOW_D) {
 		newMode = param_1;
 	} else

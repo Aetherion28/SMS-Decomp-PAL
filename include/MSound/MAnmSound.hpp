@@ -26,7 +26,7 @@ public:
 	                         JAIAnimeFrameSoundData* frame_data, f32 speed);
 };
 
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 class MAnmSoundMario : public MAnmSound {
 public:
 	MAnmSoundMario(MSound* sound)

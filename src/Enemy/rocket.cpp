@@ -281,7 +281,7 @@ f32 TRocket::getGravityY() const
 
 bool TRocket::isCollidMove(THitActor* param_1)
 {
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	if (mSpine->getCurrentNerve() == &TNerveRocketFly::theNerve()
 	    && (param_1->isHitCategory(HIT_CATEGORY_BOSS)
 	        || param_1->isActorType(ACTOR_TYPE_ENEMY_UNK1F))

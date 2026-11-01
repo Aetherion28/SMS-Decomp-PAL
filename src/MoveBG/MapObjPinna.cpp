@@ -35,7 +35,7 @@
 
 static s32 switchSnd;
 
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01)
 static f32 rotate_frame_rate = 1.0f;
 #endif
 
@@ -92,7 +92,7 @@ void TFerrisWheel::initMapObj()
 		unk13C[i] = TMapObjBaseManager::newAndRegisterObj("FerrisGondola");
 		unk13C[i]->appear();
 	}
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01)
 	if ((SMSGetMarDirector()->getCurrentStage() == 13
 	     && SMSGetMarDirector()->getCurrentScenario() == 2)
 	    || (SMSGetMarDirector()->getCurrentStage() == 5
@@ -738,7 +738,7 @@ void TAmiKing::moveObject()
 	}
 }
 
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if !defined(VERSION_GMSJ01)
 void TAmiKing::calc()
 #else
 void TAmiKing::calcRootMatrix()

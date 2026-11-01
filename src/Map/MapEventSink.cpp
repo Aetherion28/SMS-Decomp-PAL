@@ -336,7 +336,7 @@ void TMapEventSinkBianco::startControl()
 	if (mRaisingBuildingIdx == 0) {
 		SMS_ShowJoint(unk64->getMesh(), true);
 		SMS_MarioWarpRequest(unk6C, unk78);
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 		SMSGetMSound()->startSoundSystemSE(MSD_SE_SY_CLEAR_SIGN_BIG, 0, nullptr,
 		                                   0);
 #endif

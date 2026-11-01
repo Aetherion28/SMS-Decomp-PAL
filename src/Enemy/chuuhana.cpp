@@ -106,7 +106,7 @@ TChuuHanaManager::TChuuHanaManager(const char* param_1)
     : TSmallEnemyManager(param_1)
 {
 	gpCurChuuHana = nullptr;
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	unk60 = 0;
 	unk68 = 0;
 	unk6C = 0;
@@ -129,7 +129,7 @@ void TChuuHanaManager::load(JSUMemoryInputStream& param_1)
 
 void TChuuHanaManager::perform(u32 cue, JDrama::TGraphics* param_2)
 {
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	if (cue & 2) {
 		if (SMS_GetMarioGrPlane()->getActor() != nullptr
 		    && SMS_GetMarioGrPlane()->getActor()->getActorType()
@@ -170,7 +170,7 @@ void TChuuHanaManager::initSetEnemies()
 		TGraphWeb* graph = gpConductor->getGraphByName(graphlist[i]);
 		TChuuHana* enemy = (TChuuHana*)getObj(i);
 
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 		if (i == 0)
 			enemy->unk21C = &unk64;
 		else if (i < 3)
@@ -357,7 +357,7 @@ void TChuuHana::behaveToWater(THitActor* param_1)
 {
 	unk165 = true;
 	unk224 = 0;
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	static_cast<TChuuHanaManager*>(mManager)->unk68++;
 #endif
 
@@ -805,7 +805,7 @@ void TChuuHana::checkStretchType()
 			return;
 		}
 	}
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	static_cast<TChuuHanaManager*>(mManager)->unk6C++;
 #endif
 
@@ -936,7 +936,7 @@ DEFINE_NERVE(TNerveChuuHanaKeepBalance, TLiveActor)
 {
 	TChuuHana* self = (TChuuHana*)spine->getBody();
 	if (spine->getTime() == 0) {
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 		static_cast<TChuuHanaManager*>(self->mManager)->unk70++;
 #endif
 		self->setBckAnm(2);

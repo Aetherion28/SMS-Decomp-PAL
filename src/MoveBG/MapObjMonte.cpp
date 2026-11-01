@@ -80,7 +80,7 @@ void THangingBridgeBoard::drawOneRope(
 
 	f32 bottomY = param_1.y;
 	f32 topY    = param_1.y + THangingBridge::mRopeHeight;
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	if (SMSGetMarDirector()->getCurrentStage() == 13)
 		bottomY -= 60.0f;
 #endif
@@ -428,7 +428,7 @@ void THangingBridge::perform(u32 cue, JDrama::TGraphics* param_2)
 		initDraw();
 		for (int i = 0; i < unk10; i++)
 			unk14[i]->drawRopes();
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 		if (SMSGetMarDirector()->getCurrentStage() == 13)
 			drawRopeBetweenBoards(-60.0f, mPointNumBetweenBoards);
 		else
@@ -528,7 +528,7 @@ void THangingBridge::loadAfter()
 	}
 	if (SMSGetMarDirector()->getCurrentStage() == 8)
 		initMonte();
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	if (SMSGetMarDirector()->getCurrentStage() == 13) {
 		unk18.set(1436.32f, 3201.477f - mRopeHeight, -9417.205f);
 		unk24.set(3656.32f, 2631.477f - mRopeHeight, -9417.205f);
@@ -802,7 +802,7 @@ void TFluff::move()
 	mPosition.y -= unk13C;
 	if (mPosition.y < 0.0f) {
 		mPosition.y = 5000.0f;
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 		if (mHeldObject != nullptr) {
 			mHeldObject->receiveMessage(this, HIT_MESSAGE_DETACH);
 			mHeldObject->mHolder = nullptr;
@@ -833,7 +833,7 @@ void TFluff::kill()
 {
 	if (mHeldObject != nullptr) {
 		mHeldObject->receiveMessage(this, HIT_MESSAGE_DETACH);
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 		mHeldObject->mHolder = nullptr;
 #endif
 		mHeldObject = nullptr;

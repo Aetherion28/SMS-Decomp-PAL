@@ -211,13 +211,13 @@ void TYoshi::init(TMario* param_1)
 	for (int i = 0; i < 2; ++i)
 		mMirrorModels[i]->getModelData()->onFlag1OnAllShapes();
 
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	mBodyAnmSound = new MAnmSoundMario(SMSGetMSound());
 #else
 	mBodyAnmSound = new MAnmSound(SMSGetMSound());
 #endif
 	mBodyAnmSound->initAnmSound(nullptr, 1, 0.0f);
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	mTongueAnmSound = new MAnmSoundMario(SMSGetMSound());
 #else
 	mTongueAnmSound = new MAnmSound(SMSGetMSound());
@@ -263,7 +263,7 @@ void TYoshi::initInLoadAfter()
 	mTongue->initInLoadAfter();
 
 	TMirrorActor* mirrorMain = new TMirrorActor("ヨッシーin鏡");
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	mirrorMain->init(mActor->getModel(), TMirrorActor::MIRROR_ACTOR_FLAG_UNK20);
 #else
 	mirrorMain->init(mActor->getModel(), TMirrorActor::MIRROR_ACTOR_FLAG_MARIO);
@@ -271,7 +271,7 @@ void TYoshi::initInLoadAfter()
 
 	for (int i = 0; i < 2; ++i) {
 		TMirrorActor* mirror = new TMirrorActor("ヨッシー手in鏡");
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 		mirror->init(mMirrorModels[i], TMirrorActor::MIRROR_ACTOR_FLAG_UNK20);
 #else
 		mirror->init(mMirrorModels[i], TMirrorActor::MIRROR_ACTOR_FLAG_MARIO);
@@ -651,7 +651,7 @@ void TYoshi::thinkUpper()
 
 	J3DJoint* joint
 	    = mActor->getModel()->getModelData()->getJointNodePointer(18);
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	if (mTongue->mState != TYoshiTongue::STATE_IDLE
 	    || mMario->mWaterGun->isEmitting()) {
 #else
