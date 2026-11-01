@@ -259,7 +259,11 @@ u16 MSSeCallBack::setParameterSeqSync(JASystem::TTrack* param_1, u16 param_2)
 	case 110: {
 		u8 a = MSGMSound->unkCD;
 		u8 b = MSGMSound->unkCE;
+#ifdef VERSION_GMSP01
+		if (a == 8 && (b == 6 || b == 1))
+#else
 		if (a == 8 && b == 6)
+#endif
 			return 0xffff;
 		return MSGMSound->unkCD;
 	}
@@ -480,7 +484,9 @@ MSound::MSound(JKRHeap* param_1, JKRHeap* param_2, u32 param_3, u8* param_4,
 	if (param_5 != nullptr)
 		JAInter::TAsnData::asnData = param_5;
 
+#ifndef VERSION_GMSP01
 	MSSeCallBack::smWaterFilter = 0;
+#endif
 	initDriver(heap, aramSize, 1);
 	initInterface(1);
 	f32 fVar1 = 0.0f;

@@ -291,6 +291,18 @@ public:
 	virtual void control();
 };
 
+#ifdef VERSION_GMSP01
+class TWatermelonStatic : public TMapObjBase {
+public:
+	TWatermelonStatic(const char* name = "固定スイカ")
+	    : TMapObjBase(name)
+	{
+	}
+
+	virtual u32 touchWater(THitActor*);
+};
+#endif
+
 class TGoalWatermelon : public TMapObjBase {
 public:
 	TGoalWatermelon(const char* name = "スイカゴール");

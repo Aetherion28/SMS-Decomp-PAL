@@ -196,6 +196,9 @@ BOOL TBGBeakHit::receiveMessage(THitActor* sender, u32 message)
 
 			if (mOwner->unk190.color.a != 0)
 				mOwner->showMessage(BALLOON_MSG(0xE0028));
+#ifdef VERSION_GMSP01
+			mOwner->unk1A0 = 1;
+#endif
 
 			return true;
 		}
@@ -724,7 +727,11 @@ void TBossGesso::showMessage(u32 message)
 // Mario has stayed near Gooper Blooper for 20 seconds.
 void TBossGesso::checkTakeMsg()
 {
+#ifdef VERSION_GMSP01
+	if (!unk1A0 && !is2ndFightNow()) {
+#else
 	if (!unk1A0 && !is2ndFightNow() && mAttackMode == 6) {
+#endif
 		JGeometry::TVec3<f32> toMario = SMS_GetMarioPos();
 		toMario -= mPosition;
 
@@ -874,6 +881,9 @@ void TBossGesso::gotBeakDamage()
 		mSpine->setNext(&TNerveBGBeakDamage::theNerve());
 		mSpine->pushAfterCurrent(&TNerveBGWait::theNerve());
 	}
+#ifdef VERSION_GMSP01
+	unk1A0 = 1;
+#endif
 }
 
 void TBossGesso::changeAllTentacleState(int param_1)

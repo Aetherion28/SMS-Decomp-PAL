@@ -813,10 +813,10 @@ void TShiningStone::endDemo()
 		MSBgm::setTrackVolume(0, 1.0f, 10, 0);
 		if (unk74 == 1)
 			SMSGetMarDirector()->getConsole()->startAppearBalloon(
-			    BALLOON_MSG(0xE0032), true);
+			    0x32, true);
 		else
 			SMSGetMarDirector()->getConsole()->startAppearBalloon(
-			    BALLOON_MSG(0xE0033), true);
+			    0x33, true);
 	}
 #else
 	if (unk74 < 3)
@@ -1125,6 +1125,10 @@ TSandBird::TSandBird(const char* name)
 }
 
 void TWatermelon::control() { }
+
+#ifdef VERSION_GMSP01
+u32 TWatermelonStatic::touchWater(THitActor*) { return 1; }
+#endif
 
 void TGoalWatermelon::touchActor(THitActor* actor)
 {

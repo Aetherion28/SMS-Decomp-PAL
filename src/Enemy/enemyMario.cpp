@@ -1258,6 +1258,9 @@ void TEnemyMario::emEnforceTake()
 	if (tryTake()) {
 		if (mStampActor != nullptr && mSettingParams->mStampFlag.get() == 1) {
 			mStampActor->setBck("stamp_koopa_sign_draw1");
+#ifdef VERSION_GMSP01
+			mStampActor->getFrameCtrl(ANM_TYPE_BCK)->setRate(0.8333333f);
+#endif
 			changeEMDoing(EM_DOING_UNK13);
 		} else {
 			decideDoingAfterCarry();
@@ -1743,8 +1746,12 @@ void TEnemyMario::perform(u32 cue, JDrama::TGraphics* graphics)
 	}
 
 	if (cue & CUE_MOVE) {
-		if (mStatus != MARIO_STATUS_RUN || mFreezeTimer == 0)
+		if (mStatus != MARIO_STATUS_RUN || mFreezeTimer == 0) {
 			calcAnim(CUE_CALC_ANIM, graphics);
+#ifdef VERSION_GMSP01
+			animSound();
+#endif
+		}
 
 		if (mSpecialModel != nullptr) {
 			for (u16 i = 0;
@@ -1755,6 +1762,9 @@ void TEnemyMario::perform(u32 cue, JDrama::TGraphics* graphics)
 			mSpecialModel->calcWeightEnvelopeMtx();
 		} else {
 			emarioActor->calcAnm();
+#ifdef VERSION_GMSP01
+			animSound();
+#endif
 			for (u16 i = 0;
 			     i < mModel->getModel()->getModelData()->getJointNum(); ++i) {
 				MTXCopy(mModel->getModel()->getAnmMtx(i),

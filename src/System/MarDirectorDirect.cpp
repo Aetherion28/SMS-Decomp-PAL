@@ -800,9 +800,13 @@ void TMarDirector::nextStateInitialize(u8 next_state)
 		for (int i = 0; i < 4; ++i)
 			JUTGamePad::CRumble::stopMotor(mGamePads[i]->mPortNum);
 #ifdef VERSION_GMSP01
-		if (unk261 >= 3 && unk261 < 5)
+		switch (unk261) {
+		case 3:
+		case 4:
 			SMSGetMSound()->startSoundSystemSE(MSD_SE_SY_COLLECT_DELIGHT, 0,
 			                                   nullptr, 0);
+			break;
+		}
 #endif
 		mGamePads[0]->onFlag(TMarioGamePad::PAD_FLAG_MENU_INPUT);
 		break;
