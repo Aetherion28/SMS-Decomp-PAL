@@ -744,7 +744,7 @@ void TAmiKing::calc()
 void TAmiKing::calcRootMatrix()
 #endif
 {
-#ifndef VERSION_GMSP01
+#if !(!defined(VERSION_GMSJ01))
 	TMapObjBase::calcRootMatrix();
 #endif
 	gpMarioParticleManager->emitAndBindToMtxPtr(

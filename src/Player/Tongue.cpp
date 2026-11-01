@@ -152,7 +152,7 @@ THitActor* TYoshiTongue::findTarget(bool allowExtra, bool checkForward)
 	THitActor* best = nullptr;
 	f32 bestDist    = 10000.0f;
 
-#ifndef VERSION_GMSP01
+#if !(!defined(VERSION_GMSJ01))
 	for (s32 i = 0; i < mColCount; ++i) {
 		s32 type = mCollisions[i]->mActorType;
 		if (type == ACTOR_TYPE_SEAL || type == ACTOR_TYPE_BASKET_REVERSE) {

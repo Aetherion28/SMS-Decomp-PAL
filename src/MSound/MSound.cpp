@@ -548,7 +548,7 @@ void MSound::mainLoop()
 	if (unkCF == 0 && mSeGateMask == MSSeGate_None)
 		return;
 
-#ifndef VERSION_GMSP01
+#if !(!defined(VERSION_GMSJ01))
 	if (unkD1 == 1) {
 		MSBgm::startBGM(MSD_BGM_KUPPA);
 		unkD1 = 0;

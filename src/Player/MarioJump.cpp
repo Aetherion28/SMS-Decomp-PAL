@@ -142,8 +142,8 @@ bool TMario::askStrongGroundTouch()
 	if (mVel.y > -70.0f)
 		isStrong = false;
 
-#ifdef VERSION_GMSP01
-	// PAL only: a hard landing is only strong for Mario himself.
+#if !defined(VERSION_GMSJ01)
+	// US and later: a hard landing is only strong for Mario himself.
 	if (!isMario())
 		isStrong = false;
 #endif
@@ -403,8 +403,8 @@ BOOL TMario::backJumping()
 
 BOOL TMario::landing()
 {
-#ifdef VERSION_GMSP01
-	// PAL only: the long-fall cry is skipped once the landing is already in
+#if !defined(VERSION_GMSJ01)
+	// US and later: the long-fall cry is skipped once the landing is already in
 	// state 3, and goes through startVoice() rather than startSoundActor().
 	if (mVel.y < 0.0f && mStatusArg < 3) {
 		if (mStatusTimer++ > 240) {
@@ -879,8 +879,8 @@ BOOL TMario::boardJumping()
 		if (mWallPlane == nullptr) {
 			setPlayerVelocity(0.0f);
 			loserExec();
-#ifdef VERSION_GMSP01
-			// PAL only: crashing the shell plays the damage sound.
+#if !defined(VERSION_GMSJ01)
+			// US and later: crashing the shell plays the damage sound.
 			SMSGetMSound()->startSoundSystemSE(MSD_SE_SY_DAMAGE, 0, nullptr,
 			                                   0);
 #endif
@@ -892,7 +892,7 @@ BOOL TMario::boardJumping()
 			if ((diff < -max || max < diff)
 			    && mForwardVel > mSurfingParamsWaterRed.mClashSpeed.get()) {
 				loserExec();
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 				SMSGetMSound()->startSoundSystemSE(MSD_SE_SY_DAMAGE, 0,
 				                                   nullptr, 0);
 #endif

@@ -8,8 +8,8 @@
 #include <MarioUtil/ModelUtil.hpp>
 #include <MarioUtil/RumbleMgr.hpp>
 #include <MarioUtil/ShadowUtil.hpp>
-#ifdef VERSION_GMSP01
-// PAL only: TYoshi::entry() switches the light draw buffer.
+#if !defined(VERSION_GMSJ01)
+// US and later: TYoshi::entry() switches the light draw buffer.
 #include <MarioUtil/LightUtil.hpp>
 #endif
 #include <MarioUtil/RandomUtil.hpp>
@@ -501,8 +501,8 @@ void TYoshi::getOff(bool param_1)
 	SMS_RideMoveCalcLocalPos(unk94, mTranslation);
 	SMSGetMSound()->unk88 = 1;
 	MSBgm::setStageBgmYoshiPercussion(false);
-#ifdef VERSION_GMSP01
-	// PAL only: getting off also puts the tongue back to idle, so it cannot
+#if !defined(VERSION_GMSJ01)
+	// US and later: getting off also puts the tongue back to idle, so it cannot
 	// stay out after dismounting.
 	mTongue->mState = TYoshiTongue::STATE_IDLE;
 #endif
@@ -862,8 +862,8 @@ void TYoshi::movement()
 		SMS_RideMoveByGroundActor(unk94, &mTranslation, &rot);
 		mEggRotSpeed = DEG2SHORTANGLE(rot);
 
-#ifdef VERSION_GMSP01
-		// PAL only: keep probing downwards through planes Mario can pass
+#if !defined(VERSION_GMSJ01)
+		// US and later: keep probing downwards through planes Mario can pass
 		// through, so the egg lands on real ground instead of on a
 		// pass-through floor. Capped at five probes.
 		// TODO: the target calls isMarioThrough()/isWaterSurface() here,
@@ -972,8 +972,8 @@ void TYoshi::movement()
 		const TBGCheckData* ground;
 		f32 groundY = gpMap->checkGround(
 		    mTranslation.x, 200.0f + mTranslation.y, mTranslation.z, &ground);
-#ifdef VERSION_GMSP01
-		// PAL only: same downward probe as in the egg case above.
+#if !defined(VERSION_GMSJ01)
+		// US and later: same downward probe as in the egg case above.
 		for (int i = 0; i < 5; i++) {
 			if (!ground->isMarioThrough() || ground->isWaterSurface())
 				break;
@@ -1128,8 +1128,8 @@ void TYoshi::entry()
 	if (mState == STATE_EGG)
 		bVar1 = false;
 
-#ifdef VERSION_GMSP01
-	// PAL only: during a camera demo or a conversation Yoshi is always drawn,
+#if !defined(VERSION_GMSJ01)
+	// US and later: during a camera demo or a conversation Yoshi is always drawn,
 	// so the hatching blink above is overridden. Same predicate, and the same
 	// spelling, as PAL's TWaterGun::isEmitting().
 	if (gpMarDirector->isInnerDemoModeNow() || gpMarDirector->isTalkingDemoModeNow()
@@ -1188,8 +1188,8 @@ void TYoshi::entry()
 	}
 
 	mActor->entry();
-#ifdef VERSION_GMSP01
-	// PAL only: Yoshi's models and tongue are entered with the light draw
+#if !defined(VERSION_GMSJ01)
+	// US and later: Yoshi's models and tongue are entered with the light draw
 	// buffer switched to MActor's own light, then it is put back.
 	gpLightManager->getLightSet(1)->changeLightDrawBuffer(
 	    mActor->getLightId());
@@ -1197,7 +1197,7 @@ void TYoshi::entry()
 	mMirrorModels[0]->entry();
 	mMirrorModels[1]->entry();
 	mTongue->entry();
-#ifdef VERSION_GMSP01
+#if !defined(VERSION_GMSJ01)
 	gpLightManager->getLightSet(1)->resetLightDrawBuffer();
 #endif
 

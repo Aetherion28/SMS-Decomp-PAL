@@ -504,8 +504,8 @@ void TNozzleTrigger::init()
 
 void TNozzleTrigger::movement(const TMarioControllerWork& controllerWork)
 {
-#ifdef VERSION_GMSP01
-	// PAL only: the air-charge sound below is gated on the pressure having
+#if !defined(VERSION_GMSJ01)
+	// US and later: the air-charge sound below is gated on the pressure having
 	// actually risen this frame, so the entry value is kept.
 	f32 oldPressure = mInsidePressure;
 #endif
@@ -561,7 +561,7 @@ void TNozzleTrigger::movement(const TMarioControllerWork& controllerWork)
 				SMSRumbleMgr->start(20, mFludd->getMario()->getUnk564(),
 				                    (f32*)nullptr);
 		}
-#ifndef VERSION_GMSP01
+#if !(!defined(VERSION_GMSJ01))
 		if (mRumbleOnCharge != true
 		    && mSprayState == TNozzleTrigger::SPRAY_STATE_INACTIVE
 		    && controllerWork.mAnalogR > 0.0f) {
@@ -576,8 +576,8 @@ void TNozzleTrigger::movement(const TMarioControllerWork& controllerWork)
 		mInsidePressure = 0.0f;
 	}
 
-#ifdef VERSION_GMSP01
-	// PAL only: moved after the decrement, so the sound plays when this
+#if !defined(VERSION_GMSJ01)
+	// US and later: moved after the decrement, so the sound plays when this
 	// frame's pressure ended up higher than it started.
 	if (canSpray == true && mRumbleOnCharge != true
 	    && mSprayState == TNozzleTrigger::SPRAY_STATE_INACTIVE
@@ -1670,7 +1670,7 @@ void TWaterGun::perform(u32 cue, JDrama::TGraphics* graphics)
 }
 
 #ifdef VERSION_GMSP01
-// PAL only: in JP this is an inline in WaterGun.hpp (emitted as a weak copy in
+// US and later: in JP this is an inline in WaterGun.hpp (emitted as a weak copy in
 // MarioRun.cpp). PAL defines it here as a global and adds the director-mode
 // check, so FLUDD counts as not emitting during demos and conversations.
 bool TWaterGun::isEmitting()
